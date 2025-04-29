@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vex 6</title>
+  </head>
+  <body style="margin: 0;">
+    <iframe src="https://tylerpalko.github.io/gamehub/vex6/" style="width: 100%; height: 100vh; border: none;"></iframe>
+  </body>
+</html>
