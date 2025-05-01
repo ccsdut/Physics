@@ -24,21 +24,40 @@
             margin: auto;
             line-height: 1.6;
         }
-        .back-button {
-            background-color: grey;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
-            margin-bottom: 20px;
+        /* Home button styles */
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            width: 40px; /* Set a fixed size */
+            height: 40px; /* Set a fixed size */
         }
-        .back-button:hover {
-            background-color: darkgrey;
+
+        .home-icon {
+            width: 100%; /* Make the icon fill the button */
+            height: 100%; /* Make the icon fill the button */
+            border-radius: 10px; /* Rounded corners for a soft square look */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
+        .home-icon:hover {
+            transform: scale(1.1); /* Slight hover scale effect */
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4); /* Optional hover glow */
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- Home Button -->
+    <button class="home-button" onclick="window.location.href='https://4texas4.github.io/home.html'">
+        <img src="https://4texas4.github.io/media/homeicon.png" alt="Home Icon" class="home-icon">
+    </button>
 
     <h1>Terms of Use</h1>
     <p>
@@ -52,9 +71,6 @@
     <p>
         Just to clarify, we are not the creators of the games featured on our website, nor are we involved in their development. We would like to give full credit to all the talented individuals and teams who created the games you enjoy here. If you are the creator of a game listed on our site and would like it removed, please feel free to reach out to me at <a href="mailto:bananamonke325@gmail.com" style="color:white;">bananamonke325@gmail.com</a>, and I will be happy to address your request.
     </p>
-
-    <!-- Back to Home button -->
-    <a href="https://4texas4.github.io/home.html" class="back-button">Back to Home</a>
 
 </body>
 </html>
