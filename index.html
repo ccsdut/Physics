@@ -31,8 +31,13 @@
     </style>
   </head>
   <body>
+    <!-- Launch Button -->
     <button onclick="launchIframe()">Launch Rat Games</button>
+    <!-- Skip Button -->
+    <button id="skipButton" onclick="skipToHome()">Skip</button>
+
     <script>
+      // Function to automatically open the iframe and redirect to Google
       function tryAutoOpen() {
         const newWindow = window.open('about:blank', '_blank');
         
@@ -53,12 +58,16 @@
           newWindow.document.close();
           window.location.href = "https://www.google.com";
         } else {
+          // If auto-open fails, show the Launch and Skip buttons
           document.querySelector('button').style.display = 'block';
+          document.getElementById('skipButton').style.display = 'block';
         }
       }
 
+      // Run tryAutoOpen when the page loads
       window.onload = tryAutoOpen;
 
+      // Launch the iframe when the Launch button is clicked
       function launchIframe() {
         const newWindow = window.open('about:blank', '_blank');
         newWindow.document.write(`
@@ -76,6 +85,11 @@
         `);
         newWindow.document.close();
         window.location.href = "https://www.google.com";
+      }
+
+      // Redirect to /home.html when the Skip button is clicked
+      function skipToHome() {
+        window.location.href = "/home.html";
       }
     </script>
   </body>
