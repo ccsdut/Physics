@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rat Games</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('../rat-spinning.gif') no-repeat center center fixed;
+            background-size: contain;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1000px;
+            padding: 20px;
+            margin: 0 auto;
+            text-align: center;
+            background-color: rgba(18, 18, 18, 0.8);
+            border-radius: 10px;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #fff;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            border: 2px solid #555;
+            border-radius: 5px;
+            background-color: #222;
+            color: #fff;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            width: 48%;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Games</h1>
+
+        <!-- Search bar to filter games -->
+        <div class="search-container">
+            <input type="text" id="search" class="search-input" placeholder="Search for a game..." onkeyup="filterGames()">
+        </div>
+
+        <!-- Game Buttons -->
+        <div class="button-container" id="game-buttons">
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/minecraft.html'">Minecraft</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/roblox.html'">Roblox</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/geometrydash.html'">Geometry Dash</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/drivemad.html'">Drive Mad</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/manfromwindow.html'">The Man From The Window</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/shellshockers.html'">Shell Shockers</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/1v1lol.html'">1v1.lol</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/doom.html'">Doom</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/baldibasics.html'">Baldi's Basics</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/narrowone.html'">Narrow One</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/granny.html'">Granny</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/kour.html'">Kour</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/backrooms3d.html'">Backrooms 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bloxd.html'">Bloxd</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/blockblast.html'">Block Blast</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/flappybird.html'">Flappy Bird</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fnaf1.html'">FNAF 1</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fnaf2.html'">FNAF 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fnaf3.html'">FNAF 3</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fnaf4.html'">FNAF 4</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/supermario64.html'">Super Mario 64</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/mariokart64.html'">Mario Kart 64</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/supermariobros.html'">Super Mario Bros</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/donkeykong.html'">Donkey Kong</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/badicecream1.html'">Bad Ice Cream</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/badicecream2.html'">Bad Ice Cream 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/badicecream3.html'">Bad Ice Cream 3</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/vex3.html'">Vex 3</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/vex4.html'">Vex 4</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/vex5.html'">Vex 5</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/vex6.html'">Vex 6</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/vex7.html'">Vex 7</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/risehigher.html'">Rise Higher</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/charliethesteak.html'">Charlie The Steak</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/stackgame.html'">Stack Game</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/elasticman.html'">Elastic Man</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/dreadheadparkour.html'">DreadHead Parkour</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/thornandballoons.html'">Thorns And Balloons</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bonk.html'">Bonk</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pullpins.html'">Pull Pins</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/stickmanhook.html'">Stickman Hook</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/neonswing.html'">Neon Swing</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/retrobowl.html'">Retro Bowl</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/skibiditoiletpuzzle.html'">Skibidi Toilet Puzzle</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/paperio.html'">Paper IO</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/circleo.html'">CircleO</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/sandtris.html'">Sandtris</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hextris.html'">Hextris</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bloxorz.html'">Bloxorz</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/motox3m.html'">Moto X3M</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/cookieclicker.html'">Cookie Clicker</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/townscaper.html'">Town Scaper</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/slope.html'">Slope</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/subwaysurfers.html'">Subway Surfers</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/littlealchemy.html'">Little Alchemy</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/learntofly.html'">Learn To Fly</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/choir.html'">Choir</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/blobopera.html'">Blob Opera</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/2048.html'">2048</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/ovo.html'">OvO</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/crossyroad.html'">Crossy Road</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hillclimbracing.html'">Hill Climb Racing</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fnf.html'">Friday Night Funkin'</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/amongus.html'">Among Us</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/amongussingle.html'">Among Us SinglePlayer</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/angrybirds.html'">Angry Birds</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/happywheels.html'">Happy Wheels</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/btd.html'">Bloons Tower Defense</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/ballhop.html'">Ball Hop</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/idleants.html'">Idle Ants</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/jetpackjoyride.html'">Jetpack Joy Ride</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pacman.html'">Pacman</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/stickrgp.html'">Stick RPG</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/interactivebuddy.html'">Interactive Buddy</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/factoryballsforever.html'">Factory Balls Forever</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/portal.html'">Portal</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/dreader.html'">Dreader</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fruitninja.html'">Fruit Ninja</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/neonrider.html'">Neon Rider</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bottleflip.html'">Bottle Flip 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/swooop.html'">SWOOOP</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/littlegiant.html'">The Little Giant</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/cuttherope.html'">Cut The Rope</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/colortunnel.html'">Color Tunnel</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/omnomrun.html'">Om Nom Run</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/colorroll3d.html'">Color Roll 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/twistedtangle.html'">Twisted Tangle Online</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/flowlines.html'">Flow Lines</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hoopstack.html'">Hoop Stack</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/sprunki.html'">Sprunki</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fruitbasket.html'">Fruit Basket</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/backflipdive3d.html'">Backflip Dive 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/slowroads.html'">Slow Roads</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/adanceoffireandice.html'">A Dance of Fire and Ice</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/ludo.html'">Ludo</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/backrooms2d.html'">Backrooms 2D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/goingballs.html'">Going Balls</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/rollingball3d.html'">Rolling Ball 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pool.html'">Pool</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pointerpointer.html'">Pointer Pointer</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/brawlstars.html'">Brawlstars</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/escaperoadwinter.html'">Escape Road Winter</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/tinyfishing.html'">Tiny Fishing</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/escaperoad2.html'">Smashy Roads 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/incredibox.html'">Incredibox</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/cc3d.html'">Crazy Cattle 3D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pixelgun4d.html'">Pixel Gun 4D</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/dante.html'">Dante</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/doodlejump.html'">Doodle Jump</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/g-switch4creator.html'">G-Switch 4 Creator</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/freeriderjumps.html'">Free Rider Jumps</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/superliquidsoccer.html'">Super Liquid Soccer</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/escaperoad.html'">Smashy Roads</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/digdig.html'">Dig Dig</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/solitaire.html'">Solitaire</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/flight.html'">Flight</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/totm.html'">Tomb Of The Mask</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hardestgame2.html'">Worlds Hardest Game 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hardestgame.html'">Worlds Hardest Game</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/thisissand.html'">This Is Sand</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/longcat.html'">Long Cat</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/overtake.html'">Overtake</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/cattennis.html'">Cat Tennis</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/tunnelrush2.html'">Tunnel Rush 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/eggycar.html'">Eggy Car</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/carsimulatorarena.html'">Car Simulator Arena</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fluidsim.html'">Fluid Sim</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/webecomewhatwebehold.html'">We Become What We Behold</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/templerun2.html'">Temple Run 2</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/gta.html'">GTA</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/gobble.html'">Gobble</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/sandboxels.html'">Sandboxels</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/driftboss.html'">Drift Boss</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/hypersnake.html'">Hyper Snake</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/magiccat.html'">Magic Cat</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/squidgame.html'">Squid Game</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/uno.html'">UNO</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/googlebaseball.html'">Google Baseball</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/sinkit.html'">Sink It</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/impossiblequiz.html'">The Impossible Quiz</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/xx142b2exe.html'">xx142b2exe</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/rocketpult.html'">Rocket Pult</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/helixjump.html'">Helix Jump</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bitplanes.html'">Bit Planes</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/monstertracks.html'">Monster tracks</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/colorcombat.html'">Color Combat</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/earntodie.html'">Earn To Die</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/feud.html'">Feud</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/orange.html'">Orange</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/whackyourboss.html'">Whack Your Boss</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/fireboywatergirl.html'">Fire Boy Water Girl</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/rocketleague.html'">Rocket League</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/bongocat.html'">Bongo Cat</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/run3.html'">Run 3</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/stumbleguys.html'">Stumble Guys</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/aquapark.html'">Aqua Park</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/googlesnakemods.html'">Google Snake Mods</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/clusterrush.html'">Cluster Rush</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/minimonkeymart.html'">Mini Monkey Mart</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/woodturning.html'">Wood Turning</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/creatur.html'">Creatur</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/drawclimber.html'">Draw Climber</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/stickfightthechaos.html'">Stick Fight The Chaos</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/cardrawinggame.html'">Car Drawing Game</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/warbot.html'">War Bot</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/pvz.html'">Platns Versus Zombies</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/keepout.html'">Keep Out</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/basketballstars.html'">Basketball Stars</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/defendyournuts.html'">Defend Your Nuts</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/doodlecricket.html'">Doodle Cricket</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/nutclicker.html'">Nut Clicker</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/games/games/polytrack.html'">Poly Track</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to filter games based on the search query
+        function filterGames() {
+            const searchQuery = document.getElementById('search').value.toLowerCase();
+            const buttons = document.querySelectorAll('.btn');
+
+            buttons.forEach(button => {
+                const gameName = button.innerText.toLowerCase();
+                if (gameName.includes(searchQuery)) {
+                    button.style.display = 'block'; // Show the game button if it matches
+                } else {
+                    button.style.display = 'none'; // Hide the game button if it doesn't match
+                }
+            });
+        }
+    </script>
+</body>
+</html>
