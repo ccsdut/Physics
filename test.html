@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rat Games</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        text-align: center;
+      }
+      button {
+        padding: 20px;
+        font-size: 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        margin-top: 20px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Launch Button -->
+    <button onclick="launchIframe()">Launch Rat Games</button>
+    <!-- Skip Button -->
+    <button id="skipButton" onclick="skipToHome()">Skip</button>
+
+    <script>
+      // Function to automatically open the iframe and redirect to Google
+      function tryAutoOpen() {
+        const newWindow = window.open('about:blank', '_blank');
+        
+        if (newWindow) {
+          newWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Rat Games</title>
+              </head>
+              <body style="margin: 0;">
+                <iframe src="https://4texas4.github.io/home.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+          window.location.href = "https://www.google.com";
+        } else {
+          // If auto-open fails, show the Launch and Skip buttons
+          document.querySelector('button').style.display = 'block';
+          document.getElementById('skipButton').style.display = 'block';
+        }
+      }
+
+      // Run tryAutoOpen when the page loads
+      window.onload = tryAutoOpen;
+
+      // Launch the iframe when the Launch button is clicked
+      function launchIframe() {
+        const newWindow = window.open('about:blank', '_blank');
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Rat Games</title>
+            </head>
+            <body style="margin: 0;">
+              <iframe src="https://4texas4.github.io/home.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+        window.location.href = "https://www.google.com";
+      }
+
+      // Redirect to /home.html when the Skip button is clicked
+      function skipToHome() {
+        window.location.href = "/home.html";
+      }
+    </script>
+  </body>
+</html>
