@@ -10,7 +10,7 @@
             font-family: 'Comic Sans MS', sans-serif; /* Set Comic Sans font */
             margin: 0;
             padding: 0;
-            background: url('../rat-spinning.gif') no-repeat center center fixed; /* Background image path corrected */
+            background: url('https://4texas4.github.io/media/rat-spinning.gif') no-repeat center center fixed; /* Background image path corrected */
             background-size: contain; /* Zoomed-out background */
             background-color: #121212; /* Dark mode background color */
             color: #fff; /* Light text color for dark mode */
@@ -64,16 +64,47 @@
                 margin-bottom: 10px;
             }
         }
+
+        /* Home button styles */
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            width: 40px; /* Set a fixed size */
+            height: 40px; /* Set a fixed size */
+        }
+
+        .home-icon {
+            width: 100%; /* Make the icon fill the button */
+            height: 100%; /* Make the icon fill the button */
+            border-radius: 10px; /* Rounded corners for a soft square look */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .home-icon:hover {
+            transform: scale(1.1); /* Slight hover scale effect */
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4); /* Optional hover glow */
+        }
     </style>
 </head>
 <body>
+    <!-- Home Button -->
+    <button class="home-button" onclick="window.location.href='https://4texas4.github.io/home.html'">
+        <img src="https://4texas4.github.io/media/homeicon.png" alt="Home Icon" class="home-icon">
+    </button>
+
     <!-- Main container of your website -->
     <div class="container">
         <h1>Tools</h1>
 
         <!-- BUTTON AREA: Add buttons here -->
         <div class="button-container">
-            <button class="btn" onclick="window.location.href='https://4texas4.github.io/home.html'">Home</button><button class="btn" onclick="window.location.href='https://4texas4.github.io/tools/tools/movies.html'">Free Movies</button>
+            <button class="btn" onclick="window.location.href='https://4texas4.github.io/tools/tools/movies.html'">Free Movies</button>
             <button class="btn" onclick="window.location.href='https://4texas4.github.io/tools/tools/blanker.html'">Blanker</button>
             <button class="btn" onclick="window.location.href='https://4texas4.github.io/tools/tools/ai.html'">Rat AI</button>
             <button class="btn" onclick="window.location.href='https://4texas4.github.io/tools/tools/chat.html'">Chat</button>
