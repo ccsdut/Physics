@@ -4,16 +4,19 @@
     <title>Movies</title>
     <script>
       try {
+        // Check if this page is being embedded (i.e., in an iframe)
         if (window.top !== window.self) {
-          const ref = document.referrer;
-          if (ref === "https://sites.google.com/stu.ccsdut.org/heheh14/movies") {
+          // Try to access the top window's location — will throw an error if cross-origin (like Google Sites)
+          const host = window.top.location.hostname;
+
+          // If the host matches Google Sites
+          if (host === "sites.google.com") {
             document.write(`
               <style>
-                body, html {
+                html, body {
                   margin: 0;
                   padding: 0;
                   height: 100%;
-                  width: 100%;
                   background: black;
                   color: white;
                   display: flex;
@@ -24,19 +27,19 @@
                   text-align: center;
                 }
               </style>
-              <div>This site is not allowed to host this page.</div>
+              <div>This site is not allowed to embed this page.</div>
             `);
-            window.stop(); // Stop everything else from loading
+            window.stop();
           }
         }
       } catch (e) {
+        // If accessing top fails (sandboxed or cross-origin), treat it as unauthorized
         document.write(`
           <style>
-            body, html {
+            html, body {
               margin: 0;
               padding: 0;
               height: 100%;
-              width: 100%;
               background: black;
               color: white;
               display: flex;
@@ -47,7 +50,7 @@
               text-align: center;
             }
           </style>
-          <div>This site is not allowed to host this page.</div>
+          <div>This site is not allowed to embed this page.</div>
         `);
         window.stop();
       }
