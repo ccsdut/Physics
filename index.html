@@ -60,7 +60,31 @@
             }
         }
 
-        /* Styling for the bottom-left corner div */
+        /* Fullscreen button in the top-right corner */
+        #fullscreen-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: background-color 0.3s ease;
+        }
+
+        #fullscreen-btn:hover {
+            background-color: #555;
+        }
+
+        #fullscreen-btn img {
+            display: block;
+            height: 24px;
+            pointer-events: none;
+        }
+
+        /* Bottom-left ad section */
         #corner-ads {
             position: fixed;
             bottom: 10px;
@@ -81,6 +105,11 @@
     </style>
 </head>
 <body>
+    <!-- Fullscreen Button -->
+    <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <img src="/media/fullscreen.png" alt="Fullscreen">
+    </button>
+
     <h1>Rat Games</h1>
     <h2 id="dailyText"></h2>
 
@@ -120,12 +149,34 @@
 
         updateText();
         setInterval(updateText, 5000);
+
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
     </script>
 
-    <!-- Stat Counter and Zahnversicherung link in the bottom-left corner -->
+    <!-- Bottom-left corner ad/stat section -->
     <div id="corner-ads">
         <script type="text/javascript" src="https://www.stat-counter.org/count/hrr5"></script><br>
- <a href='https://www.pferdeversicherung.at/pferdekrankenversicherung/'>Pferd Krankenversicherung</a> <script type='text/javascript' src='https://whomania.com/ctr?id=53c00ac54c6be6c4b82dc1121e77b8897a9e9cbf'></script>
+        <a href='https://www.pferdeversicherung.at/pferdekrankenversicherung/'>Pferd Krankenversicherung</a>
+        <script type='text/javascript' src='https://whomania.com/ctr?id=53c00ac54c6be6c4b82dc1121e77b8897a9e9cbf'></script>
     </div>
 </body>
 </html>
