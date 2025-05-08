@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rat Games</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #121212 url('https://4texas4.github.io/media/rat-spinning.gif') no-repeat center -100px fixed;
+            background-size: contain;
+            font-family: 'Comic Sans MS', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 5em;
+            margin: 0;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        #dailyText {
+            font-size: 2em;
+            margin: 0;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        .button-container {
+            margin-top: 30px;
+        }
+
+        .btn {
+            background-color: #333;
+            color: white;
+            font-size: 20px;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .btn {
+                width: 80%;
+            }
+        }
+
+        /* Fullscreen button in the top-right corner */
+        #fullscreen-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: background-color 0.3s ease;
+        }
+
+        #fullscreen-btn:hover {
+            background-color: #555;
+        }
+
+        #fullscreen-btn img {
+            display: block;
+            height: 24px;
+            pointer-events: none;
+        }
+
+        /* Bottom-left ad section */
+        #corner-ads {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            font-size: 12px;
+            color: white;
+        }
+
+        #corner-ads a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        #corner-ads a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fullscreen Button -->
+    <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <img src="/media/fullscreen.png" alt="Fullscreen">
+    </button>
+
+    <h1>Rat Games</h1>
+    <h2 id="dailyText"></h2>
+
+    <div class="button-container">
+        <button class="btn" onclick="window.location.href='/games/'">Games</button>
+        <button class="btn" onclick="window.location.href='/tools/'">Tools/Apps</button>
+        <button class="btn" onclick="window.location.href='/survey.html'">Request Game/Feedback</button>
+        <button class="btn" onclick="window.location.href='/terms.html'">Terms Of Use</button>
+    </div>
+
+    <script>
+        const texts = [
+            "By the students, for the students",
+            "I always come back",
+            "Make sure to share this with your friends",
+            "If we don't have a game, request it",
+            "I have to walk my fish hold up"
+        ];
+
+        function getCurrentIndex() {
+            const lastUpdate = localStorage.getItem('lastUpdateTime');
+            const storedIndex = localStorage.getItem('textIndex');
+            const now = new Date().getTime();
+            
+            if (!lastUpdate || now - lastUpdate >= 5000 || storedIndex === null) {
+                const newIndex = (storedIndex === null ? 0 : (parseInt(storedIndex) + 1) % texts.length);
+                localStorage.setItem('lastUpdateTime', now);
+                localStorage.setItem('textIndex', newIndex);
+                return newIndex;
+            }
+            return parseInt(storedIndex);
+        }
+
+        function updateText() {
+            document.getElementById("dailyText").innerText = texts[getCurrentIndex()];
+        }
+
+        updateText();
+        setInterval(updateText, 5000);
+
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+    </script>
+
+    <!-- Bottom-left corner ad/stat section -->
+    <div id="corner-ads">
+        <script type="text/javascript" src="https://www.stat-counter.org/count/hrr5"></script><br>
+        <a href='https://www.pferdeversicherung.at/pferdekrankenversicherung/'>Pferd Krankenversicherung</a>
+        <script type='text/javascript' src='https://whomania.com/ctr?id=53c00ac54c6be6c4b82dc1121e77b8897a9e9cbf'></script>
+    </div>
+</body>
+</html>
