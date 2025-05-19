@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- SEO & Social Sharing -->
     <title>🎮 Rat Games</title>
     <link rel="icon" href="https://ratgames.netlify.app/media/favicon.png" type="image/png" />
-    <link rel="manifest" href="/install/manifest.json">
-    <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support.">
-    <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats">
-    <link rel="canonical" href="https://ratgames.netlify.app/">
+    <link rel="manifest" href="/install/manifest.json" />
+    <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support." />
+    <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats" />
+    <link rel="canonical" href="https://ratgames.netlify.app/" />
 
     <!-- Open Graph (for social sharing previews) -->
-    <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games">
-    <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!">
-    <meta property="og:image" content="https://ratgames.netlify.app/media/rat-spinning.gif">
-    <meta property="og:url" content="https://ratgames.netlify.app/">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games" />
+    <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!" />
+    <meta property="og:image" content="https://ratgames.netlify.app/media/rat-spinning.gif" />
+    <meta property="og:url" content="https://ratgames.netlify.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <style>
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             height: 100%;
@@ -75,7 +76,9 @@
             }
         }
 
-        #fullscreen-btn, #installBtn {
+        /* Install and Fullscreen buttons styling */
+        #fullscreen-btn,
+        #installBtn {
             position: fixed;
             top: 10px;
             background-color: #333;
@@ -86,6 +89,12 @@
             z-index: 1001;
             transition: background-color 0.3s ease;
             color: white;
+
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #fullscreen-btn {
@@ -102,9 +111,11 @@
             background-color: #555;
         }
 
-        #fullscreen-btn img {
-            display: block;
-            height: 24px;
+        /* Icons inside buttons */
+        #fullscreen-btn img,
+        #installBtn img {
+            max-width: 24px;
+            max-height: 24px;
             pointer-events: none;
         }
 
@@ -129,11 +140,13 @@
 </head>
 <body>
     <!-- Install Button -->
-    <button id="installBtn" title="Install App">     <img src="https://ratgames.netlify.app/media/install.png" alt="Install"> </button>
+    <button id="installBtn" title="Install App">
+        <img src="https://ratgames.netlify.app/media/install.png" alt="Install" />
+    </button>
 
     <!-- Fullscreen Button -->
     <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-        <img src="/media/fullscreen.png" alt="Fullscreen">
+        <img src="/media/fullscreen.png" alt="Fullscreen" />
     </button>
 
     <h1>Rat Games</h1>
@@ -152,18 +165,19 @@
             "I always come back",
             "Make sure to share this with your friends",
             "If we don't have a game, request it",
-            "I have to walk my fish hold up"
+            "I have to walk my fish hold up",
         ];
 
         function getCurrentIndex() {
-            const lastUpdate = localStorage.getItem('lastUpdateTime');
-            const storedIndex = localStorage.getItem('textIndex');
+            const lastUpdate = localStorage.getItem("lastUpdateTime");
+            const storedIndex = localStorage.getItem("textIndex");
             const now = new Date().getTime();
-            
+
             if (!lastUpdate || now - lastUpdate >= 5000 || storedIndex === null) {
-                const newIndex = (storedIndex === null ? 0 : (parseInt(storedIndex) + 1) % texts.length);
-                localStorage.setItem('lastUpdateTime', now);
-                localStorage.setItem('textIndex', newIndex);
+                const newIndex =
+                    storedIndex === null ? 0 : (parseInt(storedIndex) + 1) % texts.length;
+                localStorage.setItem("lastUpdateTime", now);
+                localStorage.setItem("textIndex", newIndex);
                 return newIndex;
             }
             return parseInt(storedIndex);
@@ -179,39 +193,44 @@
         function toggleFullscreen() {
             const elem = document.documentElement;
             if (!document.fullscreenElement) {
-                elem.requestFullscreen?.() || elem.webkitRequestFullscreen?.() || elem.msRequestFullscreen?.();
+                elem.requestFullscreen?.() ||
+                    elem.webkitRequestFullscreen?.() ||
+                    elem.msRequestFullscreen?.();
             } else {
-                document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
+                document.exitFullscreen?.() ||
+                    document.webkitExitFullscreen?.() ||
+                    document.msExitFullscreen?.();
             }
         }
 
         // Register service worker and handle install prompt
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/install/service-worker.js')
-                    .then(reg => console.log('Service Worker registered:', reg.scope))
-                    .catch(err => console.error('Service Worker registration failed:', err));
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker
+                    .register("/install/service-worker.js")
+                    .then((reg) => console.log("Service Worker registered:", reg.scope))
+                    .catch((err) => console.error("Service Worker registration failed:", err));
             });
         }
 
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
+        window.addEventListener("beforeinstallprompt", (e) => {
             e.preventDefault();
             deferredPrompt = e;
 
-            const installBtn = document.getElementById('installBtn');
-            if (installBtn) installBtn.style.display = 'block';
+            const installBtn = document.getElementById("installBtn");
+            if (installBtn) installBtn.style.display = "flex";
 
-            installBtn?.addEventListener('click', () => {
+            installBtn?.addEventListener("click", () => {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(choiceResult => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === "accepted") {
+                        console.log("User accepted the install prompt");
                     } else {
-                        console.log('User dismissed the install prompt');
+                        console.log("User dismissed the install prompt");
                     }
                     deferredPrompt = null;
-                    installBtn.style.display = 'none';
+                    installBtn.style.display = "none";
                 });
             });
         });
@@ -219,9 +238,11 @@
 
     <!-- Bottom-left corner ad/stat section -->
     <div id="corner-ads">
-        <script type="text/javascript" src="https://www.stat-counter.org/count/hrr5"></script><br>
-        <a href='https://www.pferdeversicherung.at/pferdekrankenversicherung/'>Pferd Krankenversicherung</a>
-        <script type='text/javascript' src='https://whomania.com/ctr?id=53c00ac54c6be6c4b82dc1121e77b8897a9e9cbf'></script>
+        <script type="text/javascript" src="https://www.stat-counter.org/count/hrr5"></script><br />
+        <a href="https://www.pferdeversicherung.at/pferdekrankenversicherung/">
+            Pferd Krankenversicherung
+        </a>
+        <script type="text/javascript" src="https://whomania.com/ctr?id=53c00ac54c6be6c4b82dc1121e77b8897a9e9cbf"></script>
     </div>
 </body>
 </html>
