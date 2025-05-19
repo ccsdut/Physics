@@ -6,7 +6,8 @@
 
     <!-- SEO & Social Sharing -->
     <title>🎮 Rat Games</title>
-    <link rel="icon" href="/media/favicon.png" type="image/png" />
+    <link rel="icon" href="https://ratgames.netlify.app/media/favicon.png" type="image/png" />
+    <link rel="manifest" href="/install/manifest.json">
     <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support.">
     <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats">
     <link rel="canonical" href="https://ratgames.netlify.app/">
@@ -74,10 +75,9 @@
             }
         }
 
-        #fullscreen-btn {
+        #fullscreen-btn, #installBtn {
             position: fixed;
             top: 10px;
-            right: 10px;
             background-color: #333;
             border: none;
             border-radius: 10px;
@@ -85,9 +85,20 @@
             cursor: pointer;
             z-index: 1001;
             transition: background-color 0.3s ease;
+            color: white;
         }
 
-        #fullscreen-btn:hover {
+        #fullscreen-btn {
+            right: 10px;
+        }
+
+        #installBtn {
+            right: 60px;
+            display: none;
+        }
+
+        #fullscreen-btn:hover,
+        #installBtn:hover {
             background-color: #555;
         }
 
@@ -117,6 +128,9 @@
     </style>
 </head>
 <body>
+    <!-- Install Button -->
+    <button id="installBtn">📥 Install</button>
+
     <!-- Fullscreen Button -->
     <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
         <img src="/media/fullscreen.png" alt="Fullscreen">
@@ -165,23 +179,42 @@
         function toggleFullscreen() {
             const elem = document.documentElement;
             if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
-                }
+                elem.requestFullscreen?.() || elem.webkitRequestFullscreen?.() || elem.msRequestFullscreen?.();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
             }
         }
+
+        // Register service worker and handle install prompt
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/install/service-worker.js')
+                    .then(reg => console.log('Service Worker registered:', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.style.display = 'block';
+
+            installBtn?.addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choiceResult => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            });
+        });
     </script>
 
     <!-- Bottom-left corner ad/stat section -->
