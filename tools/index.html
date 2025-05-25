@@ -25,24 +25,29 @@
       top: 20px;
       left: 20px;
       z-index: 999;
-      background: none;
+      background-color: black;  /* changed from none to black */
       border: none;
       padding: 0;
       cursor: pointer;
       width: 40px; /* fixed size */
       height: 40px; /* fixed size */
-    }
-
-    .home-icon {
-      width: 100%; /* fill button */
-      height: 100%;
-      border-radius: 10px;
+      border-radius: 10px; /* optional: same rounded corners as icon */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(255,255,255,0.3); /* subtle glow */
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .home-icon:hover {
+    .home-button:hover {
       transform: scale(1.1);
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+
+    .home-icon {
+      width: 90%; /* a bit smaller to fit nicely inside the black button */
+      height: 90%;
+      border-radius: 10px;
     }
   </style>
 </head>
