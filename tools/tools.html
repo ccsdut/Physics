@@ -112,14 +112,14 @@
   </div>
 
   <script>
-    // Open viewer.html in the same folder
-    function openViewer(url) {
-      const encoded = encodeURIComponent(url);
-      window.location.href = `viewer.html?site=${encoded}`;
-    }
-    function navigate(path) {
-      window.location.href = path;
-    }
-  </script>
+  // Open viewer.html in the parent folder (root)
+  function openViewer(url) {
+    const encoded = encodeURIComponent(url);
+    window.location.href = `../viewer.html?site=${encoded}`;
+  }
+  function navigate(path) {
+    window.location.href = path;
+  }
+</script>
 </body>
 </html>
