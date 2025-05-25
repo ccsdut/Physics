@@ -112,10 +112,10 @@
   </div>
 
   <script>
-    // Go one folder UP to reach viewer.html from tools/tools.html
+    // Open viewer.html in the same folder
     function openViewer(url) {
       const encoded = encodeURIComponent(url);
-      window.location.href = `../viewer.html?site=${encoded}`;
+      window.location.href = `viewer.html?site=${encoded}`;
     }
     function navigate(path) {
       window.location.href = path;
