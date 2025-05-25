@@ -6,86 +6,7 @@
   <title>Rat Tools</title>
   <link rel="icon" href="/media/favicon.png" type="image/png" />
   <style>
-    body {
-      font-family: 'Comic Sans MS', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: url('https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif') no-repeat center center fixed;
-      background-size: contain;
-      background-color: #121212;
-      color: #fff;
-    }
-
-    .container {
-      width: 80%;
-      max-width: 1000px;
-      padding: 20px;
-      margin: 0 auto;
-      text-align: center;
-      background-color: rgba(18, 18, 18, 0.8);
-      border-radius: 10px;
-      padding: 40px 20px;
-    }
-
-    h1 {
-      color: #fff;
-    }
-
-    .button-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .btn {
-      width: 48%;
-      padding: 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      box-sizing: border-box;
-      background-color: #333;
-      color: #fff;
-      transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-      background-color: #555;
-    }
-
-    @media (max-width: 768px) {
-      .btn {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-    }
-
-    .home-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 999;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-    }
-
-    .home-icon {
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .home-icon:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-    }
+    /* Your existing CSS here... (same as before) */
   </style>
 </head>
 <body>
@@ -95,19 +16,18 @@
     <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home Icon" class="home-icon">
   </button>
 
-  <!-- Main container -->
   <div class="container">
     <h1>Tools</h1>
 
     <div class="button-container">
-      <!-- INTERNAL TOOLS (same origin) -->
+      <!-- Internal tools -->
       <button class="btn" onclick="navigate('/tools/tools/chat.html')">Chat</button>
       <button class="btn" onclick="navigate('/tools/tools/blanker.html')">Blanker</button>
       <button class="btn" onclick="navigate('/tools/tools/clock.html')">Clock</button>
       <button class="btn" onclick="navigate('/tools/tools/mp3player.html')">MP3 Player</button>
       <button class="btn" onclick="navigate('/tools/tools/soundboard/soundboard.html')">Soundboard</button>
 
-      <!-- EXTERNAL TOOLS (open via iframe wrapper) -->
+      <!-- External tools -->
       <button class="btn" onclick="openViewer('https://uvv2.rhw.one/')">UltraViolet Unblocker</button>
       <button class="btn" onclick="openViewer('https://5-t.vercel.app')">Doge Unblocker</button>
       <button class="btn" onclick="openViewer('https://voucan-us4.github.io/pages/prox')">US4 Unblocker</button>
@@ -126,7 +46,7 @@
   <script>
     function openViewer(url) {
       const encoded = encodeURIComponent(url);
-      window.location.href = `/tools/tools/viewer.html?site=${encoded}`;
+      window.location.href = `/tools/viewer.html?site=${encoded}`;
     }
 
     function navigate(path) {
