@@ -89,11 +89,11 @@
     <h1>Tools</h1>
     <div class="button-container">
       <!-- Internal tools -->
-      <button class="btn" onclick="navigate('tools/tools/chat.html')">Chat</button>
-      <button class="btn" onclick="navigate('tools/tools/blanker.html')">Blanker</button>
-      <button class="btn" onclick="navigate('tools/tools/clock.html')">Clock</button>
-      <button class="btn" onclick="navigate('tools/tools/mp3player.html')">MP3 Player</button>
-      <button class="btn" onclick="navigate('tools/tools/soundboard/soundboard.html')">Soundboard</button>
+      <button class="btn" onclick="navigate('tools/chat.html')">Chat</button>
+      <button class="btn" onclick="navigate('tools/blanker.html')">Blanker</button>
+      <button class="btn" onclick="navigate('tools/clock.html')">Clock</button>
+      <button class="btn" onclick="navigate('tools/mp3player.html')">MP3 Player</button>
+      <button class="btn" onclick="navigate('tools/soundboard/soundboard.html')">Soundboard</button>
 
       <!-- External tools via viewer -->
       <button class="btn" onclick="openViewer('https://uvv2.rhw.one/')">UltraViolet Unblocker</button>
@@ -112,15 +112,14 @@
   </div>
 
   <script>
+    // Go one folder UP to reach viewer.html from tools/tools.html
     function openViewer(url) {
       const encoded = encodeURIComponent(url);
-      window.location.href = `viewer.html?site=${encoded}`;
+      window.location.href = `../viewer.html?site=${encoded}`;
     }
-
     function navigate(path) {
       window.location.href = path;
     }
   </script>
-
 </body>
 </html>
