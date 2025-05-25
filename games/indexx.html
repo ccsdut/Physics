@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rat Games</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      background-color: black; /* optional, to match your first style */
+      color: white;
+      font-family: sans-serif;
+    }
+    iframe {
+      border: none;
+      width: 100vw;
+      height: 100vh;
+    }
+    /* Home button styles */
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 999;
+      background-color: black;  /* changed from none to black */
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 40px; /* fixed size */
+      height: 40px; /* fixed size */
+      border-radius: 10px; /* optional: same rounded corners as icon */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(255,255,255,0.3); /* subtle glow */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .home-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+
+    .home-icon {
+      width: 90%; /* a bit smaller to fit nicely inside the black button */
+      height: 90%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Home Button -->
+  <button class="home-button" onclick="window.location.href='/'">
+    <img src="/media/homeicon.png" alt="Home Icon" class="home-icon" />
+  </button>
+
+  <iframe
+    src="https://ratgames.vercel.app/tools/tools.html"
+    allow="fullscreen; pointer-lock; autoplay; encrypted-media"
+    allowfullscreen="true">
+  </iframe>
+</body>
+</html>
