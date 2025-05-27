@@ -25,36 +25,67 @@
       top: 20px;
       left: 20px;
       z-index: 999;
-      background-color: black;  /* changed from none to black */
+      background-color: black;
       border: none;
       padding: 0;
       cursor: pointer;
-      width: 40px; /* fixed size */
-      height: 40px; /* fixed size */
-      border-radius: 10px; /* optional: same rounded corners as icon */
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 6px rgba(255,255,255,0.3); /* subtle glow */
+      box-shadow: 0 0 6px rgba(255,255,255,0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     .home-button:hover {
       transform: scale(1.1);
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
     }
-
     .home-icon {
-      width: 90%; /* a bit smaller to fit nicely inside the black button */
+      width: 90%;
       height: 90%;
       border-radius: 10px;
+    }
+
+    /* Fullscreen button styles */
+    #fullscreen-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+      background-color: #333;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+      color: white;
+    }
+    #fullscreen-btn:hover {
+      background-color: #555;
+    }
+    #fullscreen-btn img {
+      max-width: 24px;
+      max-height: 24px;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <!-- Home Button -->
-  <button class="home-button" onclick="window.location.href='/'">
+  <button class="home-button" onclick="window.location.href='/'" title="Home">
     <img src="/media/homeicon.png" alt="Home Icon" class="home-icon" />
+  </button>
+
+  <!-- Fullscreen Button -->
+  <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+    <img src="/media/fullscreen.png" alt="Fullscreen" />
   </button>
 
   <iframe
@@ -62,5 +93,20 @@
     allow="fullscreen; pointer-lock; autoplay; encrypted-media"
     allowfullscreen="true">
   </iframe>
+
+  <script>
+    function toggleFullscreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen?.() ||
+        elem.webkitRequestFullscreen?.() ||
+        elem.msRequestFullscreen?.();
+      } else {
+        document.exitFullscreen?.() ||
+        document.webkitExitFullscreen?.() ||
+        document.msExitFullscreen?.();
+      }
+    }
+  </script>
 </body>
 </html>
