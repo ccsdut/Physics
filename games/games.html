@@ -305,7 +305,8 @@
 
     <script>
   function openViewer(url) {
-    window.open(url, '_blank');
+    const encoded = encodeURIComponent(url);
+    window.location.href = `/viewer.html?site=${encoded}`;
   }
 
   function filterGames() {
