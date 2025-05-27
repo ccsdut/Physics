@@ -304,20 +304,19 @@
     </div>
 
     <script>
-        // Function to filter games based on the search query
-        function filterGames() {
-            const searchQuery = document.getElementById('search').value.toLowerCase();
-            const buttons = document.querySelectorAll('#game-buttons .btn');
+  function openViewer(url) {
+    window.open(url, '_blank');
+  }
 
-            buttons.forEach(button => {
-                const gameName = button.innerText.toLowerCase();
-                if (gameName.includes(searchQuery)) {
-                    button.style.display = 'block';
-                } else {
-                    button.style.display = 'none';
-                }
-            });
-        }
-    </script>
+  function filterGames() {
+    const searchQuery = document.getElementById('search').value.toLowerCase();
+    const buttons = document.querySelectorAll('#game-buttons .btn');
+
+    buttons.forEach(button => {
+      const gameName = button.innerText.toLowerCase();
+      button.style.display = gameName.includes(searchQuery) ? 'block' : 'none';
+    });
+  }
+</script>
 </body>
 </html>
