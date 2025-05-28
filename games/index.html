@@ -3,88 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <title>Rat Games</title>
-  <style>
-    /* Prevent all scrolling and layout overflow */
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      overflow: hidden; /* 💡 Hides all scrollbars */
       height: 100%;
       width: 100%;
       background-color: black;
       color: white;
       font-family: sans-serif;
-
-      /* Hide scrollbars in all modern browsers */
-      scrollbar-width: none; /* Firefox */
-    }
-
-    body::-webkit-scrollbar {
-      display: none; /* Chrome, Safari */
     }
 
     iframe {
       border: none;
-      position: fixed;
-      top: 0;
-      left: 0;
       width: 100vw;
       height: 100vh;
+      overflow: hidden;
     }
 
-    /* Home button styles */
+    /* Home button styled to match fullscreen button */
     .home-button {
       position: fixed;
       top: 20px;
       left: 20px;
       z-index: 999;
-      background-color: black;
+      background-color: #333;
       border: none;
       padding: 0;
       cursor: pointer;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 6px rgba(255,255,255,0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: background-color 0.3s ease;
     }
 
     .home-button:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      background-color: #555;
     }
 
     .home-icon {
-      width: 90%;
-      height: 90%;
-      border-radius: 10px;
+      width: 24px;
+      height: 24px;
     }
 
-    /* Fullscreen button styles */
+    /* Fullscreen button */
     #fullscreen-btn {
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 999;
       background-color: #333;
       border: none;
       border-radius: 10px;
       padding: 10px;
       cursor: pointer;
+      z-index: 1000;
       width: 44px;
       height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background-color 0.3s ease;
-      color: white;
     }
 
     #fullscreen-btn:hover {
@@ -95,6 +79,11 @@
       max-width: 24px;
       max-height: 24px;
       pointer-events: none;
+    }
+
+    /* Optional: Hide scrollbars in WebKit-based browsers */
+    ::-webkit-scrollbar {
+      display: none;
     }
   </style>
 </head>
@@ -109,6 +98,7 @@
     <img src="/media/fullscreen.png" alt="Fullscreen" />
   </button>
 
+  <!-- Game Iframe -->
   <iframe
     src="https://ratgames.vercel.app/games/games.html"
     allow="fullscreen; pointer-lock; autoplay; encrypted-media"
