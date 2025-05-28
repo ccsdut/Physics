@@ -4,21 +4,38 @@
   <meta charset="UTF-8" />
   <title>Rat Games</title>
   <style>
+    /* Prevent all scrolling and layout overflow */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
       height: 100%;
       width: 100%;
-      background-color: black; /* optional, to match your first style */
+      background-color: black;
       color: white;
       font-family: sans-serif;
+
+      /* Hide scrollbars in all modern browsers */
+      scrollbar-width: none; /* Firefox */
     }
+
+    body::-webkit-scrollbar {
+      display: none; /* Chrome, Safari */
+    }
+
     iframe {
       border: none;
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
     }
+
     /* Home button styles */
     .home-button {
       position: fixed;
@@ -38,10 +55,12 @@
       box-shadow: 0 0 6px rgba(255,255,255,0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .home-button:hover {
       transform: scale(1.1);
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
     }
+
     .home-icon {
       width: 90%;
       height: 90%;
@@ -67,9 +86,11 @@
       transition: background-color 0.3s ease;
       color: white;
     }
+
     #fullscreen-btn:hover {
       background-color: #555;
     }
+
     #fullscreen-btn img {
       max-width: 24px;
       max-height: 24px;
