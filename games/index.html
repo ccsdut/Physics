@@ -9,7 +9,7 @@
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden; /* 💡 Hides all scrollbars */
+      overflow: hidden; /* Prevent scrollbars */
       height: 100%;
       width: 100%;
       background-color: black;
@@ -24,7 +24,7 @@
       overflow: hidden;
     }
 
-    /* Home button styled to match fullscreen button */
+    /* Updated Home button */
     .home-button {
       position: fixed;
       top: 20px;
@@ -32,10 +32,9 @@
       z-index: 999;
       background-color: #333;
       border: none;
-      padding: 0;
       cursor: pointer;
-      width: 44px;
-      height: 44px;
+      width: 60px;
+      height: 60px;
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -48,11 +47,11 @@
     }
 
     .home-icon {
-      width: 24px;
-      height: 24px;
+      width: 40px;
+      height: 40px;
     }
 
-    /* Fullscreen button */
+    /* Fullscreen button (unchanged) */
     #fullscreen-btn {
       position: fixed;
       top: 20px;
@@ -63,8 +62,8 @@
       padding: 10px;
       cursor: pointer;
       z-index: 1000;
-      width: 44px;
-      height: 44px;
+      width: 60px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -76,12 +75,11 @@
     }
 
     #fullscreen-btn img {
-      max-width: 24px;
-      max-height: 24px;
+      max-width: 36px;
+      max-height: 36px;
       pointer-events: none;
     }
 
-    /* Optional: Hide scrollbars in WebKit-based browsers */
     ::-webkit-scrollbar {
       display: none;
     }
