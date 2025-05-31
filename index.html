@@ -23,7 +23,6 @@
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       height: 100%;
       width: 100%;
       background-color: black;
@@ -33,9 +32,8 @@
 
     iframe {
       border: none;
-      width: 100vw;
+      width: 100%;
       height: 100vh;
-      overflow: hidden;
     }
 
     .home-button {
@@ -81,7 +79,6 @@
       align-items: center;
       justify-content: center;
       transition: background-color 0.3s ease;
-      color: white;
     }
 
     #fullscreen-btn {
@@ -89,7 +86,7 @@
     }
 
     #installBtn {
-      right: 75px;
+      right: 74px;
       display: none;
     }
 
@@ -104,10 +101,6 @@
       max-height: 24px;
       pointer-events: none;
     }
-
-    ::-webkit-scrollbar {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -116,14 +109,14 @@
     <img src="/media/homeicon.png" alt="Home Icon" class="home-icon" />
   </button>
 
-  <!-- Fullscreen Button -->
-  <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-    <img src="/media/fullscreen.png" alt="Fullscreen" />
-  </button>
-
   <!-- Install Button -->
   <button id="installBtn" title="Install App">
     <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
+  </button>
+
+  <!-- Fullscreen Button -->
+  <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+    <img src="/media/fullscreen.png" alt="Fullscreen" />
   </button>
 
   <!-- Game Iframe -->
@@ -137,46 +130,44 @@
     function toggleFullscreen() {
       const elem = document.documentElement;
       if (!document.fullscreenElement) {
-        elem.requestFullscreen?.() ||
-        elem.webkitRequestFullscreen?.() ||
-        elem.msRequestFullscreen?.();
+        elem.requestFullscreen?.() || elem.webkitRequestFullscreen?.() || elem.msRequestFullscreen?.();
       } else {
-        document.exitFullscreen?.() ||
-        document.webkitExitFullscreen?.() ||
-        document.msExitFullscreen?.();
+        document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
       }
     }
 
-    // Install PWA support
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/install/service-worker.js')
-          .then(reg => console.log('Service Worker registered:', reg.scope))
-          .catch(err => console.error('Service Worker registration failed:', err));
-      });
-    }
-
+    // PWA Install Handling
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
 
-      const installBtn = document.getElementById('installBtn');
-      if (installBtn) installBtn.style.display = 'flex';
+      const installBtn = document.getElementById("installBtn");
+      if (installBtn) installBtn.style.display = "flex";
 
-      installBtn?.addEventListener('click', () => {
+      installBtn?.addEventListener("click", () => {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
+          if (choiceResult.outcome === "accepted") {
+            console.log("User accepted the install prompt");
           } else {
-            console.log('User dismissed the install prompt');
+            console.log("User dismissed the install prompt");
           }
           deferredPrompt = null;
-          installBtn.style.display = 'none';
+          installBtn.style.display = "none";
         });
       });
     });
+
+    // Optional: Register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/install/service-worker.js")
+          .then((reg) => console.log("Service Worker registered:", reg.scope))
+          .catch((err) => console.error("Service Worker registration failed:", err));
+      });
+    }
   </script>
 </body>
 </html>
