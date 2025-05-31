@@ -8,31 +8,35 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      overflow: hidden;
+      height: auto;
+      overflow: auto;
       background-color: #000;
+
+      /* Hide scrollbars but keep scrolling */
+      scrollbar-width: none; /* Firefox */
     }
+    body::-webkit-scrollbar {
+      display: none; /* Chrome, Safari */
+    }
+
     iframe {
       border: none;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      min-height: 100vh;
       display: block;
     }
   </style>
 </head>
 <body>
-  <iframe id="viewerFrame" src="" allowfullscreen allow="fullscreen; pointer-lock" scrolling="no"></iframe>
+  <iframe id="viewerFrame" src="" allowfullscreen allow="fullscreen; pointer-lock"></iframe>
 
   <script>
-    // Get the "site" parameter from the URL query string
     const params = new URLSearchParams(window.location.search);
     const site = params.get('site');
 
     if (site) {
-      // Decode the URL and set it as iframe src
       document.getElementById('viewerFrame').src = decodeURIComponent(site);
     } else {
-      // If no site parameter, show an error or blank page
       document.body.innerHTML = '<p style="color: white; text-align: center; margin-top: 20px;">No site specified.</p>';
     }
   </script>
