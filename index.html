@@ -65,10 +65,10 @@
       height: 80%;
     }
 
-    #fullscreen-btn {
+    #fullscreen-btn,
+    #installBtn {
       position: fixed;
       top: 20px;
-      right: 20px;
       background-color: #333;
       border: none;
       border-radius: 10px;
@@ -81,13 +81,25 @@
       align-items: center;
       justify-content: center;
       transition: background-color 0.3s ease;
+      color: white;
     }
 
-    #fullscreen-btn:hover {
+    #fullscreen-btn {
+      right: 20px;
+    }
+
+    #installBtn {
+      right: 75px;
+      display: none;
+    }
+
+    #fullscreen-btn:hover,
+    #installBtn:hover {
       background-color: #555;
     }
 
-    #fullscreen-btn img {
+    #fullscreen-btn img,
+    #installBtn img {
       max-width: 24px;
       max-height: 24px;
       pointer-events: none;
@@ -107,6 +119,11 @@
   <!-- Fullscreen Button -->
   <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
     <img src="/media/fullscreen.png" alt="Fullscreen" />
+  </button>
+
+  <!-- Install Button -->
+  <button id="installBtn" title="Install App">
+    <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
   </button>
 
   <!-- Game Iframe -->
@@ -129,6 +146,37 @@
         document.msExitFullscreen?.();
       }
     }
+
+    // Install PWA support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/install/service-worker.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      const installBtn = document.getElementById('installBtn');
+      if (installBtn) installBtn.style.display = 'flex';
+
+      installBtn?.addEventListener('click', () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+          installBtn.style.display = 'none';
+        });
+      });
+    });
   </script>
 </body>
 </html>
