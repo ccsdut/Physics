@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- SEO & Social Sharing -->
     <title>🎮 Rat Games</title>
     <link rel="icon" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/favicon.png" type="image/png" />
     <link rel="manifest" href="/install/manifest.json" />
     <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support." />
     <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats" />
     <link rel="canonical" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
-
-    <!-- Open Graph (for social sharing previews) -->
     <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games" />
     <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!" />
     <meta property="og:image" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif" />
@@ -76,49 +72,6 @@
             }
         }
 
-        /* Install and Fullscreen buttons styling */
-        #fullscreen-btn,
-        #installBtn {
-            position: fixed;
-            top: 10px;
-            background-color: #333;
-            border: none;
-            border-radius: 10px;
-            padding: 10px;
-            cursor: pointer;
-            z-index: 1001;
-            transition: background-color 0.3s ease;
-            color: white;
-
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #fullscreen-btn {
-            right: 10px;
-        }
-
-        #installBtn {
-            right: 60px;
-            display: none;
-        }
-
-        #fullscreen-btn:hover,
-        #installBtn:hover {
-            background-color: #555;
-        }
-
-        /* Icons inside buttons */
-        #fullscreen-btn img,
-        #installBtn img {
-            max-width: 24px;
-            max-height: 24px;
-            pointer-events: none;
-        }
-
         #corner-ads {
             position: fixed;
             bottom: 10px;
@@ -139,16 +92,6 @@
     </style>
 </head>
 <body>
-    <!-- Install Button -->
-    <button id="installBtn" title="Install App">
-        <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
-    </button>
-
-    <!-- Fullscreen Button -->
-    <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-        <img src="/media/fullscreen.png" alt="Fullscreen" />
-    </button>
-
     <h1>Rat Games</h1>
     <h2 id="dailyText"></h2>
 
@@ -174,8 +117,7 @@
             const now = new Date().getTime();
 
             if (!lastUpdate || now - lastUpdate >= 5000 || storedIndex === null) {
-                const newIndex =
-                    storedIndex === null ? 0 : (parseInt(storedIndex) + 1) % texts.length;
+                const newIndex = storedIndex === null ? 0 : (parseInt(storedIndex) + 1) % texts.length;
                 localStorage.setItem("lastUpdateTime", now);
                 localStorage.setItem("textIndex", newIndex);
                 return newIndex;
@@ -190,20 +132,6 @@
         updateText();
         setInterval(updateText, 5000);
 
-        function toggleFullscreen() {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement) {
-                elem.requestFullscreen?.() ||
-                    elem.webkitRequestFullscreen?.() ||
-                    elem.msRequestFullscreen?.();
-            } else {
-                document.exitFullscreen?.() ||
-                    document.webkitExitFullscreen?.() ||
-                    document.msExitFullscreen?.();
-            }
-        }
-
-        // Register service worker and handle install prompt
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker
@@ -212,28 +140,6 @@
                     .catch((err) => console.error("Service Worker registration failed:", err));
             });
         }
-
-        let deferredPrompt;
-        window.addEventListener("beforeinstallprompt", (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-
-            const installBtn = document.getElementById("installBtn");
-            if (installBtn) installBtn.style.display = "flex";
-
-            installBtn?.addEventListener("click", () => {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === "accepted") {
-                        console.log("User accepted the install prompt");
-                    } else {
-                        console.log("User dismissed the install prompt");
-                    }
-                    deferredPrompt = null;
-                    installBtn.style.display = "none";
-                });
-            });
-        });
     </script>
 
     <!-- Bottom-left corner ad/stat section -->
