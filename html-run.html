@@ -1,0 +1,16 @@
+<button onclick="openInlineViewer('<h1 style=&quot;color:white;&quot;>Hello from raw HTML</h1>')">Run HTML</button>
+
+<script>
+  function openInlineViewer(htmlCode) {
+    const viewerWindow = window.open('html-run.html', '_blank');
+
+    const sendMessage = () => {
+      if (viewerWindow && viewerWindow.postMessage) {
+        viewerWindow.postMessage(htmlCode, '*');
+      } else {
+        setTimeout(sendMessage, 100);
+      }
+    };
+    sendMessage();
+  }
+</script>
