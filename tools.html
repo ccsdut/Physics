@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rat Tools</title>
+  <link rel="icon" href="/media/favicon.png" type="image/png" />
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #121212;
+      color: #fff;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 1000px;
+      padding: 40px 20px;
+      margin: 0 auto;
+      text-align: center;
+      background-color: rgba(18, 18, 18, 0.8);
+      border-radius: 10px;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      margin-bottom: 20px;
+      border: 2px solid #555;
+      border-radius: 5px;
+      background-color: #222;
+      color: #fff;
+    }
+
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      width: 48%;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-sizing: border-box;
+      background-color: #333;
+      color: #fff;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #555;
+    }
+
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 999;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
+
+    .home-icon {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .home-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Home Button -->
+  <button class="home-button" onclick="window.location.href='/'">
+    <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home Icon" class="home-icon">
+  </button>
+
+  <div class="container">
+    <h1>Tools</h1>
+
+    <!-- Search bar to filter tools -->
+    <div class="search-container">
+      <input type="text" id="search" class="search-input" placeholder="Search for a tool..." onkeyup="filterTools()">
+    </div>
+
+    <!-- Tool Buttons -->
+    <div class="button-container" id="tool-buttons"></div>
+  </div>
+
+  <script>
+    function openViewer(url) {
+      const encoded = encodeURIComponent(url);
+      window.location.href = `/viewer.html?site=${encoded}`;
+    }
+
+    function filterTools() {
+      const searchQuery = document.getElementById('search').value.toLowerCase();
+      const buttons = document.querySelectorAll('#tool-buttons .btn');
+
+      buttons.forEach(button => {
+        const toolName = button.innerText.toLowerCase();
+        button.style.display = toolName.includes(searchQuery) ? 'block' : 'none';
+      });
+    }
+
+    // ✅ Your Tool List: Add new ones here
+    const toolList = `
+UltraViolet Unblocker, https://uvv2.rhw.one/
+Vapor VM, https://vaporon.top/page/vm-priv.html
+Sramjet Unblocker, https://vaporon.top/scram.html
+Doge Unblocker, https://5-t.vercel.app
+US4 Unblocker, https://voucan-us4.github.io/pages/prox
+Free Movies, https://i-love-movies.global.ssl.fastly.net/
+Rat AI, https://app.schoolai.com/student-space?code=QPYE
+Ewasion, https://ewasion.github.io/opendirectory-finder/
+Khinsider, https://downloads.khinsider.com/
+Spotify Downloader, https://spotidownloader.com/en
+YouTube Downloader, https://en.y2mate.is/yt-uK9o/
+Clock, https://4texas4.github.io/clock
+Blooket Hacks, https://blooketbot.me
+Chat, https://e.widgetbot.io/channels/1350218877891510395/1350218877891510398?api=340bb008-30e3-4509-b436-e04353f55375
+Emulator, https://vaporon.top/page/apps/emu-manual.html
+Rom Files, https://www.romstools.net/
+Soundboard, https://v9o9.github.io/soundboard/
+    `;
+
+    // Generate buttons
+    const container = document.getElementById('tool-buttons');
+    toolList.trim().split('\n').forEach(line => {
+      const [name, url] = line.split(',').map(x => x.trim());
+      if (name && url) {
+        const button = document.createElement('button');
+        button.className = 'btn';
+        button.textContent = name;
+        button.onclick = () => openViewer(url);
+        container.appendChild(button);
+      }
+    });
+  </script>
+
+</body>
+</html>
