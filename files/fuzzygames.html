@@ -56,36 +56,18 @@
 
     .btn {
       width: 48%;
-      padding: 12px 15px;
+      padding: 15px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       box-sizing: border-box;
       background-color: #333;
       color: #fff;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 12px;
       transition: background-color 0.3s ease;
-      min-height: 50px;
     }
 
     .btn:hover {
       background-color: #555;
-    }
-
-    .btn img {
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      flex-shrink: 0;
-      visibility: visible;
-    }
-
-    .btn span {
-      flex-grow: 1;
-      text-align: left;
     }
 
     .home-button {
@@ -354,19 +336,9 @@ xx142b2exe, https://tylerpalko.github.io/gamehub/xx142b2.exe/
     games.forEach(({ name, url }) => {
       const button = document.createElement('button');
       button.className = 'btn';
-
-      const icon = document.createElement('img');
-      icon.src = new URL('/favicon.ico', new URL(url).origin).href;
-      icon.onerror = () => icon.style.visibility = 'hidden';
-
-      const text = document.createElement('span');
-      text.textContent = name;
-
-      button.appendChild(icon);
-      button.appendChild(text);
+      button.textContent = name;
       button.onclick = () => openViewer(url);
       container.appendChild(button);
-
       buttonMap.set(name, button);
     });
 
@@ -380,7 +352,7 @@ xx142b2exe, https://tylerpalko.github.io/gamehub/xx142b2.exe/
       const results = query ? fuse.search(query).map(r => r.item.name) : games.map(g => g.name);
       const showSet = new Set(results);
       buttonMap.forEach((btn, name) => {
-        btn.style.display = showSet.has(name) ? 'flex' : 'none';
+        btn.style.display = showSet.has(name) ? 'block' : 'none';
       });
     });
   </script>
