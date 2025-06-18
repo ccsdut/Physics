@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rat Soundboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header img {
+      height: 40px;
+      width: 40px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+
+    .search-bar {
+      flex: 1;
+      text-align: center;
+      margin: 10px 20px;
+    }
+
+    .search-bar input {
+      width: 50%;
+      max-width: 300px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+    }
+
+    .stop-button {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .stop-button:hover {
+      background: #ff2222;
+    }
+
+    .soundboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(10%, 1fr));
+      gap: 10px;
+      padding: 20px;
+    }
+
+    button.sound {
+      width: 100%;
+      aspect-ratio: 3 / 1;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: bold;
+      transition: transform 0.15s ease, outline 0.15s ease;
+    }
+
+    button.sound:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    button.sound.active {
+      transform: scale(1.12);
+      outline: 3px solid white;
+      z-index: 1;
+    }
+
+    @media (max-width: 700px) {
+      .soundboard {
+        grid-template-columns: repeat(auto-fill, minmax(45%, 1fr));
+      }
+
+      .search-bar input {
+        width: 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-section">
+      <img src="https://4texas4.github.io/ratgames/icon.png" alt="Rat Icon">
+      <h1>Rat Soundboard</h1>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="Search sounds...">
+    </div>
+    <button class="stop-button" onclick="stopAllSounds()">Stop Everything</button>
+  </header>
+
+  <div class="soundboard" id="soundboard">Loading...</div>
+
+  <script>
+    const colors = [
+      "#FF4136", "#FF851B", "#FFDC00", "#2ECC40",
+      "#0074D9", "#B10DC9", "#7FDBFF", "#F012BE",
+      "#AAAAAA", "#DDDDDD", "#FFFFFF", "#39CCCC"
+    ];
+
+    const activeAudios = [];
+    const buttons = [];
+
+    function getRandomColor() {
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function stopAllSounds() {
+      activeAudios.forEach(({ audio, button }) => {
+        audio.pause();
+        audio.currentTime = 0;
+        button.classList.remove('active');
+      });
+      activeAudios.length = 0;
+    }
+
+    function filterButtons(query) {
+      const lowerQuery = query.toLowerCase();
+      buttons.forEach(({ name, button }) => {
+        const match = name.toLowerCase().includes(lowerQuery);
+        button.style.display = match ? "block" : "none";
+      });
+    }
+
+    async function fetchSoundFiles() {
+      const apiURL = 'https://api.github.com/repos/v9o9/soundboard/contents/sounds';
+      const res = await fetch(apiURL);
+      const data = await res.json();
+
+      const container = document.getElementById('soundboard');
+      container.innerHTML = '';
+      buttons.length = 0;
+
+      data
+        .filter(file => file.name.endsWith('.mp3'))
+        .forEach(file => {
+          const button = document.createElement('button');
+          button.className = "sound";
+
+          const fileName = decodeURIComponent(file.name.replace('.mp3', ''));
+          const fileURL = `https://v9o9.github.io/soundboard/sounds/${encodeURIComponent(file.name)}`;
+
+          button.textContent = fileName;
+          button.style.backgroundColor = getRandomColor();
+
+          button.onclick = () => {
+            const audio = new Audio(fileURL);
+            activeAudios.push({ audio, button });
+            button.classList.add('active');
+            audio.play();
+
+            audio.onended = () => {
+              button.classList.remove('active');
+              const index = activeAudios.findIndex(item => item.audio === audio);
+              if (index !== -1) activeAudios.splice(index, 1);
+            };
+          };
+
+          container.appendChild(button);
+          buttons.push({ name: fileName, button });
+        });
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      filterButtons(e.target.value);
+    });
+
+    fetchSoundFiles();
+  </script>
+</body>
+</html>
