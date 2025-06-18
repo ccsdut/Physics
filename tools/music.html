@@ -2,33 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Music Player</title>
+  <title>Songs</title>
   <style>
     body {
       margin: 0;
       background: #000;
       color: #fff;
       font-family: sans-serif;
+    }
+
+    #search-container {
+      transition: all 0.3s ease;
       text-align: center;
+      position: relative;
+      z-index: 10;
     }
 
-    h1 {
+    #search-container.centered {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #search-container.top {
+      position: relative;
+      top: 0;
+      left: 0;
+      transform: none;
       margin-top: 1rem;
+      padding-top: 1rem;
     }
 
-    input {
-      padding: 0.5rem;
-      width: 300px;
-      font-size: 1rem;
-      border-radius: 5px;
+    #search-container input {
+      padding: 1rem;
+      width: 350px;
+      font-size: 1.4rem;
+      border-radius: 8px;
       border: none;
     }
 
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
+    #search-container button {
+      padding: 1rem 2rem;
+      font-size: 1.4rem;
       margin-left: 10px;
-      border-radius: 5px;
+      border-radius: 8px;
       border: none;
       background: #444;
       color: #fff;
@@ -150,9 +168,10 @@
   </style>
 </head>
 <body>
-  <h1>🎵 Songs</h1>
-  <input type="text" id="query" placeholder="Search for a song..." />
-  <button onclick="searchSongs()">Search</button>
+  <div id="search-container" class="centered">
+    <input type="text" id="query" placeholder="Search for a song..." />
+    <button onclick="searchSongs()">Search</button>
+  </div>
 
   <div id="results"></div>
   <div id="players"></div>
@@ -162,6 +181,20 @@
   <script>
     let ytPlayerCounter = 0;
     let playerBoxes = [];
+
+    function updateLayoutState() {
+      const hasPlayers = document.getElementById("players").children.length > 0;
+      const hasResults = document.getElementById("results").innerHTML.trim() !== "";
+      const container = document.getElementById("search-container");
+
+      if (!hasPlayers && !hasResults) {
+        container.classList.add("centered");
+        container.classList.remove("top");
+      } else {
+        container.classList.remove("centered");
+        container.classList.add("top");
+      }
+    }
 
     function searchSongs() {
       const query = document.getElementById("query").value;
@@ -193,6 +226,7 @@
         }).join('');
 
         document.getElementById("results").innerHTML = htmlOut || "No results found.";
+        updateLayoutState();
       });
     }
 
@@ -203,7 +237,7 @@
       box.style.backgroundImage = `url(${thumb})`;
 
       box.innerHTML = `
-        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+        <button class="close-btn" onclick="this.parentElement.remove(); updateLayoutState();">×</button>
         <button class="fullscreen-btn" onclick="toggleFullscreen(this.parentElement)">⛶</button>
         <div class="overlay">
           <div><strong>${title}</strong></div>
@@ -242,6 +276,8 @@
           }
         }
       });
+
+      updateLayoutState();
     }
 
     function formatTime(t) {
@@ -299,6 +335,9 @@
         document.exitFullscreen();
       }
     }
+
+    // Initial layout update
+    updateLayoutState();
   </script>
 </body>
 </html>
