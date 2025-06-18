@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Songs</title>
+  <title>Music Player</title>
   <style>
     body {
       margin: 0;
       background: #000;
       color: #fff;
       font-family: sans-serif;
+      overflow-x: hidden;
     }
 
     #search-container {
@@ -149,22 +150,8 @@
       transition: background 0.2s ease;
     }
 
-    .close-btn {
-      right: 16px;
-    }
-
-    .fullscreen-btn {
-      right: 60px;
-    }
-
-    .close-btn:hover,
-    .fullscreen-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    iframe {
-      display: none;
-    }
+    .close-btn { right: 16px; }
+    .fullscreen-btn { right: 60px; }
   </style>
 </head>
 <body>
@@ -172,12 +159,10 @@
     <input type="text" id="query" placeholder="Search for a song..." />
     <button onclick="searchSongs()">Search</button>
   </div>
-
   <div id="results"></div>
   <div id="players"></div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
-
   <script>
     let ytPlayerCounter = 0;
     let playerBoxes = [];
@@ -230,6 +215,17 @@
       });
     }
 
+    function pauseAllExcept(id) {
+      playerBoxes.forEach(p => {
+        if (p.id !== id && p.isPlaying) {
+          p.player.pauseVideo();
+          p.isPlaying = false;
+          const playBtn = p.box.querySelector('.controls button:nth-child(2)');
+          if (playBtn) playBtn.textContent = '▶️';
+        }
+      });
+    }
+
     function openPlayer(videoId, title, thumb) {
       const playerId = `ytplayer${ytPlayerCounter++}`;
       const box = document.createElement("div");
@@ -250,34 +246,59 @@
             <button onclick="togglePlayPause('${playerId}', this)">⏸</button>
             <button onclick="seekRelative('${playerId}', 10)">⏭</button>
           </div>
+          <div id="${playerId}"></div>
         </div>
-        <div id="${playerId}"></div>
       `;
 
       document.getElementById("players").appendChild(box);
+
+      const autoplay = !isAnyPlayerPlaying();
 
       const player = new YT.Player(playerId, {
         height: "0",
         width: "0",
         videoId,
-        playerVars: { autoplay: 1, controls: 0, loop: 0 },
+        playerVars: { autoplay: autoplay ? 1 : 0, controls: 0, loop: 0 },
         events: {
           onReady: (e) => {
             const p = {
               id: playerId,
               player: e.target,
+              box: box,
               bar: document.getElementById(`bar-${playerId}`),
               time: document.getElementById(`time-${playerId}`),
-              isPlaying: true
+              isPlaying: autoplay
             };
             playerBoxes.push(p);
-            e.target.playVideo();
+            if (autoplay) {
+              pauseAllExcept(playerId);
+              e.target.playVideo();
+            }
             setInterval(() => updateProgress(p), 500);
+          },
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.ENDED) moveToNextBox(playerId);
           }
         }
       });
 
       updateLayoutState();
+    }
+
+    function isAnyPlayerPlaying() {
+      return playerBoxes.some(p => p.isPlaying);
+    }
+
+    function moveToNextBox(currentId) {
+      const currentIndex = playerBoxes.findIndex(p => p.id === currentId);
+      const next = playerBoxes[currentIndex + 1];
+      if (next) {
+        const isFullscreen = document.fullscreenElement;
+        pauseAllExcept(next.id);
+        next.player.playVideo();
+        next.isPlaying = true;
+        if (isFullscreen) toggleFullscreen(next.box);
+      }
     }
 
     function formatTime(t) {
@@ -303,6 +324,7 @@
         box.player.pauseVideo();
         btn.textContent = '▶️';
       } else {
+        pauseAllExcept(id);
         box.player.playVideo();
         btn.textContent = '⏸';
       }
@@ -336,7 +358,6 @@
       }
     }
 
-    // Initial layout update
     updateLayoutState();
   </script>
 </body>
