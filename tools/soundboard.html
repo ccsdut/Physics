@@ -125,7 +125,9 @@
 
   <div class="soundboard" id="soundboard">Loading...</div>
 
-  <script>
+  <script type="module">
+    import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
+
     const colors = [
       "#FF4136", "#FF851B", "#FFDC00", "#2ECC40",
       "#0074D9", "#B10DC9", "#7FDBFF", "#F012BE",
@@ -134,72 +136,69 @@
 
     const activeAudios = [];
     const buttons = [];
+    let fuse;
 
-    function getRandomColor() {
-      return colors[Math.floor(Math.random() * colors.length)];
+    async function startSoundboard() {
+      const res = await fetch('https://api.github.com/repos/v9o9/soundboard/contents/sounds');
+      const data = await res.json();
+      const container = document.getElementById('soundboard');
+      container.innerHTML = '';
+      buttons.length = 0;
+
+      const soundNames = [];
+
+      data.filter(file => file.name.endsWith('.mp3')).forEach(file => {
+        const fileName = decodeURIComponent(file.name.replace('.mp3', ''));
+        const fileURL = `https://v9o9.github.io/soundboard/sounds/${encodeURIComponent(file.name)}`;
+
+        const button = document.createElement('button');
+        button.className = "sound";
+        button.textContent = fileName;
+        button.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        button.onclick = () => {
+          const audio = new Audio(fileURL);
+          activeAudios.push({ audio, button });
+          button.classList.add('active');
+          audio.play();
+          audio.onended = () => {
+            button.classList.remove('active');
+            const index = activeAudios.findIndex(item => item.audio === audio);
+            if (index !== -1) activeAudios.splice(index, 1);
+          };
+        };
+
+        container.appendChild(button);
+        buttons.push({ name: fileName, button });
+        soundNames.push(fileName);
+      });
+
+      fuse = new Fuse(soundNames, { includeScore: true, threshold: 0.4 });
+      filterButtons('');
     }
 
-    function stopAllSounds() {
+    function filterButtons(query) {
+      const matches = query ? fuse.search(query).map(r => r.item) : buttons.map(b => b.name);
+      const matchSet = new Set(matches);
+      buttons.forEach(({ name, button }) => {
+        button.style.display = matchSet.has(name) ? 'block' : 'none';
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      filterButtons(e.target.value.trim());
+    });
+
+    window.stopAllSounds = function () {
       activeAudios.forEach(({ audio, button }) => {
         audio.pause();
         audio.currentTime = 0;
         button.classList.remove('active');
       });
       activeAudios.length = 0;
-    }
+    };
 
-    function filterButtons(query) {
-      const lowerQuery = query.toLowerCase();
-      buttons.forEach(({ name, button }) => {
-        const match = name.toLowerCase().includes(lowerQuery);
-        button.style.display = match ? "block" : "none";
-      });
-    }
-
-    async function fetchSoundFiles() {
-      const apiURL = 'https://api.github.com/repos/v9o9/soundboard/contents/sounds';
-      const res = await fetch(apiURL);
-      const data = await res.json();
-
-      const container = document.getElementById('soundboard');
-      container.innerHTML = '';
-      buttons.length = 0;
-
-      data
-        .filter(file => file.name.endsWith('.mp3'))
-        .forEach(file => {
-          const button = document.createElement('button');
-          button.className = "sound";
-
-          const fileName = decodeURIComponent(file.name.replace('.mp3', ''));
-          const fileURL = `https://v9o9.github.io/soundboard/sounds/${encodeURIComponent(file.name)}`;
-
-          button.textContent = fileName;
-          button.style.backgroundColor = getRandomColor();
-
-          button.onclick = () => {
-            const audio = new Audio(fileURL);
-            activeAudios.push({ audio, button });
-            button.classList.add('active');
-            audio.play();
-
-            audio.onended = () => {
-              button.classList.remove('active');
-              const index = activeAudios.findIndex(item => item.audio === audio);
-              if (index !== -1) activeAudios.splice(index, 1);
-            };
-          };
-
-          container.appendChild(button);
-          buttons.push({ name: fileName, button });
-        });
-    }
-
-    document.getElementById('search').addEventListener('input', (e) => {
-      filterButtons(e.target.value);
-    });
-
-    fetchSoundFiles();
+    startSoundboard();
   </script>
 </body>
 </html>
