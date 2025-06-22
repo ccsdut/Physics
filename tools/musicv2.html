@@ -134,7 +134,8 @@
 
     .close-btn,
     .fullscreen-btn,
-    .download-btn {
+    .download-btn,
+    .refresh-btn {
       position: absolute;
       top: 12px;
       background: rgba(0, 0, 0, 0.7);
@@ -152,8 +153,9 @@
     }
 
     .close-btn { right: 16px; }
-    .download-btn { right: 60px; }
-    .fullscreen-btn { right: 104px; }
+    .refresh-btn { right: 68px; }
+    .download-btn { right: 120px; }
+    .fullscreen-btn { right: 172px; }
   </style>
 </head>
 <body>
@@ -236,7 +238,8 @@
 
       box.innerHTML = `
         <button class="close-btn" onclick="this.parentElement.remove(); updateLayoutState();">×</button>
-        <button class="download-btn" onclick="downloadMP3('${videoId}', \`${title}\`)">⬇️</button>
+        <button class="refresh-btn" onclick="refreshPlayer('${playerId}')">⟳</button>
+        <button class="download-btn" onclick="downloadMP3('${videoId}', \`${title}\`)">⤓</button>
         <button class="fullscreen-btn" onclick="toggleFullscreen(this.parentElement)">⛶</button>
         <div class="overlay">
           <div><strong>${title}</strong></div>
@@ -286,6 +289,15 @@
       });
 
       updateLayoutState();
+    }
+
+    function refreshPlayer(playerId) {
+      const p = playerBoxes.find(b => b.id === playerId);
+      if (!p) return;
+      const videoId = p.player.getVideoData().video_id;
+      p.player.loadVideoById(videoId, 0);
+      p.isPlaying = true;
+      pauseAllExcept(playerId);
     }
 
     function isAnyPlayerPlaying() {
@@ -361,7 +373,6 @@
       }
     }
 
-    // Download button opens yt1d.com download page in a new tab
     function downloadMP3(videoId, title) {
       const url = `https://yt1d.com/en307/watch?v=${videoId}`;
       window.open(url, '_blank');
