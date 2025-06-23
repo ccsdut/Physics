@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>YouTube Video Downloader</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #eee;
+    padding: 20px;
+    max-width: 960px;
+    margin: auto;
+  }
+  input, button {
+    padding: 10px;
+    font-size: 1rem;
+    margin: 5px 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  button {
+    cursor: pointer;
+    background: #28a745;
+    border: none;
+    color: white;
+    border-radius: 5px;
+  }
+  button:hover {
+    background: #218838;
+  }
+  #results {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .video-item {
+    cursor: pointer;
+    background: #222;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .video-item:hover {
+    background: #333;
+  }
+  .video-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+  .video-title {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h2>YouTube Video Downloader</h2>
+
+<label for="inputBox">Enter YouTube URL or search term:</label>
+<input type="text" id="inputBox" placeholder="Paste a YouTube link or search a video" />
+<button id="goBtn">Go</button>
+
+<div id="results"></div>
+
+<script>
+  const inputBox = document.getElementById('inputBox');
+  const goBtn = document.getElementById('goBtn');
+  const resultsDiv = document.getElementById('results');
+
+  function getYouTubeVideoID(url) {
+    const regex = /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
+
+  function isYouTubeUrl(input) {
+    return input.includes('youtube.com/watch') || input.includes('youtu.be/');
+  }
+
+  async function searchYouTube(query) {
+    resultsDiv.innerHTML = 'Loading...';
+    const proxyUrl = 'https://corsproxy.io/?';
+    const searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+
+    try {
+      const res = await fetch(proxyUrl + searchUrl);
+      const text = await res.text();
+
+      const jsonMatch = text.match(/var ytInitialData = (.*?);\s*<\/script>/s);
+      if (!jsonMatch) {
+        resultsDiv.innerHTML = 'Failed to parse search results.';
+        return;
+      }
+      const ytInitialData = JSON.parse(jsonMatch[1]);
+
+      const contents = ytInitialData.contents
+        ?.twoColumnSearchResultsRenderer
+        ?.primaryContents
+        ?.sectionListRenderer
+        ?.contents;
+
+      if (!contents) {
+        resultsDiv.innerHTML = 'No search results found.';
+        return;
+      }
+
+      let videoItems = [];
+      for (const section of contents) {
+        const itemSection = section.itemSectionRenderer;
+        if (!itemSection) continue;
+        const items = itemSection.contents;
+        for (const item of items) {
+          if (item.videoRenderer) videoItems.push(item.videoRenderer);
+        }
+      }
+
+      if (videoItems.length === 0) {
+        resultsDiv.innerHTML = 'No videos found.';
+        return;
+      }
+
+      resultsDiv.innerHTML = '';
+      videoItems.forEach(video => {
+        const vidID = video.videoId;
+        const title = video.title.runs[0].text;
+        const thumbnail = video.thumbnail.thumbnails.pop().url;
+
+        const div = document.createElement('div');
+        div.className = 'video-item';
+        div.innerHTML = `
+          <img src="${thumbnail}" alt="Thumbnail" />
+          <div class="video-title">${title}</div>
+        `;
+        div.onclick = () => {
+          const targetUrl = `https://yt1d.com/en307/watch?v=${vidID}`;
+          window.open(targetUrl, '_blank');
+        };
+        resultsDiv.appendChild(div);
+      });
+
+    } catch (err) {
+      console.error(err);
+      resultsDiv.innerHTML = 'Error fetching or parsing search results.';
+    }
+  }
+
+  goBtn.addEventListener('click', () => {
+    const input = inputBox.value.trim();
+    resultsDiv.innerHTML = '';
+
+    if (!input) {
+      alert('Please enter a YouTube URL or search term.');
+      return;
+    }
+
+    if (isYouTubeUrl(input)) {
+      const vidID = getYouTubeVideoID(input);
+      if (!vidID) {
+        alert('Invalid YouTube URL.');
+        return;
+      }
+      const targetUrl = `https://yt1d.com/en307/watch?v=${vidID}`;
+      window.open(targetUrl, '_blank');
+    } else {
+      searchYouTube(input);
+    }
+  });
+
+  inputBox.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      goBtn.click();
+    }
+  });
+</script>
+
+</body>
+</html>
