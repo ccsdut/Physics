@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spotify Playlist Viewer with YouTube Download Links</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+    background: #121212;
+    color: #eee;
+  }
+  input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    font-size: 1rem;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: none;
+  }
+  input {
+    background: #222;
+    color: #eee;
+  }
+  button {
+    background: #1db954;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #17a44d;
+  }
+  ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  li {
+    padding: 10px 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  li:last-child {
+    border-bottom: none;
+  }
+  .track-info {
+    max-width: 75%;
+  }
+  .track-name {
+    font-weight: bold;
+  }
+  .artist-name {
+    color: #aaa;
+  }
+  .download-btn {
+    background: #1db954;
+    border: none;
+    color: white;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 48px; /* fixed width */
+    height: 48px; /* fixed height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .download-btn img {
+    max-width: 28px;
+    max-height: 28px;
+    user-select: none;
+    pointer-events: none;
+  }
+  .download-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+</style>
+</head>
+<body>
+
+<h2>Spotify Public Playlist Viewer with YouTube Download</h2>
+
+<label for="playlistUrl">Spotify Playlist URL:</label>
+<input type="text" id="playlistUrl" placeholder="Paste a public Spotify playlist URL here" />
+
+<button id="loadBtn">Load Playlist</button>
+
+<div id="playlistInfo"></div>
+
+<script>
+  // Your Spotify access token (replace with your own valid token)
+  const token = 'BQCkyh8jttb9fH7AkpyaGQTcUObUSaq6vBZmttKqKtaolG27WwaNHxBeBpmoeOH86kitkUpCT1iyqffd2_16fR1oce0IsjEcYtrHKa1aZhszxexdNkT7hSP0PjlfXqmW7Q4vJlnhtxgCMyNtYCVf-nDqTtYB-tR6CBMkHMJ6ekYCw17AiqvtVC9HcHe9didYb2pqTL3eE4cnTynG6xplZQB9s3_m0yCLljqS1R1x-aLMwKpPwvW1V5umnns0vgPk7NWLXt6HcbQ3E7eHgaTe3pSAAikl5TjCCbaW9AsbOZVJSJY2FlpHm7tU12guvZaq';
+
+  const playlistUrlInput = document.getElementById('playlistUrl');
+  const loadBtn = document.getElementById('loadBtn');
+  const playlistInfo = document.getElementById('playlistInfo');
+
+  function extractPlaylistId(url) {
+    let match = url.match(/playlist\/([a-zA-Z0-9]+)(\?|$)/);
+    if (match) return match[1];
+    match = url.match(/spotify:playlist:([a-zA-Z0-9]+)/);
+    if (match) return match[1];
+    return null;
+  }
+
+  async function searchYouTubeVideo(query) {
+    const proxyUrl = 'https://corsproxy.io/?';
+    const searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+
+    try {
+      const res = await fetch(proxyUrl + searchUrl);
+      const text = await res.text();
+
+      const jsonMatch = text.match(/var ytInitialData = (.*?);\s*<\/script>/s);
+      if (!jsonMatch) return null;
+
+      const ytInitialData = JSON.parse(jsonMatch[1]);
+
+      const contents = ytInitialData.contents
+        ?.twoColumnSearchResultsRenderer
+        ?.primaryContents
+        ?.sectionListRenderer
+        ?.contents;
+
+      if (!contents) return null;
+
+      for (const section of contents) {
+        const itemSection = section.itemSectionRenderer;
+        if (!itemSection) continue;
+        const items = itemSection.contents;
+        for (const item of items) {
+          if (item.videoRenderer) {
+            return item.videoRenderer.videoId;
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('YouTube search error:', e);
+      return null;
+    }
+  }
+
+  loadBtn.addEventListener('click', async () => {
+    const playlistUrl = playlistUrlInput.value.trim();
+
+    if (!playlistUrl) {
+      alert('Please enter a Spotify playlist URL.');
+      return;
+    }
+
+    const playlistId = extractPlaylistId(playlistUrl);
+    if (!playlistId) {
+      alert('Invalid Spotify playlist URL.');
+      return;
+    }
+
+    playlistInfo.innerHTML = 'Loading playlist...';
+
+    try {
+      let tracks = [];
+      let nextUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`;
+
+      while (nextUrl) {
+        const res = await fetch(nextUrl, {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        if (!res.ok) {
+          if(res.status === 401) {
+            playlistInfo.innerHTML = 'Unauthorized: Invalid or expired token.';
+            return;
+          } else {
+            playlistInfo.innerHTML = 'Failed to load playlist tracks.';
+            return;
+          }
+        }
+        const data = await res.json();
+        tracks = tracks.concat(data.items);
+        nextUrl = data.next;
+      }
+
+      if (tracks.length === 0) {
+        playlistInfo.innerHTML = 'This playlist has no tracks.';
+        return;
+      }
+
+      // Display playlist with download buttons
+      let html = `<h3>Playlist Tracks (${tracks.length}):</h3><ul>`;
+      for (const [index, item] of tracks.entries()) {
+        const track = item.track;
+        if(!track) continue;
+        const name = track.name;
+        const artists = track.artists.map(a => a.name).join(', ');
+        html += `
+          <li>
+            <div class="track-info">
+              <span class="track-name">${name}</span><br/>
+              <span class="artist-name">${artists}</span>
+            </div>
+            <button class="download-btn" data-index="${index}" title="Download">
+              <img src="https://ratgames.vercel.app/media/install.png" alt="Download" />
+            </button>
+          </li>
+        `;
+      }
+      html += '</ul>';
+      playlistInfo.innerHTML = html;
+
+      // Attach click handlers
+      document.querySelectorAll('.download-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = btn.getAttribute('data-index');
+          const track = tracks[idx].track;
+          if (!track) return;
+
+          btn.disabled = true;
+          btn.title = 'Searching...';
+
+          const query = `${track.name} ${track.artists.map(a => a.name).join(' ')}`;
+
+          const videoId = await searchYouTubeVideo(query);
+
+          if (videoId) {
+            const yt1dUrl = `https://yt1d.com/en307/watch?v=${videoId}`;
+            window.open(yt1dUrl, '_blank');
+            btn.disabled = false;
+            btn.title = 'Download';
+          } else {
+            btn.title = 'Not found';
+            setTimeout(() => {
+              btn.title = 'Download';
+              btn.disabled = false;
+            }, 3000);
+          }
+        });
+      });
+
+    } catch (e) {
+      playlistInfo.innerHTML = 'Error loading playlist.';
+      console.error(e);
+    }
+  });
+</script>
+
+</body>
+</html>
