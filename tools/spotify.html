@@ -41,13 +41,10 @@
   li {
     padding: 10px 5px;
     border-bottom: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    cursor: pointer;
   }
   .track-name {
     font-weight: bold;
-    cursor: pointer;
     color: #1db954;
     text-decoration: underline;
   }
@@ -56,7 +53,7 @@
   }
   .youtube-player-wrapper iframe {
     width: 100%;
-    height: 0;
+    height: 0px;
     border: 0;
   }
   .player-controls {
@@ -68,7 +65,7 @@
   .progress-container {
     width: 100%;
     background: #444;
-    height: 6px;
+    height: 12px;
     cursor: pointer;
     position: relative;
   }
@@ -102,7 +99,14 @@
 
 <div id="playlistInfo"></div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
+  let allTracks = [];
+  let currentTrackIndex = -1;
+  let currentPlayerId = null;
+  let currentAnimation = null;
+  const players = {};
+
   async function getToken() {
     const res = await fetch('https://spotify-nu-six.vercel.app/api/token');
     const data = await res.json();
@@ -149,6 +153,8 @@
     }
   }
 
+  window.onYouTubeIframeAPIReady = () => {};
+
   loadBtn.addEventListener('click', async () => {
     const playlistUrl = playlistUrlInput.value.trim();
     if (!playlistUrl) return alert('Please enter a Spotify playlist URL.');
@@ -170,18 +176,25 @@
         nextUrl = data.next;
       }
 
-      let html = `<h3>Playlist Tracks (${tracks.length}):</h3><ul>`;
-      for (const [index, item] of tracks.entries()) {
+      allTracks = tracks.map((item, index) => {
         const track = item.track;
-        if (!track) continue;
-        const name = track.name;
-        const artists = track.artists.map(a => a.name).join(', ');
-        const query = `${track.name} ${artists}`;
+        if (!track) return null;
+        return {
+          index,
+          name: track.name,
+          artists: track.artists.map(a => a.name).join(', '),
+          query: `${track.name} ${track.artists.map(a => a.name).join(' ')}`,
+          title: `${track.name} - ${track.artists.map(a => a.name).join(', ')}`
+        };
+      }).filter(Boolean);
+
+      let html = `<h3>Playlist Tracks (${allTracks.length}):</h3><ul>`;
+      for (const track of allTracks) {
         html += `
-          <li>
+          <li data-index="${track.index}">
             <div class="track-info">
-              <span class="track-name" data-query="${query}" data-title="${track.name} - ${artists}">${track.name}</span><br/>
-              <span class="artist-name">${artists}</span>
+              <span class="track-name">${track.name}</span><br/>
+              <span class="artist-name">${track.artists}</span>
             </div>
             <div class="player-slot"></div>
           </li>`;
@@ -189,37 +202,12 @@
       html += '</ul>';
       playlistInfo.innerHTML = html;
 
-      document.querySelectorAll('.track-name').forEach(span => {
-        span.addEventListener('click', async () => {
-          const container = span.closest('li');
-          const slot = container.querySelector('.player-slot');
-          const query = span.dataset.query;
-          const title = span.dataset.title;
-          const videoId = await searchYouTubeVideo(query);
-          if (!videoId) return;
-
-          const playerId = `player-${videoId}-${Date.now()}`;
-          const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&controls=0`;
-          slot.innerHTML = `
-            <div class="youtube-player-wrapper">
-              <iframe id="${playerId}" src="${embedUrl}" allow="autoplay"></iframe>
-              <div class="player-controls">
-                <div class="time-info">
-                  <span id="time-left-${playerId}">0:00</span>
-                  <span id="time-right-${playerId}">0:00</span>
-                </div>
-                <div class="progress-container" onclick="seek(event, '${playerId}')">
-                  <div class="progress-bar" id="bar-${playerId}"></div>
-                </div>
-                <div class="button-row">
-                  <button onclick="seekRelative('${playerId}', -10)">⏮</button>
-                  <button onclick="togglePlayPause('${playerId}', this)">⏸</button>
-                  <button onclick="seekRelative('${playerId}', 10)">⏭</button>
-                  <button onclick="downloadMP3('${videoId}', \`${title}\`)">⤓</button>
-                </div>
-              </div>
-            </div>`;
-          initYouTubePlayer(videoId, playerId);
+      document.querySelectorAll('li').forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Prevent click if interacting with controls
+          if (e.target.tagName === 'BUTTON' || e.target.classList.contains('progress-container')) return;
+          const idx = parseInt(item.dataset.index);
+          playTrackByIndex(idx);
         });
       });
     } catch (e) {
@@ -227,22 +215,57 @@
       console.error(e);
     }
   });
-</script>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script>
-  const players = {};
-  function initYouTubePlayer(videoId, playerId) {
-    window.onYouTubeIframeAPIReady = function () {
-      players[playerId] = new YT.Player(playerId, {
-        events: { onReady: () => updateTimeLoop(playerId) }
-      });
-    };
-    if (window.YT && YT.Player) {
-      players[playerId] = new YT.Player(playerId, {
-        events: { onReady: () => updateTimeLoop(playerId) }
-      });
+
+  async function playTrackByIndex(index) {
+    const track = allTracks[index];
+    if (!track) return;
+    currentTrackIndex = index;
+    const item = document.querySelector(`li[data-index="${index}"]`);
+    const slot = item.querySelector('.player-slot');
+    if (!slot) return;
+    slot.innerHTML = 'Loading player...';
+
+    const videoId = await searchYouTubeVideo(track.query);
+    if (!videoId) return;
+
+    if (currentPlayerId && players[currentPlayerId]) {
+      players[currentPlayerId].destroy();
+      cancelAnimationFrame(currentAnimation);
     }
+
+    const playerId = `player-${videoId}-${Date.now()}`;
+    currentPlayerId = playerId;
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&controls=0`;
+    slot.innerHTML = `
+      <div class="youtube-player-wrapper">
+        <iframe id="${playerId}" src="${embedUrl}" allow="autoplay"></iframe>
+        <div class="player-controls">
+          <div class="time-info">
+            <span id="time-left-${playerId}">0:00</span>
+            <span id="time-right-${playerId}">0:00</span>
+          </div>
+          <div class="progress-container" onclick="seek(event, '${playerId}')">
+            <div class="progress-bar" id="bar-${playerId}"></div>
+          </div>
+          <div class="button-row">
+            <button onclick="seekRelative('${playerId}', -10)">⏮</button>
+            <button onclick="togglePlayPause('${playerId}', this)">⏸</button>
+            <button onclick="seekRelative('${playerId}', 10)">⏭</button>
+            <button onclick="downloadMP3('${videoId}', \`${track.title}\`)">⤓</button>
+          </div>
+        </div>
+      </div>`;
+
+    players[playerId] = new YT.Player(playerId, {
+      events: {
+        onReady: () => updateTimeLoop(playerId),
+        onStateChange: (e) => {
+          if (e.data === YT.PlayerState.ENDED) playTrackByIndex(currentTrackIndex + 1);
+        }
+      }
+    });
   }
+
   function togglePlayPause(playerId, btn) {
     const player = players[playerId];
     if (!player) return;
@@ -277,15 +300,15 @@
     const bar = document.getElementById(`bar-${playerId}`);
     const left = document.getElementById(`time-left-${playerId}`);
     const right = document.getElementById(`time-right-${playerId}`);
-    const update = () => {
+    function update() {
       if (!player || player.getDuration() === 0) return;
       const cur = player.getCurrentTime();
       const dur = player.getDuration();
       left.textContent = formatTime(cur);
       right.textContent = formatTime(dur);
       bar.style.width = `${(cur / dur) * 100}%`;
-      requestAnimationFrame(update);
-    };
+      currentAnimation = requestAnimationFrame(update);
+    }
     update();
   }
   function formatTime(seconds) {
