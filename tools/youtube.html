@@ -61,6 +61,27 @@
     font-size: 1.1rem;
     text-align: center;
   }
+  #player-container {
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #222;
+    padding: 10px;
+  }
+  #download-btn {
+    margin-top: 10px;
+    background: #1db954;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+  }
+  #download-btn:hover {
+    background: #17a44d;
+  }
 </style>
 </head>
 <body>
@@ -73,10 +94,26 @@
 
 <div id="results"></div>
 
+<!-- Container for embedded player and download button -->
+<div id="player-container" style="display:none;">
+  <iframe
+    id="video-player"
+    title="Video player"
+    width="100%"
+    style="border-radius: 8px; border: none; aspect-ratio: 16/9; min-height: 250px;"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+  <button id="download-btn">Download</button>
+</div>
+
 <script>
   const inputBox = document.getElementById('inputBox');
   const goBtn = document.getElementById('goBtn');
   const resultsDiv = document.getElementById('results');
+  const playerContainer = document.getElementById('player-container');
+  const videoPlayer = document.getElementById('video-player');
+  const downloadBtn = document.getElementById('download-btn');
 
   function getYouTubeVideoID(url) {
     const regex = /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/;
@@ -143,8 +180,7 @@
           <div class="video-title">${title}</div>
         `;
         div.onclick = () => {
-          const targetUrl = `https://yt1d.com/en307/watch?v=${vidID}`;
-          window.open(targetUrl, '_blank');
+          loadVideo(vidID);
         };
         resultsDiv.appendChild(div);
       });
@@ -155,9 +191,21 @@
     }
   }
 
+  function loadVideo(videoId) {
+    // Clear search results
+    resultsDiv.innerHTML = '';
+    // Show player container
+    playerContainer.style.display = 'block';
+    // Set iframe src
+    videoPlayer.src = `https://embed-player.com/video/?source=https://www.youtube.com/watch?v=${videoId}&color=%23a1c2c3&preload=metadata`;
+    // Set download button link
+    downloadBtn.onclick = () => {
+      window.open(`https://yt1d.com/en307/watch?v=${videoId}`, '_blank');
+    };
+  }
+
   goBtn.addEventListener('click', () => {
     const input = inputBox.value.trim();
-    resultsDiv.innerHTML = '';
 
     if (!input) {
       alert('Please enter a YouTube URL or search term.');
@@ -170,9 +218,11 @@
         alert('Invalid YouTube URL.');
         return;
       }
-      const targetUrl = `https://yt1d.com/en307/watch?v=${vidID}`;
-      window.open(targetUrl, '_blank');
+      loadVideo(vidID);
     } else {
+      // Hide player container if searching new query
+      playerContainer.style.display = 'none';
+      videoPlayer.src = '';
       searchYouTube(input);
     }
   });
