@@ -139,25 +139,33 @@
     let fuse;
 
     async function startSoundboard() {
-      const res = await fetch('https://api.github.com/repos/v9o9/soundboard/contents/sounds');
-      const data = await res.json();
+      const html = await fetch('https://corsproxy.io/?https://pranx.com/sound-effects/').then(r => r.text());
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const data = [...doc.querySelectorAll('[data-sound]')];
+
+      const sounds = data.map(el => {
+        const id = el.getAttribute('data-sound');
+        const label = el.querySelector('strong')?.textContent?.trim() || id;
+        return { label, url: `https://pranx.com/sound-effects/sounds/${id}.mp3` };
+      });
+
+      // Sort alphabetically
+      sounds.sort((a, b) => a.label.localeCompare(b.label));
+
       const container = document.getElementById('soundboard');
       container.innerHTML = '';
       buttons.length = 0;
 
       const soundNames = [];
 
-      data.filter(file => file.name.endsWith('.mp3')).forEach(file => {
-        const fileName = decodeURIComponent(file.name.replace('.mp3', ''));
-        const fileURL = `https://v9o9.github.io/soundboard/sounds/${encodeURIComponent(file.name)}`;
-
+      sounds.forEach(({ label, url }) => {
         const button = document.createElement('button');
         button.className = "sound";
-        button.textContent = fileName;
+        button.textContent = label;
         button.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
         button.onclick = () => {
-          const audio = new Audio(fileURL);
+          const audio = new Audio(url);
           activeAudios.push({ audio, button });
           button.classList.add('active');
           audio.play();
@@ -169,8 +177,8 @@
         };
 
         container.appendChild(button);
-        buttons.push({ name: fileName, button });
-        soundNames.push(fileName);
+        buttons.push({ name: label, button });
+        soundNames.push(label);
       });
 
       fuse = new Fuse(soundNames, { includeScore: true, threshold: 0.4 });
