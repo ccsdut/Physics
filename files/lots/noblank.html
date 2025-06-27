@@ -155,6 +155,7 @@
 
     const loaderOverlay = document.getElementById('loader-overlay');
     const loaderContainer = document.getElementById('loader-container');
+    const container = document.getElementById('game-buttons');
 
     const getDriveDirectURL = (url) => {
       let idMatch = url.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,})/);
@@ -190,17 +191,18 @@
       return { name, url };
     });
 
-    const container = document.getElementById('game-buttons');
-    const buttonMap = new Map();
+    const renderButtons = (list) => {
+      container.innerHTML = '';
+      list.forEach(({ name, url }) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = name;
+        btn.onclick = () => openGame(url);
+        container.appendChild(btn);
+      });
+    };
 
-    games.forEach(({ name, url }) => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = name;
-      btn.onclick = () => openGame(url);
-      container.appendChild(btn);
-      buttonMap.set(name, btn);
-    });
+    renderButtons(games);
 
     const fuse = new Fuse(games, {
       keys: ['name'],
@@ -211,11 +213,8 @@
 
     document.getElementById('search').addEventListener('input', (e) => {
       const query = e.target.value.trim();
-      const results = query ? fuse.search(query).map(r => r.item.name) : games.map(g => g.name);
-      const showSet = new Set(results);
-      buttonMap.forEach((btn, name) => {
-        btn.style.display = showSet.has(name) ? 'block' : 'none';
-      });
+      const results = query ? fuse.search(query).map(r => r.item) : games;
+      renderButtons(results);
     });
   </script>
 </body>
