@@ -58,9 +58,6 @@
       background-color: #333;
       color: #fff;
       transition: background-color 0.3s ease;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
     .btn:hover {
       background-color: #555;
@@ -135,7 +132,7 @@
   </style>
 </head>
 <body>
-  <button class="home-button" onclick="window.location.href='/'" title="Home">
+  <button class="home-button" onclick="window.location.href='/'">
     <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home Icon" class="home-icon">
   </button>
 
@@ -151,7 +148,6 @@
       <input type="text" id="search" class="search-input" placeholder="Search for a game...">
     </div>
     <div class="button-container" id="game-buttons"></div>
-    <div id="no-results" style="display:none; color:#ccc; margin-top:10px;">No games found.</div>
   </div>
 
   <script type="module">
@@ -159,41 +155,15 @@
 
     const loaderOverlay = document.getElementById('loader-overlay');
     const loaderContainer = document.getElementById('loader-container');
-    const noResultsDiv = document.getElementById('no-results');
-
-    // Fetch your game list from the external text file
-    async function fetchGameList() {
-      try {
-        const response = await fetch('/files/lots/games.txt');
-        if (!response.ok) throw new Error('Failed to load game list');
-        const text = await response.text();
-        return text.trim().split('\n').map(line => {
-          const [name, url] = line.split(',').map(x => x.trim());
-          return { name, url };
-        });
-      } catch (e) {
-        alert('Error loading games list: ' + e.message);
-        return [];
-      }
-    }
 
     const getDriveDirectURL = (url) => {
-      // Handle both /file/d/ID/ and open?id=ID and open?id=ID&usp=drive_copy
-      let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
-
-      match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-      if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
-
-      return null;
+      let idMatch = url.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{25,})/);
+      return idMatch ? `https://drive.google.com/uc?export=download&id=${idMatch[1]}` : null;
     };
 
-    async function openGame(url) {
+    const openGame = async (url) => {
       const directUrl = getDriveDirectURL(url);
-      if (!directUrl) {
-        alert('Invalid Drive URL');
-        return;
-      }
+      if (!directUrl) return alert('Invalid Drive URL');
 
       loaderOverlay.style.display = 'block';
       loaderContainer.style.display = 'block';
@@ -201,82 +171,52 @@
       try {
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
         const res = await fetch(proxyUrl);
-        if (!res.ok) throw new Error(`Proxy fetch failed: ${res.status}`);
         const html = await res.text();
 
-        const newTab = window.open('/files/lots/gameloader.html');
-        if (!newTab) {
-          alert('Pop-up blocked. Please allow pop-ups for this site.');
-          loaderOverlay.style.display = 'none';
-          loaderContainer.style.display = 'none';
-          return;
-        }
-
-        // Send HTML when the new tab is ready (try every 100ms)
-        const timer = setInterval(() => {
-          if (newTab.closed) {
-            clearInterval(timer);
-            loaderOverlay.style.display = 'none';
-            loaderContainer.style.display = 'none';
-            return;
-          }
-          try {
-            newTab.postMessage(html, '*');
-            clearInterval(timer);
-            loaderOverlay.style.display = 'none';
-            loaderContainer.style.display = 'none';
-          } catch {
-            // Window might not be ready yet, retry
-          }
-        }, 100);
-
+        sessionStorage.setItem('gameHTML', html);
+        window.location.href = '/files/lots/gameloader.html';
       } catch (err) {
         alert('Error loading game: ' + err.message);
+      } finally {
         loaderOverlay.style.display = 'none';
         loaderContainer.style.display = 'none';
       }
-    }
+    };
 
-    (async () => {
-      const games = await fetchGameList();
+    const response = await fetch('/files/lots/games.txt');
+    const text = await response.text();
+    const games = text.trim().split('\n').map(line => {
+      const [name, url] = line.split(',').map(x => x.trim());
+      return { name, url };
+    });
 
-      const container = document.getElementById('game-buttons');
-      const buttonMap = new Map();
+    const container = document.getElementById('game-buttons');
+    const buttonMap = new Map();
 
-      games.forEach(({ name, url }) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.textContent = name;
-        btn.title = url;
-        btn.onclick = () => openGame(url);
-        container.appendChild(btn);
-        buttonMap.set(name, btn);
+    games.forEach(({ name, url }) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = name;
+      btn.onclick = () => openGame(url);
+      container.appendChild(btn);
+      buttonMap.set(name, btn);
+    });
+
+    const fuse = new Fuse(games, {
+      keys: ['name'],
+      threshold: 0.3,
+      distance: 100,
+      ignoreLocation: true,
+    });
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      const results = query ? fuse.search(query).map(r => r.item.name) : games.map(g => g.name);
+      const showSet = new Set(results);
+      buttonMap.forEach((btn, name) => {
+        btn.style.display = showSet.has(name) ? 'block' : 'none';
       });
-
-      const fuse = new Fuse(games, { keys: ['name'], threshold: 0.4 });
-
-      document.getElementById('search').addEventListener('input', (e) => {
-        const query = e.target.value.trim();
-        let results = [];
-        if (query) {
-          results = fuse.search(query).map(r => r.item.name);
-        } else {
-          results = games.map(g => g.name);
-        }
-
-        const showSet = new Set(results);
-
-        if (results.length === 0) {
-          buttonMap.forEach(btn => (btn.style.display = 'none'));
-          noResultsDiv.style.display = 'block';
-        } else {
-          buttonMap.forEach((btn, name) => {
-            btn.style.display = showSet.has(name) ? 'block' : 'none';
-          });
-          noResultsDiv.style.display = 'none';
-        }
-      });
-    })();
+    });
   </script>
 </body>
 </html>
