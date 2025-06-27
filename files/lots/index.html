@@ -191,7 +191,7 @@
       loaderOverlay.style.display = 'block';
       loaderContainer.style.display = 'block';
       try {
-        const res = await fetch('https://ratgames.vercel.app/files/games.txt');
+        const res = await fetch('https://ratgames.vercel.app/files/lots/games.txt');
         if (!res.ok) throw new Error('Failed to fetch game list');
         const text = await res.text();
         const games = text.trim().split('\n').map(line => {
