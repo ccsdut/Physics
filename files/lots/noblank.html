@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rat Games</title>
+  <link rel="icon" href="/media/favicon.png" type="image/png" />
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #121212;
+      color: #fff;
+    }
+    .container {
+      width: 80%;
+      max-width: 1000px;
+      padding: 40px 20px;
+      margin: 0 auto;
+      text-align: center;
+      background-color: rgba(18, 18, 18, 0.8);
+      border-radius: 10px;
+    }
+    h1 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .search-container {
+      margin-bottom: 20px;
+    }
+    .search-input {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      margin-bottom: 20px;
+      border: 2px solid #555;
+      border-radius: 5px;
+      background-color: #222;
+      color: #fff;
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      width: 48%;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-sizing: border-box;
+      background-color: #333;
+      color: #fff;
+      transition: background-color 0.3s ease;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background-color: #555;
+    }
+    .home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 999;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
+    .home-icon {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .home-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+    .loader-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(30, 20, 10, 0.7);
+      backdrop-filter: blur(15px);
+      z-index: 9998;
+    }
+    .loader-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      text-align: center;
+    }
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #444;
+      border-top: 8px solid #c2b280;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    .loader-text {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #ddd;
+      font-weight: bold;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 768px) {
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="home-button" onclick="window.location.href='/'" title="Home">
+    <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home Icon" class="home-icon">
+  </button>
+
+  <div class="loader-overlay" id="loader-overlay"></div>
+  <div class="loader-container" id="loader-container">
+    <div class="loader"></div>
+    <div class="loader-text">Please wait...</div>
+  </div>
+
+  <div class="container">
+    <h1>Games</h1>
+    <div class="search-container">
+      <input type="text" id="search" class="search-input" placeholder="Search for a game...">
+    </div>
+    <div class="button-container" id="game-buttons"></div>
+    <div id="no-results" style="display:none; color:#ccc; margin-top:10px;">No games found.</div>
+  </div>
+
+  <script type="module">
+    import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
+
+    const loaderOverlay = document.getElementById('loader-overlay');
+    const loaderContainer = document.getElementById('loader-container');
+    const noResultsDiv = document.getElementById('no-results');
+
+    // Fetch your game list from the external text file
+    async function fetchGameList() {
+      try {
+        const response = await fetch('/files/lots/games.txt');
+        if (!response.ok) throw new Error('Failed to load game list');
+        const text = await response.text();
+        return text.trim().split('\n').map(line => {
+          const [name, url] = line.split(',').map(x => x.trim());
+          return { name, url };
+        });
+      } catch (e) {
+        alert('Error loading games list: ' + e.message);
+        return [];
+      }
+    }
+
+    const getDriveDirectURL = (url) => {
+      // Handle both /file/d/ID/ and open?id=ID and open?id=ID&usp=drive_copy
+      let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+
+      match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+
+      return null;
+    };
+
+    async function openGame(url) {
+      const directUrl = getDriveDirectURL(url);
+      if (!directUrl) {
+        alert('Invalid Drive URL');
+        return;
+      }
+
+      loaderOverlay.style.display = 'block';
+      loaderContainer.style.display = 'block';
+
+      try {
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error(`Proxy fetch failed: ${res.status}`);
+        const html = await res.text();
+
+        const newTab = window.open('/files/lots/gameloader.html');
+        if (!newTab) {
+          alert('Pop-up blocked. Please allow pop-ups for this site.');
+          loaderOverlay.style.display = 'none';
+          loaderContainer.style.display = 'none';
+          return;
+        }
+
+        // Send HTML when the new tab is ready (try every 100ms)
+        const timer = setInterval(() => {
+          if (newTab.closed) {
+            clearInterval(timer);
+            loaderOverlay.style.display = 'none';
+            loaderContainer.style.display = 'none';
+            return;
+          }
+          try {
+            newTab.postMessage(html, '*');
+            clearInterval(timer);
+            loaderOverlay.style.display = 'none';
+            loaderContainer.style.display = 'none';
+          } catch {
+            // Window might not be ready yet, retry
+          }
+        }, 100);
+
+      } catch (err) {
+        alert('Error loading game: ' + err.message);
+        loaderOverlay.style.display = 'none';
+        loaderContainer.style.display = 'none';
+      }
+    }
+
+    (async () => {
+      const games = await fetchGameList();
+
+      const container = document.getElementById('game-buttons');
+      const buttonMap = new Map();
+
+      games.forEach(({ name, url }) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = name;
+        btn.title = url;
+        btn.onclick = () => openGame(url);
+        container.appendChild(btn);
+        buttonMap.set(name, btn);
+      });
+
+      const fuse = new Fuse(games, { keys: ['name'], threshold: 0.4 });
+
+      document.getElementById('search').addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        let results = [];
+        if (query) {
+          results = fuse.search(query).map(r => r.item.name);
+        } else {
+          results = games.map(g => g.name);
+        }
+
+        const showSet = new Set(results);
+
+        if (results.length === 0) {
+          buttonMap.forEach(btn => (btn.style.display = 'none'));
+          noResultsDiv.style.display = 'block';
+        } else {
+          buttonMap.forEach((btn, name) => {
+            btn.style.display = showSet.has(name) ? 'block' : 'none';
+          });
+          noResultsDiv.style.display = 'none';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
