@@ -4,13 +4,19 @@
   <meta charset="UTF-8" />
   <title>Game Loader</title>
   <style>
-    body, html { margin:0; padding:0; height:100%; }
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      background: #121212;
+      color: #eee;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
 <script>
   window.addEventListener('message', (event) => {
-    // Optionally validate origin here: if(event.origin !== 'https://yourdomain.com') return;
+    // For security, you can check event.origin here
+    // if (event.origin !== 'https://yourdomain.com') return;
 
     const html = event.data;
     if (typeof html === 'string') {
