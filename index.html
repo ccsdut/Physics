@@ -1,167 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🎮 Rat Games</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    background-color: black;
-    overflow: hidden;
-    font-family: sans-serif;
-  }
+  <!-- SEO & Social Sharing -->
+  <title>🎮 Rat Games</title>
+  <link rel="icon" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/favicon.png" type="image/png" />
+  <link rel="manifest" href="/install/manifest.json" />
+  <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support." />
+  <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats" />
+  <link rel="canonical" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
 
-  /* Top black bar */
-  .top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 64px;
-    width: 100%;
-    background-color: black;
-    display: flex;
-    align-items: center;
-    padding: 0 20px 0 20px;
-    box-sizing: border-box;
-    z-index: 1000;
-    padding-right: 100px; /* space for fullscreen btn */
-  }
+  <!-- Open Graph (for social sharing previews) -->
+  <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games" />
+  <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!" />
+  <meta property="og:image" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif" />
+  <meta property="og:url" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
+  <meta name="twitter:card" content="summary_large_image" />
 
-  /* Left side buttons container */
-  .left-buttons {
-    display: flex;
-    gap: 10px;
-  }
-
-  button {
-    width: 44px;
-    height: 44px;
-    background-color: #333;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #555;
-  }
-
-  button img {
-    max-width: 32px; /* bigger icons */
-    max-height: 32px;
-    pointer-events: none;
-  }
-
-  /* Fullscreen button fixed just right of bar */
-  #fullscreen-btn {
-    position: fixed;
-    top: 10px; /* vertical center relative to 64px */
-    right: 20px; /* visible outside the bar */
-    background-color: #333;
-    border-radius: 10px;
-    z-index: 1100;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  #fullscreen-btn:hover {
-    background-color: #555;
-  }
-
-  /* Iframe below the bar */
-  #iframe-container {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 64px);
-  }
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-</style>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%; background: black; overflow: hidden; font-family: sans-serif; color: white;
+    }
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px; background: black;
+      display: flex; align-items: center; padding: 0 20px; box-sizing: border-box;
+      justify-content: space-between; z-index: 9999;
+    }
+    .left-buttons, .right-buttons {
+      display: flex; align-items: center; gap: 12px;
+    }
+    button {
+      background: #222; border: none; border-radius: 10px;
+      width: 44px; height: 44px; cursor: pointer;
+      display: flex; justify-content: center; align-items: center;
+      transition: background-color 0.3s ease;
+    }
+    button:hover { background: #555; }
+    button img {
+      max-width: 24px;
+      max-height: 24px;
+      pointer-events: none;
+    }
+    /* Bigger home icon */
+    .home-button img {
+      width: 36px;
+      height: 36px;
+      max-width: none;
+      max-height: none;
+    }
+    iframe {
+      position: fixed; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px);
+      border: none; background: black;
+    }
+  </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="left-buttons">
-    <button id="home-btn" onclick="window.location.href='/'" title="Home">
-      <img src="/media/homeicon.png" alt="Home Icon" />
-    </button>
-    <button id="installBtn" title="Install App" style="display: flex;">
-      <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
-    </button>
+  <div class="top-bar">
+    <div class="left-buttons">
+      <button class="home-button" title="Home" onclick="location.href='/'">
+        <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home" />
+      </button>
+    </div>
+    <div class="right-buttons">
+      <button id="installBtn" title="Install App" style="display:none;">
+        <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
+      </button>
+      <button id="fullscreen-btn" title="Fullscreen" onclick="toggleIframeFullscreen()">
+        <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/fullscreen.png" alt="Fullscreen" />
+      </button>
+    </div>
   </div>
-</div>
 
-<button id="fullscreen-btn" title="Toggle Fullscreen" onclick="toggleFullscreen()">
-  <img src="/media/fullscreen.png" alt="Fullscreen" />
-</button>
+  <iframe id="game-iframe" src="https://ratgames.vercel.app/files/home.html" allow="fullscreen; pointer-lock; autoplay; encrypted-media" allowfullscreen></iframe>
 
-<div id="iframe-container">
-  <iframe
-    src="https://ratgames.vercel.app/files/home.html"
-    allow="fullscreen; pointer-lock; autoplay; encrypted-media"
-    allowfullscreen="true"
-  ></iframe>
-</div>
-
-<script>
-  function toggleFullscreen() {
-    const container = document.getElementById("iframe-container");
-    if (!document.fullscreenElement) {
-      container.requestFullscreen?.() || container.webkitRequestFullscreen?.() || container.msRequestFullscreen?.();
-    } else {
-      document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
+  <script>
+    function toggleIframeFullscreen() {
+      const iframe = document.getElementById('game-iframe');
+      if (!document.fullscreenElement) {
+        iframe.requestFullscreen?.() || iframe.webkitRequestFullscreen?.() || iframe.msRequestFullscreen?.();
+      } else {
+        document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
+      }
     }
-  }
 
-  let deferredPrompt;
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const installBtn = document.getElementById("installBtn");
-    if (installBtn) installBtn.style.display = "flex";
+    // PWA install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('installBtn');
+      installBtn.style.display = 'flex';
+      installBtn.onclick = () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted install prompt');
+          } else {
+            console.log('User dismissed install prompt');
+          }
+          deferredPrompt = null;
+          installBtn.style.display = 'none';
+        });
+      };
+    });
 
-    installBtn.addEventListener("click", () => {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the install prompt");
-        } else {
-          console.log("User dismissed the install prompt");
-        }
-        deferredPrompt = null;
-        installBtn.style.display = "none";
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/install/service-worker.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.error('Service Worker failed:', err));
       });
-    });
-  });
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("/install/service-worker.js")
-        .then((reg) => console.log("Service Worker registered:", reg.scope))
-        .catch((err) => console.error("Service Worker registration failed:", err));
-    });
-  }
-</script>
+    }
+  </script>
 
 </body>
 </html>
