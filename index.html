@@ -28,8 +28,7 @@
     padding: 0 20px 0 20px;
     box-sizing: border-box;
     z-index: 1000;
-    /* Leave space on right for fullscreen button */
-    padding-right: 100px;
+    padding-right: 100px; /* space for fullscreen btn */
   }
 
   /* Left side buttons container */
@@ -56,16 +55,16 @@
   }
 
   button img {
-    max-width: 24px;
-    max-height: 24px;
+    max-width: 32px; /* bigger icons */
+    max-height: 32px;
     pointer-events: none;
   }
 
   /* Fullscreen button fixed just right of bar */
   #fullscreen-btn {
     position: fixed;
-    top: 10px; /* vertically center relative to 64px bar height */
-    right: 20px; /* fully visible with some margin from right edge */
+    top: 10px; /* vertical center relative to 64px */
+    right: 20px; /* visible outside the bar */
     background-color: #333;
     border-radius: 10px;
     z-index: 1100;
@@ -105,7 +104,7 @@
     <button id="home-btn" onclick="window.location.href='/'" title="Home">
       <img src="/media/homeicon.png" alt="Home Icon" />
     </button>
-    <button id="installBtn" style="display:none;" title="Install App">
+    <button id="installBtn" title="Install App" style="display: flex;">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
     </button>
   </div>
