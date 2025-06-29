@@ -24,20 +24,38 @@
       margin: 0; padding: 0; height: 100%; background: black; overflow: hidden; font-family: sans-serif; color: white;
     }
     .top-bar {
-      position: fixed; top: 0; left: 0; right: 0; height: 60px; background: black;
-      display: flex; align-items: center; padding: 0 20px; box-sizing: border-box;
-      justify-content: space-between; z-index: 9999;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: black;
+      display: flex;
+      align-items: center;
+      padding: 0 8px; /* reduced horizontal padding */
+      box-sizing: border-box;
+      justify-content: space-between;
+      z-index: 9999;
     }
     .left-buttons, .right-buttons {
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     button {
-      background: #222; border: none; border-radius: 10px;
-      width: 44px; height: 44px; cursor: pointer;
-      display: flex; justify-content: center; align-items: center;
+      background: #222;
+      border: none;
+      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       transition: background-color 0.3s ease;
+      margin: 0; /* reset margin */
     }
-    button:hover { background: #555; }
+    button:hover {
+      background: #555;
+    }
     button img {
       max-width: 24px;
       max-height: 24px;
@@ -51,8 +69,13 @@
       max-height: none;
     }
     iframe {
-      position: fixed; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px);
-      border: none; background: black;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 60px);
+      border: none;
+      background: black;
     }
   </style>
 </head>
