@@ -1,179 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🎮 Rat Games</title>
 
-  <!-- SEO & Social Sharing -->
-  <title>🎮 Rat Games</title>
-  <link rel="icon" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/favicon.png" type="image/png" />
-  <link rel="manifest" href="/install/manifest.json" />
-  <meta name="description" content="Play unblocked games like Subway Surfers, Minecraft, and Moto X3M at RatGames — the meme-powered site with spinning rats, no downloads, and full browser support." />
-  <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats" />
-  <link rel="canonical" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: black;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
 
-  <!-- Open Graph (for social sharing previews) -->
-  <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games" />
-  <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!" />
-  <meta property="og:image" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif" />
-  <meta property="og:url" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
-  <meta name="twitter:card" content="summary_large_image" />
+  /* Top black bar */
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 64px;
+    width: 100%;
+    background-color: black;
+    display: flex;
+    align-items: center;
+    padding: 0 20px 0 20px;
+    box-sizing: border-box;
+    z-index: 1000;
+    /* Leave space on right for fullscreen button */
+    padding-right: 100px;
+  }
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      overflow-y: scroll;
-      scrollbar-width: none; /* Firefox */
-    }
+  /* Left side buttons container */
+  .left-buttons {
+    display: flex;
+    gap: 10px;
+  }
 
-    body::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
-    }
+  button {
+    width: 44px;
+    height: 44px;
+    background-color: #333;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+  }
 
-    iframe {
-      border: none;
-      width: 100%;
-      height: 100vh;
-    }
+  button:hover {
+    background-color: #555;
+  }
 
-    .home-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 999;
-      background-color: #333;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s ease;
-    }
+  button img {
+    max-width: 24px;
+    max-height: 24px;
+    pointer-events: none;
+  }
 
-    .home-button:hover {
-      background-color: #555;
-    }
+  /* Fullscreen button fixed just right of bar */
+  #fullscreen-btn {
+    position: fixed;
+    top: 10px; /* vertically center relative to 64px bar height */
+    right: 20px; /* fully visible with some margin from right edge */
+    background-color: #333;
+    border-radius: 10px;
+    z-index: 1100;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
 
-    .home-icon {
-      width: 80%;
-      height: 80%;
-    }
+  #fullscreen-btn:hover {
+    background-color: #555;
+  }
 
-    #fullscreen-btn,
-    #installBtn {
-      position: fixed;
-      top: 20px;
-      background-color: #333;
-      border: none;
-      border-radius: 10px;
-      padding: 10px;
-      cursor: pointer;
-      z-index: 1000;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s ease;
-    }
+  /* Iframe below the bar */
+  #iframe-container {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 64px);
+  }
 
-    #fullscreen-btn {
-      right: 20px;
-    }
-
-    #installBtn {
-      right: 74px;
-      display: none;
-    }
-
-    #fullscreen-btn:hover,
-    #installBtn:hover {
-      background-color: #555;
-    }
-
-    #fullscreen-btn img,
-    #installBtn img {
-      max-width: 24px;
-      max-height: 24px;
-      pointer-events: none;
-    }
-  </style>
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+</style>
 </head>
 <body>
-  <!-- Home Button -->
-  <button class="home-button" onclick="window.location.href='/'" title="Home">
-    <img src="/media/homeicon.png" alt="Home Icon" class="home-icon" />
-  </button>
 
-  <!-- Install Button -->
-  <button id="installBtn" title="Install App">
-    <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
-  </button>
+<div class="top-bar">
+  <div class="left-buttons">
+    <button id="home-btn" onclick="window.location.href='/'" title="Home">
+      <img src="/media/homeicon.png" alt="Home Icon" />
+    </button>
+    <button id="installBtn" style="display:none;" title="Install App">
+      <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
+    </button>
+  </div>
+</div>
 
-  <!-- Fullscreen Button -->
-  <button id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-    <img src="/media/fullscreen.png" alt="Fullscreen" />
-  </button>
+<button id="fullscreen-btn" title="Toggle Fullscreen" onclick="toggleFullscreen()">
+  <img src="/media/fullscreen.png" alt="Fullscreen" />
+</button>
 
-  <!-- Game Iframe -->
+<div id="iframe-container">
   <iframe
     src="https://ratgames.vercel.app/files/home.html"
     allow="fullscreen; pointer-lock; autoplay; encrypted-media"
-    allowfullscreen="true">
-  </iframe>
+    allowfullscreen="true"
+  ></iframe>
+</div>
 
-  <script>
-    function toggleFullscreen() {
-      const elem = document.documentElement;
-      if (!document.fullscreenElement) {
-        elem.requestFullscreen?.() || elem.webkitRequestFullscreen?.() || elem.msRequestFullscreen?.();
-      } else {
-        document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
-      }
+<script>
+  function toggleFullscreen() {
+    const container = document.getElementById("iframe-container");
+    if (!document.fullscreenElement) {
+      container.requestFullscreen?.() || container.webkitRequestFullscreen?.() || container.msRequestFullscreen?.();
+    } else {
+      document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
     }
+  }
 
-    // PWA Install Handling
-    let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
+  let deferredPrompt;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById("installBtn");
+    if (installBtn) installBtn.style.display = "flex";
 
-      const installBtn = document.getElementById("installBtn");
-      if (installBtn) installBtn.style.display = "flex";
-
-      installBtn?.addEventListener("click", () => {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === "accepted") {
-            console.log("User accepted the install prompt");
-          } else {
-            console.log("User dismissed the install prompt");
-          }
-          deferredPrompt = null;
-          installBtn.style.display = "none";
-        });
+    installBtn.addEventListener("click", () => {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("User accepted the install prompt");
+        } else {
+          console.log("User dismissed the install prompt");
+        }
+        deferredPrompt = null;
+        installBtn.style.display = "none";
       });
     });
+  });
 
-    // Optional: Register service worker
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/install/service-worker.js")
-          .then((reg) => console.log("Service Worker registered:", reg.scope))
-          .catch((err) => console.error("Service Worker registration failed:", err));
-      });
-    }
-  </script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/install/service-worker.js")
+        .then((reg) => console.log("Service Worker registered:", reg.scope))
+        .catch((err) => console.error("Service Worker registration failed:", err));
+    });
+  }
+</script>
+
 </body>
 </html>
