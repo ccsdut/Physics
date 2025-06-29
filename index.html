@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- SEO & Social Sharing -->
   <title>🎮 Rat Games</title>
   <link rel="icon" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/favicon.png" type="image/png" />
   <link rel="manifest" href="/install/manifest.json" />
@@ -12,7 +11,6 @@
   <meta name="keywords" content="unblocked games, free games online, browser games, school games, HTML5 games, play games at school, meme games, no download games, fun web games, RatGames, funny games, safe games for school, rat website, coolmath alternative, game site with rats" />
   <link rel="canonical" href="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/" />
 
-  <!-- Open Graph (for social sharing previews) -->
   <meta property="og:title" content="🐀🎮 RatGames – Meme-Powered Unblocked Games" />
   <meta property="og:description" content="Play unblocked browser games with spinning rats. Featuring Subway Surfers, Minecraft, Moto X3M and more!" />
   <meta property="og:image" content="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif" />
@@ -21,7 +19,11 @@
 
   <style>
     body, html {
-      margin: 0; padding: 0; height: 100%; background: black; overflow: hidden; font-family: sans-serif; color: white;
+      margin: 0; padding: 0; height: 100%;
+      background: black;
+      overflow: hidden;
+      font-family: "Comic Sans MS", "Comic Sans", cursive;
+      color: white;
     }
     .top-bar {
       position: fixed;
@@ -30,18 +32,46 @@
       background: black;
       display: flex;
       align-items: center;
-      padding: 0 8px; /* reduced horizontal padding */
+      justify-content: center;
+      padding: 0 8px;
       box-sizing: border-box;
-      justify-content: space-between;
       z-index: 9999;
+      overflow: hidden;
+    }
+    .top-bar::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('https://ratgames.vercel.app/media/rat-spinning.gif');
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) brightness(0.6);
+      opacity: 0.3;
+      z-index: 0;
+    }
+    .top-bar-content {
+      position: relative;
+      z-index: 1;
+      font-size: 20px;
+      font-weight: bold;
     }
     .left-buttons, .right-buttons {
+      position: absolute;
+      top: 0;
+      height: 100%;
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 0 8px;
+    }
+    .left-buttons {
+      left: 0;
+    }
+    .right-buttons {
+      right: 0;
     }
     button {
-      background: #222;
+      background: rgba(0, 0, 0, 0.5);
       border: none;
       border-radius: 10px;
       width: 44px;
@@ -51,17 +81,16 @@
       justify-content: center;
       align-items: center;
       transition: background-color 0.3s ease;
-      margin: 0; /* reset margin */
+      margin: 0;
     }
     button:hover {
-      background: #555;
+      background: rgba(255, 255, 255, 0.2);
     }
     button img {
       max-width: 24px;
       max-height: 24px;
       pointer-events: none;
     }
-    /* Bigger home icon */
     .home-button img {
       width: 36px;
       height: 36px;
@@ -87,6 +116,9 @@
         <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home" />
       </button>
     </div>
+
+    <div class="top-bar-content">Rat Games</div>
+
     <div class="right-buttons">
       <button id="installBtn" title="Install App" style="display:none;">
         <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install" />
@@ -109,7 +141,6 @@
       }
     }
 
-    // PWA install prompt
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
