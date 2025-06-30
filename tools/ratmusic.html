@@ -303,7 +303,7 @@
     <div id="songs-list"></div>
     <div id="player-area">
       <div id="player">
-        <img id="player-cover" src="https://files.catbox.moe/1jvo81.png" alt="cover" />
+        <img id="player-cover" src="https://files.catbox.moe/i3ubo4.png" alt="cover" />
         <div id="player-controls">
           <div id="player-info">
             <h2 id="player-title">Not Playing</h2>
@@ -490,7 +490,7 @@
     currentSongIndex = -1;
     elements.playerTitle.textContent = 'Not Playing';
     elements.playerArtist.textContent = '';
-    elements.playerCover.src = 'https://files.catbox.moe/1jvo81.png';
+    elements.playerCover.src = 'https://files.catbox.moe/i3ubo4.png';
     elements.playPauseBtn.textContent = 'Play';
     isPlaying = false;
     clearInterval(updateInterval);
@@ -511,7 +511,7 @@
     currentSongIndex = index;
     elements.playerTitle.textContent = song.title || 'Unknown Title';
     elements.playerArtist.textContent = song.artist || 'Unknown Artist';
-    elements.playerCover.src = song.cover || 'https://files.catbox.moe/1jvo81.png';
+    elements.playerCover.src = song.cover || 'https://files.catbox.moe/i3ubo4.png';
 
     if(song.youtubeId) {
       playYouTubeVideo(song.youtubeId);
