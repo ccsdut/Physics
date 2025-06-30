@@ -84,10 +84,11 @@
     margin-left: 10px;
   }
   #songs-list {
-    flex: 1;
-    overflow-y: auto;
-    background: #2b2b2b; /* dark grey songs list */
-  }
+  flex: 1;
+  overflow-y: auto;
+  background: #2b2b2b;
+  padding-bottom: 240px; /* space for fixed player */
+}
   .song-item {
     display: flex;
     align-items: center;
@@ -124,85 +125,104 @@
     margin-left: 8px;
   }
   #player-area {
-    flex: 1;
-    background: #3a2f27; /* dark brown player background */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  position: fixed;
+  bottom: 0;
+  left: 280px; /* start right after playlist bar */
+  right: 0;
+  background: #3a2f27;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+}
   #player {
-    display: flex;
-    background: #3a2f27; /* dark brown */
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.8); /* stronger shadow */
-    width: 600px;
-    max-width: 90vw;
-    padding: 20px;
-    gap: 20px;
-    align-items: center;
-    color: #d3bfa6;
-  }
-  #player-cover {
-    width: 180px;
-    height: 180px;
-    border-radius: 16px;
-    object-fit: cover;
-    box-shadow: 0 0 15px rgba(0,0,0,0.8);
-  }
-  #player-controls {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 180px;
-  }
-  #player-info {
-    text-align: center;
-  }
-  #player-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0 0 8px 0;
-    color: #d3bfa6;
-  }
-  #player-artist {
-    font-size: 14px;
-    color: #b0a28e;
-    margin: 0;
-  }
-  #progress-container {
-    height: 12px;
-    background: #4a3a2a; /* brown background */
-    border-radius: 6px;
-    overflow: hidden;
-    cursor: pointer;
-    margin: 10px 0;
-  }
-  #progress-bar {
-    height: 100%;
-    width: 0;
-    background: #6B4C3B; /* brown progress */
-  }
-  #time-display {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #d3bfa6;
-  }
-  #buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-  }
-  #buttons button {
-    padding: 8px 16px;
-    background: #6B4C3B; /* brown buttons */
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    color: white;
-  }
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #3a2f27;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+  width: 600px;
+  max-width: 90vw;
+  padding: 15px 20px;
+  color: #d3bfa6;
+  /* Reduce height by using padding and flex alignment */
+}
+
+#player-cover {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(0,0,0,0.8);
+  flex-shrink: 0;
+}
+
+#player-info-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#player-info {
+  margin-bottom: 10px;
+}
+
+#player-title {
+  font-size: 18px;
+  margin: 0 0 4px 0;
+}
+
+#player-artist {
+  font-size: 14px;
+  color: #b0a28e;
+  margin: 0;
+}
+
+#progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#progress-container {
+  height: 12px;
+  background: #4a3a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0;
+  background: #6B4C3B;
+}
+
+#time-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #d3bfa6;
+}
+
+#buttons {
+  display: flex;
+  justify-content: center;
+}
+
+#buttons button {
+  padding: 6px 14px;
+  background: #6B4C3B;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  color: white;
+  width: 100px;
+}
   #spotify-import-modal {
     position: fixed;
     top: 50%;
@@ -290,41 +310,45 @@
 </head>
 <body>
   <div id="top-bar">
-    <button id="btn-import-spotify">​Import Spotify Playlist</button>
-    <button id="btn-create-playlist">Create New Playlist</button>
     <input type="text" id="search-input" placeholder="Search YouTube songs..." autocomplete="off" />
   </div>
+
+<div id="search-results" style="display:none;"></div>
 
   <div id="container">
     <div id="playlist-bar">
       <h3>Playlists</h3>
       <div id="playlists-list"></div>
     </div>
+
+    <button id="btn-import-spotify">​Import Spotify Playlist</button>
+    <button id="btn-create-playlist">Create New Playlist</button>
+    
     <div id="songs-list"></div>
-    <div id="player-area">
-      <div id="player">
-        <img id="player-cover" src="https://files.catbox.moe/k94icu.png" alt="cover" />
-        <div id="player-controls">
-          <div id="player-info">
-            <h2 id="player-title">Not Playing</h2>
-            <p id="player-artist"></p>
-          </div>
-          <div id="progress-container">
-            <div id="progress-bar"></div>
-          </div>
-          <div id="time-display">
-            <span id="current-time">0:00</span>
-            <span id="duration">0:00</span>
-          </div>
-          <div id="buttons">
-            <button id="play-pause-btn">Play</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div id="player-area">
+  <div id="player">
+    <img id="player-cover" src="https://files.catbox.moe/k94icu.png" alt="cover" />
+
+<div id="player-info-controls">
+  <div id="player-info">
+    <h2 id="player-title">Not Playing</h2>
+    <p id="player-artist"></p>
   </div>
 
-  <div id="search-results" style="display:none;"></div>
+  <div id="progress-section">
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="time-display">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+    <div id="buttons">
+      <button id="play-pause-btn">Play</button>
+    </div>
+  </div>
+</div>
+</div>
 
   <div id="spotify-import-modal">
     <h3>Import Spotify Playlist</h3>
