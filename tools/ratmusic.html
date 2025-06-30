@@ -6,7 +6,8 @@
 <style>
   body, html {
     margin: 0; padding: 0; height: 100%;
-    background: #262626; color: #d3bfa6;
+    background: #262626; /* main dark grey background */
+    color: #d3bfa6; /* light brown text */
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
@@ -14,7 +15,7 @@
   }
   #top-bar {
     padding: 10px 20px;
-    background: #2b2b2b;
+    background: #2b2b2b; /* dark grey top bar */
     display: flex;
     gap: 10px;
     align-items: center;
@@ -25,16 +26,18 @@
     padding: 10px;
     font-size: 16px;
     border-radius: 6px;
-    border: 1px solid #4a3a2a;
+    border: 1px solid #4a3a2a; /* brown border */
     min-width: 200px;
+    background: #1f1f1f; /* search input background */
+    color: #d3bfa6; /* text inside input */
   }
   button {
     cursor: pointer;
     padding: 8px 14px;
     border-radius: 6px;
     border: none;
-    background: #6B4C3B;
-    color: #1f1f1f;
+    background: #6B4C3B; /* brown buttons */
+    color: white;
     font-weight: bold;
   }
   #container {
@@ -44,30 +47,32 @@
   }
   #playlist-bar {
     width: 280px;
-    background: #2b2b2b;
+    background: #2b2b2b; /* dark grey playlist bar */
     overflow-y: auto;
-    border-right: 1px solid #4a3a2a;
+    border-right: 1px solid #4a3a2a; /* brown border */
   }
   #playlist-bar h3 {
     margin: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #d3bfa6; /* header text brown */
   }
   #playlists-list {
     overflow-y: auto;
   }
   .playlist-item {
     padding: 10px 15px;
-    border-bottom: 1px solid #4a3a2a;
+    border-bottom: 1px solid #4a3a2a; /* brown border */
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #d3bfa6; /* item text */
   }
   .playlist-item.active {
-    background: #6B4C3B;
-    color: #1f1f1f;
+    background: #6B4C3B; /* brown active background */
+    color: white;
   }
   .playlist-item .trash-btn {
     background: transparent;
@@ -81,17 +86,18 @@
   #songs-list {
     flex: 1;
     overflow-y: auto;
-    background: #2b2b2b;
+    background: #2b2b2b; /* dark grey songs list */
   }
   .song-item {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    border-bottom: 1px solid #4a3a2a;
+    border-bottom: 1px solid #4a3a2a; /* brown border */
     cursor: pointer;
+    color: #d3bfa6;
   }
   .song-item:hover {
-    background: #4a3a2a;
+    background: #5a4b3c; /* dark warm brown hover */
   }
   .song-cover {
     width: 50px;
@@ -109,17 +115,17 @@
   }
   .song-artist {
     font-size: 12px;
-    color: #b0a28e;
+    color: #b0a28e; /* lighter brown text */
   }
   .song-remove {
-    color: red;
+    color: #c00;
     font-weight: bold;
     cursor: pointer;
     margin-left: 8px;
   }
   #player-area {
     flex: 1;
-    background: #262626;
+    background: #3a2f27; /* dark brown player background */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,21 +133,22 @@
   }
   #player {
     display: flex;
-    background: #3a2f27;
+    background: #3a2f27; /* dark brown */
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8); /* stronger shadow */
     width: 600px;
     max-width: 90vw;
     padding: 20px;
     gap: 20px;
     align-items: center;
+    color: #d3bfa6;
   }
   #player-cover {
     width: 180px;
     height: 180px;
     border-radius: 16px;
     object-fit: cover;
-    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
   }
   #player-controls {
     flex-grow: 1;
@@ -157,6 +164,7 @@
     font-size: 20px;
     font-weight: bold;
     margin: 0 0 8px 0;
+    color: #d3bfa6;
   }
   #player-artist {
     font-size: 14px;
@@ -165,7 +173,7 @@
   }
   #progress-container {
     height: 12px;
-    background: #4a3a2a;
+    background: #4a3a2a; /* brown background */
     border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
@@ -174,7 +182,7 @@
   #progress-bar {
     height: 100%;
     width: 0;
-    background: #6B4C3B;
+    background: #6B4C3B; /* brown progress */
   }
   #time-display {
     display: flex;
@@ -189,11 +197,11 @@
   }
   #buttons button {
     padding: 8px 16px;
-    background: #6B4C3B;
+    background: #6B4C3B; /* brown buttons */
     border: none;
     border-radius: 6px;
     font-weight: bold;
-    color: #1f1f1f;
+    color: white;
   }
   #spotify-import-modal {
     position: fixed;
@@ -201,13 +209,14 @@
     left: 50%;
     width: 400px;
     transform: translate(-50%, -50%);
-    background: #2b2b2b;
+    background: #2b2b2b; /* dark modal bg */
     border-radius: 16px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.8);
     padding: 20px;
     display: none;
     flex-direction: column;
     z-index: 100;
+    color: #d3bfa6;
   }
   #spotify-import-modal input {
     padding: 10px;
@@ -216,10 +225,12 @@
     border: 1px solid #4a3a2a;
     margin-bottom: 15px;
     width: 100%;
+    background: #1f1f1f;
+    color: #d3bfa6;
   }
   #spotify-import-modal button {
     background: #6B4C3B;
-    color: #1f1f1f;
+    color: white;
     font-weight: bold;
   }
   #overlay {
@@ -236,22 +247,24 @@
     right: 20px;
     max-height: 300px;
     overflow-y: auto;
-    background: #1f1f1f;
+    background: #1f1f1f; /* dark search bg */
     border: 1px solid #4a3a2a;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
     z-index: 110;
+    color: #d3bfa6;
   }
   .search-result {
     display: flex;
     padding: 8px;
-    border-bottom: 1px solid #2b2b2b;
+    border-bottom: 1px solid #4a3a2a;
     cursor: pointer;
     align-items: center;
+    color: #d3bfa6;
   }
   .search-result:hover {
     background: #6B4C3B;
-    color: #1f1f1f;
+    color: white;
   }
   .search-thumb {
     width: 80px;
@@ -271,7 +284,7 @@
   }
   .search-channel {
     font-size: 12px;
-    color: #4a3a2a;
+    color: #b0a28e;
   }
 </style>
 </head>
