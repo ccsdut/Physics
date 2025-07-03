@@ -1,238 +1,324 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>YouTube Video Downloader</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: #eee;
-    padding: 20px;
-    max-width: 960px;
-    margin: auto;
-  }
-  input, button {
-    padding: 10px;
-    font-size: 1rem;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  button {
-    cursor: pointer;
-    background: #28a745;
-    border: none;
-    color: white;
-    border-radius: 5px;
-  }
-  button:hover {
-    background: #218838;
-  }
-  #results {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-  }
-  .video-item {
-    cursor: pointer;
-    background: #222;
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: background 0.2s;
-  }
-  .video-item:hover {
-    background: #333;
-  }
-  .video-item img {
-    width: 100%;
-    height: auto;
-    border-radius: 6px;
-    object-fit: cover;
-  }
-  .video-title {
-    margin-top: 10px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-align: center;
-  }
-  #player-container {
-    margin-top: 20px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #222;
-    padding: 10px;
-  }
-  #download-btn {
-    margin-top: 10px;
-    background: #1db954;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 5px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-  }
-  #download-btn:hover {
-    background: #17a44d;
-  }
-</style>
+  <base target="_blank" />
+  <meta charset="UTF-8" />
+  <title>YouTube</title>
+  <style>
+    body {
+      background-color: #12100e;
+      font-family: 'Segoe UI', sans-serif;
+      color: #d1c7b7;
+      margin: 0;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      color: #8b7765;
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 30px;
+      user-select: none;
+      font-weight: 600;
+    }
+
+    #search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    input {
+      padding: 12px;
+      width: 340px;
+      border-radius: 30px;
+      border: 1.5px solid #5a4d3b;
+      font-size: 16px;
+      background-color: #2c2a26;
+      color: #d1c7b7;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+    input::placeholder {
+      color: #7f7769;
+    }
+    input:focus {
+      border-color: #8b7765;
+      background-color: #3c3a35;
+    }
+
+    button {
+      padding: 12px 25px;
+      margin-left: 12px;
+      background-color: #5a4d3b;
+      color: #d1c7b7;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      box-shadow: none;
+    }
+
+    button:hover {
+      background-color: #7e6e55;
+    }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      justify-content: center;
+    }
+
+    .video-card {
+      background: linear-gradient(145deg, #2f2b26, #25221d);
+      border-radius: 15px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      box-shadow: none;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-card:hover {
+      transform: scale(1.05);
+    }
+
+    .video-card img {
+      width: 100%;
+      display: block;
+      height: 170px;
+      object-fit: cover;
+    }
+
+    .video-info {
+      padding: 15px;
+      color: #b5a78f;
+      flex-grow: 1;
+    }
+
+    .video-info h3 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18, 16, 14, 0.95);
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      background-color: #1e1b18;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px #5a4d3b;
+    }
+
+    .modal iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      border-radius: 10px;
+      background-color: #000;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: -0px;
+      right: -0px;
+      font-size: 40px;
+      color: #8b7765;
+      cursor: pointer;
+      user-select: none;
+      background-color: #2c2a26;
+      padding: 8px 14px;
+      border-radius: 12px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.7);
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 38px;
+    }
+
+    .close-btn:hover {
+      background-color: #7e6e55;
+    }
+
+    #download-btn {
+  background-color: #5a4d3b;
+  color: #d1c7b7;
+  border: none;
+  padding: 12px 0;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 15px;
+  display: block;
+  width: 300px;          /* ← make it wider, you can adjust as needed (e.g., 250px, 350px) */
+  text-align: center;
+  margin-left: auto;     /* ← center horizontally */
+  margin-right: auto;    /* ← center horizontally */
+}
+#download-btn:hover {
+  background-color: #7e6e55;
+}
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
+  <h1>YouTube</h1>
 
-<h2>YouTube Video Downloader</h2>
+  <div id="search-bar">
+    <input id="search" placeholder="Search..." />
+    <button onclick="searchYouTube()">Search</button>
+  </div>
 
-<label for="inputBox">Enter YouTube URL or search term:</label>
-<input type="text" id="inputBox" placeholder="Paste a YouTube link or search a video" />
-<button id="goBtn">Go</button>
+  <div id="results"></div>
 
-<div id="results"></div>
-
-<!-- Container for embedded player and download button -->
-<div id="player-container" style="display:none;">
-  <iframe
-    id="video-player"
-    title="Video player"
-    width="100%"
-    style="border-radius: 8px; border: none; aspect-ratio: 16/9; min-height: 250px;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen
-  ></iframe>
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">×</span>
+      <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div id="download-container" style="text-align: center;">
   <button id="download-btn">Download</button>
 </div>
+    </div>
+  </div>
 
-<script>
-  const inputBox = document.getElementById('inputBox');
-  const goBtn = document.getElementById('goBtn');
-  const resultsDiv = document.getElementById('results');
-  const playerContainer = document.getElementById('player-container');
-  const videoPlayer = document.getElementById('video-player');
-  const downloadBtn = document.getElementById('download-btn');
+  <script>
+    const apiKeys = [
+      "AIzaSyBs0_UbSzQsAIBWsV01mVGCUOzN26eGW_c",
+      "AIzaSyCTmTfQK8Vp8DnRw4XsLkC-T7_a08tHNmk",
+      "AIzaSyBAnLAEwYssI3e3uaYfdEOPpzs-TVqHoM",
+      "AIzaSyBQAZ7-zXoAFYBBDp9Amddor0WAooSjUaM",
+      "AIzaSyCXizLEzfyVQESntn97HwtYA3yhxbjDeso",
+      "AIzaSyCFHE95Fnk8X0lRlWpSuyeoXHeBRQ-RjPw"
+    ];
 
-  function getYouTubeVideoID(url) {
-    const regex = /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-  }
+    let nextPageToken = '';
+    let currentQuery = '';
+    let currentKeyIndex = 0;
 
-  function isYouTubeUrl(input) {
-    return input.includes('youtube.com/watch') || input.includes('youtu.be/');
-  }
-
-  async function searchYouTube(query) {
-    resultsDiv.innerHTML = 'Loading...';
-    const proxyUrl = 'https://corsproxy.io/?';
-    const searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
-
-    try {
-      const res = await fetch(proxyUrl + searchUrl);
-      const text = await res.text();
-
-      const jsonMatch = text.match(/var ytInitialData = (.*?);\s*<\/script>/s);
-      if (!jsonMatch) {
-        resultsDiv.innerHTML = 'Failed to parse search results.';
-        return;
-      }
-      const ytInitialData = JSON.parse(jsonMatch[1]);
-
-      const contents = ytInitialData.contents
-        ?.twoColumnSearchResultsRenderer
-        ?.primaryContents
-        ?.sectionListRenderer
-        ?.contents;
-
-      if (!contents) {
-        resultsDiv.innerHTML = 'No search results found.';
-        return;
-      }
-
-      let videoItems = [];
-      for (const section of contents) {
-        const itemSection = section.itemSectionRenderer;
-        if (!itemSection) continue;
-        const items = itemSection.contents;
-        for (const item of items) {
-          if (item.videoRenderer) videoItems.push(item.videoRenderer);
+    async function fetchWithKey(url) {
+      for (let i = 0; i < apiKeys.length; i++) {
+        const key = apiKeys[(currentKeyIndex + i) % apiKeys.length];
+        const requestUrl = url.replace('{API_KEY}', key);
+        try {
+          const res = await fetch(requestUrl);
+          if (!res.ok) {
+            if (res.status === 403 || res.status === 400) continue;
+            throw new Error(`HTTP error ${res.status}`);
+          }
+          currentKeyIndex = (currentKeyIndex + i) % apiKeys.length;
+          const data = await res.json();
+          return data;
+        } catch (e) {
+          continue;
         }
       }
+      throw new Error("All API keys failed or quota exceeded.");
+    }
 
-      if (videoItems.length === 0) {
-        resultsDiv.innerHTML = 'No videos found.';
-        return;
+    async function searchYouTube(loadMore = false) {
+      const queryInput = document.getElementById("search");
+      const query = queryInput.value.trim() || 'futuristic tech';
+
+      if (!loadMore) {
+        document.getElementById("results").innerHTML = '';
+        nextPageToken = '';
       }
+      currentQuery = query;
 
-      resultsDiv.innerHTML = '';
-      videoItems.forEach(video => {
-        const vidID = video.videoId;
-        const title = video.title.runs[0].text;
-        const thumbnail = video.thumbnail.thumbnails.pop().url;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=12&pageToken=${nextPageToken}`;
+      try {
+        const data = await fetchWithKey(url);
+        nextPageToken = data.nextPageToken || '';
+        appendResults(data.items);
+      } catch (error) {
+        alert("Failed to fetch videos. Please try again later.");
+      }
+    }
 
-        const div = document.createElement('div');
-        div.className = 'video-item';
-        div.innerHTML = `
-          <img src="${thumbnail}" alt="Thumbnail" />
-          <div class="video-title">${title}</div>
+    function appendResults(items) {
+      const results = document.getElementById("results");
+      items.forEach(item => {
+        const videoId = item.id.videoId;
+        const title = item.snippet.title;
+        const thumbnail = item.snippet.thumbnails.high.url;
+
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <img src="${thumbnail}" alt="${title}" loading="lazy" />
+          <div class="video-info">
+            <h3>${title}</h3>
+          </div>
         `;
-        div.onclick = () => {
-          loadVideo(vidID);
-        };
-        resultsDiv.appendChild(div);
+        card.onclick = () => openModal(videoId);
+        results.appendChild(card);
       });
-
-    } catch (err) {
-      console.error(err);
-      resultsDiv.innerHTML = 'Error fetching or parsing search results.';
-    }
-  }
-
-  function loadVideo(videoId) {
-    // Clear search results
-    resultsDiv.innerHTML = '';
-    // Show player container
-    playerContainer.style.display = 'block';
-    // Set iframe src
-    videoPlayer.src = `https://embed-player.com/video/?source=https://www.youtube.com/watch?v=${videoId}&color=%23a1c2c3&preload=metadata`;
-    // Set download button link
-    downloadBtn.onclick = () => {
-      window.open(`https://yt1d.com/en307/watch?v=${videoId}`, '_blank');
-    };
-  }
-
-  goBtn.addEventListener('click', () => {
-    const input = inputBox.value.trim();
-
-    if (!input) {
-      alert('Please enter a YouTube URL or search term.');
-      return;
     }
 
-    if (isYouTubeUrl(input)) {
-      const vidID = getYouTubeVideoID(input);
-      if (!vidID) {
-        alert('Invalid YouTube URL.');
-        return;
+    function openModal(videoId) {
+      const modal = document.getElementById("videoModal");
+      const iframe = document.getElementById("videoPlayer");
+      const downloadBtn = document.getElementById("download-btn");
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      iframe.src = `https://embed-player.com/video/?source=${encodeURIComponent(youtubeUrl)}&color=%238b7765&preload=metadata`;
+      modal.style.display = "flex";
+
+      downloadBtn.onclick = () => {
+        const downloadUrl = `https://yt1d.com/watch?v=${videoId}`;
+        window.open(downloadUrl, '_blank');
+      };
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("videoModal");
+      const iframe = document.getElementById("videoPlayer");
+      modal.style.display = "none";
+      iframe.src = "";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("videoModal");
+      if (event.target === modal) closeModal();
+    }
+
+    window.onscroll = () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+        if (nextPageToken) searchYouTube(true);
       }
-      loadVideo(vidID);
-    } else {
-      // Hide player container if searching new query
-      playerContainer.style.display = 'none';
-      videoPlayer.src = '';
-      searchYouTube(input);
     }
-  });
 
-  inputBox.addEventListener('keypress', e => {
-    if (e.key === 'Enter') {
-      goBtn.click();
-    }
-  });
-</script>
-
+    window.onload = () => {
+      searchYouTube();
+    };
+  </script>
 </body>
 </html>
