@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Music Player</title>
+<style>
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    background: #262626; /* main dark grey background */
+    color: #d3bfa6; /* light brown text */
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #top-bar {
+    padding: 10px 20px;
+    background: #2b2b2b; /* dark grey top bar */
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  #search-input {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #4a3a2a; /* brown border */
+    min-width: 200px;
+    background: #1f1f1f; /* search input background */
+    color: #d3bfa6; /* text inside input */
+  }
+  button {
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    background: #6B4C3B; /* brown buttons */
+    color: white;
+    font-weight: bold;
+  }
+  #container {
+    flex: 1;
+    display: flex;
+    height: calc(100% - 52px);
+  }
+  #playlist-bar {
+    width: 280px;
+    background: #2b2b2b; /* dark grey playlist bar */
+    overflow-y: auto;
+    border-right: 1px solid #4a3a2a; /* brown border */
+  }
+  #playlist-bar h3 {
+    margin: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #d3bfa6; /* header text brown */
+  }
+  #playlists-list {
+    overflow-y: auto;
+  }
+  .playlist-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #4a3a2a; /* brown border */
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #d3bfa6; /* item text */
+  }
+  .playlist-item.active {
+    background: #6B4C3B; /* brown active background */
+    color: white;
+  }
+  .playlist-item .trash-btn {
+    background: transparent;
+    border: none;
+    color: #c00;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+  }
+  #songs-list {
+  flex: 1;
+  overflow-y: auto;
+  background: #2b2b2b;
+  padding-bottom: 240px; /* space for fixed player */
+}
+  .song-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #4a3a2a; /* brown border */
+    cursor: pointer;
+    color: #d3bfa6;
+  }
+  .song-item:hover {
+    background: #5a4b3c; /* dark warm brown hover */
+  }
+  .song-cover {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 12px;
+  }
+  .song-info {
+    flex-grow: 1;
+  }
+  .song-title {
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .song-artist {
+    font-size: 12px;
+    color: #b0a28e; /* lighter brown text */
+  }
+  .song-remove {
+    color: #c00;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  #player-area {
+  position: fixed;
+  bottom: 0;
+  left: 280px; /* start right after playlist bar */
+  right: 0;
+  background: #3a2f27;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+}
+  #player {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #3a2f27;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+  width: 600px;
+  max-width: 90vw;
+  padding: 15px 20px;
+  color: #d3bfa6;
+  /* Reduce height by using padding and flex alignment */
+}
+
+#player-cover {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(0,0,0,0.8);
+  flex-shrink: 0;
+}
+
+#player-info-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#player-info {
+  margin-bottom: 10px;
+}
+
+#player-title {
+  font-size: 18px;
+  margin: 0 0 4px 0;
+}
+
+#player-artist {
+  font-size: 14px;
+  color: #b0a28e;
+  margin: 0;
+}
+
+#progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#progress-container {
+  height: 12px;
+  background: #4a3a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0;
+  background: #6B4C3B;
+}
+
+#time-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #d3bfa6;
+}
+
+#buttons {
+  display: flex;
+  justify-content: center;
+}
+
+#buttons button {
+  padding: 6px 14px;
+  background: #6B4C3B;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  color: white;
+  width: 100px;
+}
+  #spotify-import-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    transform: translate(-50%, -50%);
+    background: #2b2b2b; /* dark modal bg */
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.8);
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    z-index: 100;
+    color: #d3bfa6;
+  }
+  #spotify-import-modal input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #4a3a2a;
+    margin-bottom: 15px;
+    width: 100%;
+    background: #1f1f1f;
+    color: #d3bfa6;
+  }
+  #spotify-import-modal button {
+    background: #6B4C3B;
+    color: white;
+    font-weight: bold;
+  }
+  #overlay {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(18, 18, 18, 0.8);
+    display: none;
+    z-index: 90;
+  }
+  #search-results {
+    position: absolute;
+    top: 48px; /* just below top bar */
+    left: 300px; /* just right of playlist bar */
+    right: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #1f1f1f; /* dark search bg */
+    border: 1px solid #4a3a2a;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    z-index: 110;
+    color: #d3bfa6;
+  }
+  .search-result {
+    display: flex;
+    padding: 8px;
+    border-bottom: 1px solid #4a3a2a;
+    cursor: pointer;
+    align-items: center;
+    color: #d3bfa6;
+  }
+  .search-result:hover {
+    background: #6B4C3B;
+    color: white;
+  }
+  .search-thumb {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+    margin-right: 12px;
+    flex-shrink: 0;
+    border-radius: 4px;
+  }
+  .search-info {
+    flex-grow: 1;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .search-title {
+    font-weight: bold;
+  }
+  .search-channel {
+    font-size: 12px;
+    color: #b0a28e;
+  }
+</style>
+</head>
+<body>
+  <div id="top-bar">
+    <button id="btn-import-spotify">​Import Spotify Playlist</button>
+    <button id="btn-create-playlist">Create New Playlist</button>
+    <input type="text" id="search-input" placeholder="Search YouTube songs..." autocomplete="off" />
+  </div>
+
+<div id="search-results" style="display:none;"></div>
+
+  <div id="container">
+    <div id="playlist-bar">
+      <h3>Playlists</h3>
+      <div id="playlists-list"></div>
+    </div>
+    <div id="songs-list"></div>
+  <div id="player-area">
+  <div id="player">
+    <img id="player-cover" src="https://files.catbox.moe/k94icu.png" alt="cover" />
+
+<div id="player-info-controls">
+  <div id="player-info">
+    <h2 id="player-title">Not Playing</h2>
+    <p id="player-artist"></p>
+  </div>
+
+  <div id="progress-section">
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="time-display">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+    <div id="buttons">
+      <button id="play-pause-btn">Play</button>
+    </div>
+  </div>
+</div>
+</div>
+
+  <div id="spotify-import-modal">
+    <h3>Import Spotify Playlist</h3>
+    <input type="text" id="spotify-link" placeholder="Enter Spotify Playlist URL" />
+    <button id="import-spotify-btn">Import</button>
+    <button id="close-spotify-modal">Cancel</button>
+    <div id="import-status" style="margin-top:10px; font-size:14px;"></div>
+  </div>
+  <div id="overlay"></div>
+
+  <div id="ytplayer"></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  let player;
+  let playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
+
+  // Ensure at least one playlist
+  function ensureAtLeastOnePlaylist() {
+    const keys = Object.keys(playlists);
+    if(keys.length === 0) {
+      playlists['Playlist #1'] = { name: 'Playlist #1', songs: [] };
+      savePlaylists();
+    }
+  }
+  ensureAtLeastOnePlaylist();
+
+  let currentPlaylist = Object.keys(playlists)[0];
+  let currentSongIndex = -1;
+  let isPlaying = false;
+  let updateInterval;
+
+  const elements = {
+    btnImportSpotify: document.getElementById('btn-import-spotify'),
+    btnCreatePlaylist: document.getElementById('btn-create-playlist'),
+    playlistsList: document.getElementById('playlists-list'),
+    songsList: document.getElementById('songs-list'),
+    playerTitle: document.getElementById('player-title'),
+    playerArtist: document.getElementById('player-artist'),
+    playerCover: document.getElementById('player-cover'),
+    playPauseBtn: document.getElementById('play-pause-btn'),
+    progressBar: document.getElementById('progress-bar'),
+    progressContainer: document.getElementById('progress-container'),
+    currentTimeElem: document.getElementById('current-time'),
+    durationElem: document.getElementById('duration'),
+    spotifyModal: document.getElementById('spotify-import-modal'),
+    spotifyLinkInput: document.getElementById('spotify-link'),
+    importSpotifyBtn: document.getElementById('import-spotify-btn'),
+    closeSpotifyModalBtn: document.getElementById('close-spotify-modal'),
+    overlay: document.getElementById('overlay'),
+    searchInput: document.getElementById('search-input'),
+    searchResults: document.getElementById('search-results'),
+    importStatus: document.getElementById('import-status'),
+  };
+
+  function savePlaylists() {
+    localStorage.setItem('playlists', JSON.stringify(playlists));
+  }
+
+  function formatTime(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return m + ':' + (sec < 10 ? '0' + sec : sec);
+  }
+
+  function renderPlaylists() {
+    elements.playlistsList.innerHTML = '';
+    for (const key in playlists) {
+      const pl = playlists[key];
+      const div = document.createElement('div');
+      div.className = 'playlist-item';
+      if(key === currentPlaylist) div.classList.add('active');
+
+      const spanName = document.createElement('span');
+      spanName.textContent = `${pl.name} (${pl.songs.length})`;
+      spanName.style.flexGrow = '1';
+      div.appendChild(spanName);
+
+      // Trash button
+      const trashBtn = document.createElement('button');
+      trashBtn.className = 'trash-btn';
+      trashBtn.title = 'Delete playlist';
+      trashBtn.innerHTML = '🗑️';
+      trashBtn.onclick = (e) => {
+        e.stopPropagation();
+        if(confirm(`Delete playlist "${pl.name}"?`)) {
+          delete playlists[key];
+          savePlaylists();
+          ensureAtLeastOnePlaylist();
+          if(currentPlaylist === key) {
+            currentPlaylist = Object.keys(playlists)[0];
+            currentSongIndex = -1;
+            resetPlayer();
+          }
+          renderPlaylists();
+          renderSongs();
+        }
+      };
+      div.appendChild(trashBtn);
+
+      div.onclick = () => {
+        currentPlaylist = key;
+        currentSongIndex = -1;
+        resetPlayer();
+        renderPlaylists();
+        renderSongs();
+        clearSearchResults();
+        elements.searchInput.value = '';
+      };
+
+      elements.playlistsList.appendChild(div);
+    }
+  }
+
+  function renderSongs() {
+    elements.songsList.innerHTML = '';
+    if(!playlists[currentPlaylist]) return;
+    playlists[currentPlaylist].songs.forEach((song, i) => {
+      const div = document.createElement('div');
+      div.className = 'song-item';
+
+      const img = document.createElement('img');
+      img.src = song.cover || 'https://via.placeholder.com/50';
+      img.className = 'song-cover';
+
+      const info = document.createElement('div');
+      info.className = 'song-info';
+
+      const title = document.createElement('div');
+      title.className = 'song-title';
+      title.textContent = song.title || 'Unknown Title';
+
+      const artist = document.createElement('div');
+      artist.className = 'song-artist';
+      artist.textContent = song.artist || 'Unknown Artist';
+
+      info.appendChild(title);
+      info.appendChild(artist);
+
+      const removeBtn = document.createElement('div');
+      removeBtn.className = 'song-remove';
+      removeBtn.textContent = '×';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        playlists[currentPlaylist].songs.splice(i, 1);
+        savePlaylists();
+        renderSongs();
+        if(i === currentSongIndex) resetPlayer();
+      };
+
+      div.appendChild(img);
+      div.appendChild(info);
+      div.appendChild(removeBtn);
+
+      div.onclick = () => playSong(i);
+
+      elements.songsList.appendChild(div);
+    });
+  }
+
+  function resetPlayer() {
+    currentSongIndex = -1;
+    elements.playerTitle.textContent = 'Not Playing';
+    elements.playerArtist.textContent = '';
+    elements.playerCover.src = 'https://files.catbox.moe/k94icu.png';
+    elements.playPauseBtn.textContent = 'Play';
+    isPlaying = false;
+    clearInterval(updateInterval);
+    if(player) player.stopVideo();
+    updateProgress(0,0);
+  }
+
+  function updateProgress(current=0, duration=0) {
+    elements.currentTimeElem.textContent = formatTime(current);
+    elements.durationElem.textContent = formatTime(duration);
+    if(duration > 0) elements.progressBar.style.width = ((current / duration) * 100) + '%';
+    else elements.progressBar.style.width = '0%';
+  }
+
+  async function playSong(index) {
+    const song = playlists[currentPlaylist].songs[index];
+    if(!song) return;
+    currentSongIndex = index;
+    elements.playerTitle.textContent = song.title || 'Unknown Title';
+    elements.playerArtist.textContent = song.artist || 'Unknown Artist';
+    elements.playerCover.src = song.cover || 'https://files.catbox.moe/k94icu.png';
+
+    if(song.youtubeId) {
+      playYouTubeVideo(song.youtubeId);
+    } else {
+      elements.playerTitle.textContent = song.title + " (Searching YouTube...)";
+      const videoId = await searchYouTube(song.title + ' ' + song.artist);
+      if(!videoId) {
+        alert('YouTube video not found for this song.');
+        resetPlayer();
+        return;
+      }
+      song.youtubeId = videoId;
+      savePlaylists();
+      playYouTubeVideo(videoId);
+      elements.playerTitle.textContent = song.title || 'Unknown Title'; // Reset title after search
+    }
+  }
+
+  function playYouTubeVideo(videoId) {
+    if(!player) return;
+    player.loadVideoById(videoId);
+    player.playVideo();
+    isPlaying = true;
+    elements.playPauseBtn.textContent = 'Pause';
+    clearInterval(updateInterval);
+    updateInterval = setInterval(() => {
+      const current = player.getCurrentTime();
+      const duration = player.getDuration();
+      updateProgress(current, duration);
+    }, 500);
+  }
+
+  function togglePlayPause() {
+    if(!player) return;
+    const state = player.getPlayerState();
+    if(state === YT.PlayerState.PLAYING) {
+      player.pauseVideo();
+      elements.playPauseBtn.textContent = 'Play';
+      isPlaying = false;
+    } else {
+      player.playVideo();
+      elements.playPauseBtn.textContent = 'Pause';
+      isPlaying = true;
+    }
+  }
+
+  function seek(e) {
+    if(!player) return;
+    const rect = elements.progressContainer.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const duration = player.getDuration();
+    player.seekTo(duration * percent, true);
+  }
+
+  const apiKeys = [
+  "AIzaSyBs0_UbSzQsAIBWsV01mVGCUOzN26eGW_c",
+  "AIzaSyCTmTfQK8Vp8DnRw4XsLkC-T7_a08tHNmk",
+  "AIzaSyBAnLAEwYssI3Oe3uaYfdEOPpzs-TVqHoM",
+  "AIzaSyBQAZ7-zXoAFYBBDp9Amddor0WAooSjUaM",
+  "AIzaSyCXizLEzfyVQESntn97HwtYA3yhxbjDeso",
+  "AIzaSyCFHE95Fnk8X0lRlWpSuyeoXHeBRQ-RjPw",
+];
+
+async function searchYouTube(query) {
+  for (const apiKey of apiKeys) {
+    try {
+      const apiURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${apiKey}`;
+      const res = await fetch(apiURL);
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        return data.items[0].id.videoId;
+      }
+    } catch (e) {
+      console.error("Error with API key:", apiKey, e);
+      continue;
+    }
+  }
+  console.error("All API keys failed or no video found");
+  return null;
+}
+
+
+  async function fetchSearchResults(query) {
+  for (const apiKey of apiKeys) {
+    try {
+      const apiURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${apiKey}`;
+      const res = await fetch(apiURL);
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        return data.items.map(item => ({
+          videoId: item.id.videoId,
+          title: item.snippet.title,
+          channel: item.snippet.channelTitle,
+          thumbnail: item.snippet.thumbnails.default.url,
+        }));
+      }
+    } catch (e) {
+      console.error("Error with API key:", apiKey, e);
+      continue;
+    }
+  }
+  console.error("All API keys failed or no results");
+  return [];
+}
+
+
+  function renderSearchResults(results) {
+    if(results.length === 0) {
+      elements.searchResults.style.display = 'none';
+      elements.searchResults.innerHTML = '';
+      return;
+    }
+    elements.searchResults.style.display = 'block';
+    elements.searchResults.innerHTML = '';
+    results.forEach(result => {
+      const div = document.createElement('div');
+      div.className = 'search-result';
+
+      const thumb = document.createElement('img');
+      thumb.src = result.thumbnail;
+      thumb.className = 'search-thumb';
+
+      const info = document.createElement('div');
+      info.className = 'search-info';
+
+      const title = document.createElement('div');
+      title.className = 'search-title';
+      title.textContent = result.title;
+
+      const channel = document.createElement('div');
+      channel.className = 'search-channel';
+      channel.textContent = result.channel;
+
+      info.appendChild(title);
+      info.appendChild(channel);
+
+      div.appendChild(thumb);
+      div.appendChild(info);
+
+      div.onclick = () => {
+        addSongToCurrentPlaylist(result);
+        clearSearchResults();
+        elements.searchInput.value = '';
+      };
+
+      elements.searchResults.appendChild(div);
+    });
+  }
+
+  function clearSearchResults() {
+    elements.searchResults.style.display = 'none';
+    elements.searchResults.innerHTML = '';
+  }
+
+  function addSongToCurrentPlaylist(songData) {
+    if(!playlists[currentPlaylist]) {
+      playlists[currentPlaylist] = { name: currentPlaylist, songs: [] };
+    }
+    playlists[currentPlaylist].songs.push({
+      title: songData.title,
+      artist: songData.channel,
+      cover: songData.thumbnail,
+      youtubeId: songData.videoId,
+    });
+    savePlaylists();
+    renderSongs();
+  }
+
+  elements.playPauseBtn.onclick = togglePlayPause;
+  elements.progressContainer.onclick = seek;
+
+  elements.btnCreatePlaylist.onclick = () => {
+    const name = prompt('Enter new playlist name:');
+    if(name) {
+      if(playlists[name]) {
+        alert('Playlist already exists!');
+        return;
+      }
+      playlists[name] = { name, songs: [] };
+      savePlaylists();
+      currentPlaylist = name;
+      currentSongIndex = -1;
+      resetPlayer();
+      renderPlaylists();
+      renderSongs();
+      clearSearchResults();
+      elements.searchInput.value = '';
+    }
+  };
+
+  // Search debounce for top search bar
+  let searchTimeout = null;
+  elements.searchInput.oninput = () => {
+    clearTimeout(searchTimeout);
+    const query = elements.searchInput.value.trim();
+    if(query.length < 2) {
+      clearSearchResults();
+      return;
+    }
+    searchTimeout = setTimeout(async () => {
+      const results = await fetchSearchResults(query);
+      renderSearchResults(results);
+    }, 400);
+  };
+
+  // Spotify import functionality
+  async function getToken() {
+    const res = await fetch('https://spotify-nu-six.vercel.app/api/token');
+    const data = await res.json();
+    return data.access_token;
+  }
+
+  function parseSpotifyPlaylistId(url) {
+    try {
+      const match = url.match(/playlist\/([a-zA-Z0-9]+)(\?|$)/);
+      if(match) return match[1];
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchSpotifyPlaylistTracks(playlistId, token) {
+    let tracks = [];
+    let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+    while(url) {
+      const res = await fetch(url, {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if(!res.ok) throw new Error('Spotify API error');
+      const data = await res.json();
+      tracks = tracks.concat(data.items.map(item => item.track).filter(t => t));
+      url = data.next;
+    }
+    return tracks;
+  }
+
+  async function importSpotifyPlaylist() {
+    const link = elements.spotifyLinkInput.value.trim();
+    if(!link) {
+      alert('Please enter a Spotify playlist URL');
+      return;
+    }
+    const playlistId = parseSpotifyPlaylistId(link);
+    if(!playlistId) {
+      alert('Invalid Spotify playlist URL');
+      return;
+    }
+    elements.importStatus.textContent = 'Getting Spotify token...';
+    try {
+      const token = await getToken();
+      elements.importStatus.textContent = 'Fetching Spotify playlist tracks...';
+      const tracks = await fetchSpotifyPlaylistTracks(playlistId, token);
+
+      // Get playlist info (name)
+      const playlistRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const playlistData = await playlistRes.json();
+      const playlistName = playlistData.name || 'Imported Playlist';
+
+      playlists[playlistName] = { name: playlistName, songs: [] };
+      currentPlaylist = playlistName;
+      currentSongIndex = -1;
+      resetPlayer();
+      renderPlaylists();
+      renderSongs();
+
+      elements.importStatus.textContent = `Adding ${tracks.length} songs to playlist...`;
+
+      // Add songs immediately with empty youtubeId (no search now)
+      for(let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        playlists[playlistName].songs.push({
+          title: track.name,
+          artist: track.artists?.map(a => a.name).join(', ') || 'Unknown Artist',
+          cover: track.album?.images?.[0]?.url || '',
+          youtubeId: '',  // empty now, search when clicked
+        });
+      }
+      savePlaylists();
+      renderSongs();
+      elements.importStatus.textContent = 'Import complete!';
+      setTimeout(() => {
+        elements.spotifyModal.style.display = 'none';
+        elements.overlay.style.display = 'none';
+        elements.spotifyLinkInput.value = '';
+        elements.importStatus.textContent = '';
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      elements.importStatus.textContent = 'Error importing playlist.';
+      alert('Failed to import Spotify playlist. Try again later.');
+    }
+  }
+
+  elements.btnImportSpotify.onclick = () => {
+    elements.spotifyModal.style.display = 'flex';
+    elements.overlay.style.display = 'block';
+    elements.importStatus.textContent = '';
+  };
+
+  elements.closeSpotifyModalBtn.onclick = () => {
+    elements.spotifyModal.style.display = 'none';
+    elements.overlay.style.display = 'none';
+    elements.spotifyLinkInput.value = '';
+  };
+
+  elements.importSpotifyBtn.onclick = importSpotifyPlaylist;
+
+  elements.overlay.onclick = () => {
+    elements.spotifyModal.style.display = 'none';
+    elements.overlay.style.display = 'none';
+    elements.spotifyLinkInput.value = '';
+  };
+
+  // YouTube Iframe API setup
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('ytplayer', {
+      height: '0',
+      width: '0',
+      videoId: '',
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        disablekb: 1,
+        modestbranding: 1,
+        rel: 0,
+        fs: 0,
+      },
+      events: {
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+
+  function onPlayerStateChange(event) {
+    if(event.data === YT.PlayerState.ENDED) {
+      playNextSong();
+    }
+  }
+
+  function playNextSong() {
+    if(!playlists[currentPlaylist]) return;
+    if(currentSongIndex + 1 < playlists[currentPlaylist].songs.length) {
+      playSong(currentSongIndex + 1);
+    } else {
+      resetPlayer();
+    }
+  }
+
+  // Initial render
+  renderPlaylists();
+  renderSongs();
+  resetPlayer();
+</script>
+</body>
+</html>
