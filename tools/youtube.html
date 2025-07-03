@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <base target="_blank" />
@@ -164,25 +165,25 @@
     }
 
     #download-btn {
-  background-color: #5a4d3b;
-  color: #d1c7b7;
-  border: none;
-  padding: 12px 0;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 15px;
-  display: block;
-  width: 300px;          /* ← make it wider, you can adjust as needed (e.g., 250px, 350px) */
-  text-align: center;
-  margin-left: auto;     /* ← center horizontally */
-  margin-right: auto;    /* ← center horizontally */
-}
-#download-btn:hover {
-  background-color: #7e6e55;
-}
+      background-color: #5a4d3b;
+      color: #d1c7b7;
+      border: none;
+      padding: 12px 0;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 15px;
+      display: block;
+      width: 300px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
+    #download-btn:hover {
+      background-color: #7e6e55;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -205,8 +206,8 @@
       <span class="close-btn" onclick="closeModal()">×</span>
       <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       <div id="download-container" style="text-align: center;">
-  <button id="download-btn">Download</button>
-</div>
+        <button id="download-btn">Download</button>
+      </div>
     </div>
   </div>
 
@@ -223,6 +224,25 @@
     let nextPageToken = '';
     let currentQuery = '';
     let currentKeyIndex = 0;
+
+    const defaultQueries = [
+      "I bought",
+      "last to leave wins",
+      "futuristic tech",
+      "try not to laugh",
+      "stick figure animated storytime",
+      "Fred Buyers"
+    ];
+
+    // Keep track of videos shown to avoid duplicates
+    const shownVideoIds = new Set();
+
+    function shuffleArray(array) {
+      return array
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+    }
 
     async function fetchWithKey(url) {
       for (let i = 0; i < apiKeys.length; i++) {
@@ -244,23 +264,23 @@
       throw new Error("All API keys failed or quota exceeded.");
     }
 
-    async function searchYouTube(loadMore = false) {
+    async function searchYouTube(loadMore = false, customQuery = '') {
       const queryInput = document.getElementById("search");
-      const query = queryInput.value.trim() || 'futuristic tech';
+      const query = customQuery || queryInput.value.trim() || defaultQueries[0];
 
       if (!loadMore) {
-        document.getElementById("results").innerHTML = '';
+        if (!customQuery) document.getElementById("results").innerHTML = '';
         nextPageToken = '';
       }
       currentQuery = query;
 
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=12&pageToken=${nextPageToken}`;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=6&pageToken=${nextPageToken}`;
       try {
         const data = await fetchWithKey(url);
         nextPageToken = data.nextPageToken || '';
         appendResults(data.items);
       } catch (error) {
-        alert("Failed to fetch videos. Please try again later.");
+        console.warn(`Failed to fetch videos for "${query}":`, error);
       }
     }
 
@@ -268,6 +288,9 @@
       const results = document.getElementById("results");
       items.forEach(item => {
         const videoId = item.id.videoId;
+        if (shownVideoIds.has(videoId)) return; // skip duplicates
+        shownVideoIds.add(videoId);
+
         const title = item.snippet.title;
         const thumbnail = item.snippet.thumbnails.high.url;
 
@@ -316,8 +339,11 @@
       }
     }
 
-    window.onload = () => {
-      searchYouTube();
+    window.onload = async () => {
+      const queries = shuffleArray(defaultQueries);
+      for (const query of queries) {
+        await searchYouTube(false, query);
+      }
     };
   </script>
 </body>
