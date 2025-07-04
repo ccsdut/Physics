@@ -40,9 +40,11 @@
       outline: none;
       transition: border-color 0.3s ease;
     }
+
     input::placeholder {
       color: #7f7769;
     }
+
     input:focus {
       border-color: #8b7765;
       background-color: #3c3a35;
@@ -189,11 +191,45 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(18, 16, 14, 0.95);
+      color: #d1c7b7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 2000;
+    }
+
+    .spinner {
+      border: 6px solid #2c2a26;
+      border-top: 6px solid #8b7765;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <h1>YouTube</h1>
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading API keys…</p>
+  </div>
 
+  <h1>YouTube</h1>
   <div id="search-bar">
     <input id="search" placeholder="Search..." />
     <button onclick="searchYouTube()">Search</button>
@@ -212,50 +248,51 @@
   </div>
 
   <script>
-    const apiKeys = [
-      "AIzaSyBs0_UbSzQsAIBWsV01mVGCUOzN26eGW_c",
-      "AIzaSyCTmTfQK8Vp8DnRw4XsLkC-T7_a08tHNmk",
-      "AIzaSyBAnLAEwYssI3e3uaYfdEOPpzs-TVqHoM",
-      "AIzaSyBQAZ7-zXoAFYBBDp9Amddor0WAooSjUaM",
-      "AIzaSyCXizLEzfyVQESntn97HwtYA3yhxbjDeso",
-      "AIzaSyCFHE95Fnk8X0lRlWpSuyeoXHeBRQ-RjPw"
-    ];
-
+    let apiKeys = [];
+    let currentKeyIndex = 0;
     let nextPageToken = '';
     let currentQuery = '';
-    let currentKeyIndex = 0;
-
     const defaultQueries = [
-      "I bought",
-      "last to leave wins",
-      "futuristic tech",
-      "try not to laugh",
-      "stick figure animated storytime",
-      "Fred Buyers"
+      "I bought", "last to leave wins", "futuristic tech",
+      "try not to laugh", "stick figure animated storytime", "Fred Buyers"
     ];
-
-    // Keep track of videos shown to avoid duplicates
     const shownVideoIds = new Set();
 
-    function shuffleArray(array) {
-      return array
-        .map(value => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value);
+    async function loadApiKeysFromRemote() {
+      const sources = [
+        'https://vpl1aza.github.io/audio/index.html',
+        'https://sites.google.com/view/3l1te-g4m32/apps/youtube'
+      ];
+      const proxy = 'https://corsproxy.io/?';
+      const keys = new Set();
+
+      for (const url of sources) {
+        try {
+          const res = await fetch(proxy + url);
+          const text = await res.text();
+          const fromAddApiKey = [...text.matchAll(/addApiKey\(['"](.+?)['"]\);/g)];
+          const fromConst = [...text.matchAll(/const apiKey\s*=\s*['"](.+?)['"]/g)];
+          fromAddApiKey.forEach(match => keys.add(match[1]));
+          fromConst.forEach(match => keys.add(match[1]));
+        } catch (e) {
+          console.warn("Failed to load keys from:", url, e);
+        }
+      }
+
+      apiKeys = Array.from(keys);
+      console.log(`Loaded ${apiKeys.length} API keys.`);
     }
 
     async function fetchWithKey(url) {
-      for (let i = 0; i < apiKeys.length; i++) {
-        const key = apiKeys[(currentKeyIndex + i) % apiKeys.length];
-        const requestUrl = url.replace('{API_KEY}', key);
+      const totalTries = apiKeys.length * 2;
+      for (let i = 0; i < totalTries; i++) {
+        const keyIndex = (currentKeyIndex + i) % apiKeys.length;
+        const requestUrl = url.replace('{API_KEY}', apiKeys[keyIndex]);
         try {
           const res = await fetch(requestUrl);
-          if (!res.ok) {
-            if (res.status === 403 || res.status === 400) continue;
-            throw new Error(`HTTP error ${res.status}`);
-          }
-          currentKeyIndex = (currentKeyIndex + i) % apiKeys.length;
+          if (!res.ok) continue;
           const data = await res.json();
+          currentKeyIndex = keyIndex;
           return data;
         } catch (e) {
           continue;
@@ -272,15 +309,17 @@
         if (!customQuery) document.getElementById("results").innerHTML = '';
         nextPageToken = '';
       }
-      currentQuery = query;
 
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=6&pageToken=${nextPageToken}`;
+      currentQuery = query;
+      const pageTokenParam = nextPageToken ? `&pageToken=${nextPageToken}` : '';
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=6${pageTokenParam}`;
+
       try {
         const data = await fetchWithKey(url);
         nextPageToken = data.nextPageToken || '';
         appendResults(data.items);
       } catch (error) {
-        console.warn(`Failed to fetch videos for "${query}":`, error);
+        console.error(`Failed to fetch for "${query}":`, error);
       }
     }
 
@@ -288,7 +327,7 @@
       const results = document.getElementById("results");
       items.forEach(item => {
         const videoId = item.id.videoId;
-        if (shownVideoIds.has(videoId)) return; // skip duplicates
+        if (shownVideoIds.has(videoId)) return;
         shownVideoIds.add(videoId);
 
         const title = item.snippet.title;
@@ -340,11 +379,27 @@
     }
 
     window.onload = async () => {
-      const queries = shuffleArray(defaultQueries);
+      await loadApiKeysFromRemote();
+      if (apiKeys.length === 0) {
+        alert("No API keys loaded. Cannot continue.");
+        return;
+      }
+
+      document.getElementById("loading-overlay").style.display = "none";
+
+      const queries = defaultQueries.sort(() => Math.random() - 0.5);
       for (const query of queries) {
         await searchYouTube(false, query);
       }
     };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          searchYouTube();
+        }
+      });
+    });
   </script>
 </body>
 </html>
