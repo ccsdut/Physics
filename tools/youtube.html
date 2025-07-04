@@ -132,6 +132,8 @@
       padding: 20px;
       border-radius: 20px;
       box-shadow: 0 0 15px #5a4d3b;
+      display: flex;
+      flex-direction: column;
     }
 
     .modal iframe {
@@ -221,6 +223,72 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* NEW: Enter Link button top right */
+    #manual-link-button {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #5a4d3b;
+  color: #d1c7b7;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  transition: background-color 0.3s ease;
+  z-index: 3000;
+  user-select: none;
+}
+
+#manual-link-button:hover {
+  background-color: #7e6e55;
+}
+
+    /* NEW: Manual input container in modal */
+    #manual-input-container {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    #manual-link-input {
+      flex-grow: 1;
+      padding: 10px 15px;
+      border-radius: 25px;
+      border: 1.5px solid #5a4d3b;
+      background-color: #2c2a26;
+      color: #d1c7b7;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    #manual-link-input::placeholder {
+      color: #7f7769;
+    }
+
+    #manual-link-input:focus {
+      border-color: #8b7765;
+      background-color: #3c3a35;
+    }
+
+    #manual-link-enter-btn {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border-radius: 25px;
+      background-color: #5a4d3b;
+      border: none;
+      color: #d1c7b7;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    #manual-link-enter-btn:hover {
+      background-color: #7e6e55;
+    }
   </style>
 </head>
 <body>
@@ -228,6 +296,8 @@
     <div class="spinner"></div>
     <p>Loading API keys…</p>
   </div>
+
+  <button id="manual-link-button" title="Not working? Enter Link">Not working? Enter Link</button>
 
   <h1>YouTube</h1>
   <div id="search-bar">
@@ -240,6 +310,13 @@
   <div class="modal" id="videoModal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">×</span>
+
+      <!-- Manual link input with Enter button -->
+      <div id="manual-input-container" style="display:none;">
+        <input id="manual-link-input" placeholder="Enter YouTube video link here" />
+        <button id="manual-link-enter-btn">Enter</button>
+      </div>
+
       <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       <div id="download-container" style="text-align: center;">
         <button id="download-btn">Download</button>
@@ -257,6 +334,40 @@
       "try not to laugh", "stick figure animated storytime", "Fred Buyers"
     ];
     const shownVideoIds = new Set();
+
+    const manualLinkButton = document.getElementById('manual-link-button');
+    const manualInputContainer = document.getElementById('manual-input-container');
+    const manualLinkInput = document.getElementById('manual-link-input');
+    const manualLinkEnterBtn = document.getElementById('manual-link-enter-btn');
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoPlayer');
+    const downloadBtn = document.getElementById('download-btn');
+
+    manualLinkButton.addEventListener('click', () => {
+      manualInputContainer.style.display = 'flex';
+      modal.style.display = 'flex';
+      manualLinkInput.focus();
+    });
+
+    manualLinkEnterBtn.addEventListener('click', () => {
+      const url = manualLinkInput.value.trim();
+      if (!url) return alert("Please enter a YouTube video link.");
+
+      const videoId = extractVideoId(url);
+      if (!videoId) {
+        alert("Invalid YouTube video link.");
+        return;
+      }
+
+      openModal(videoId);
+    });
+
+    function extractVideoId(url) {
+      // Simple regex to extract YouTube video ID from various URL formats
+      const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
 
     async function loadApiKeysFromRemote() {
       const sources = [
@@ -347,9 +458,6 @@
     }
 
     function openModal(videoId) {
-      const modal = document.getElementById("videoModal");
-      const iframe = document.getElementById("videoPlayer");
-      const downloadBtn = document.getElementById("download-btn");
       const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
       iframe.src = `https://embed-player.com/video/?source=${encodeURIComponent(youtubeUrl)}&color=%238b7765&preload=metadata`;
       modal.style.display = "flex";
@@ -358,17 +466,20 @@
         const downloadUrl = `https://yt1d.com/watch?v=${videoId}`;
         window.open(downloadUrl, '_blank');
       };
+
+      // Clear manual input & hide input container when modal opens normally
+      manualInputContainer.style.display = 'none';
+      manualLinkInput.value = '';
     }
 
     function closeModal() {
-      const modal = document.getElementById("videoModal");
-      const iframe = document.getElementById("videoPlayer");
       modal.style.display = "none";
       iframe.src = "";
+      manualInputContainer.style.display = 'none';
+      manualLinkInput.value = '';
     }
 
     window.onclick = function(event) {
-      const modal = document.getElementById("videoModal");
       if (event.target === modal) closeModal();
     }
 
@@ -397,6 +508,12 @@
       document.getElementById("search").addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           searchYouTube();
+        }
+      });
+
+      manualLinkInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          manualLinkEnterBtn.click();
         }
       });
     });
