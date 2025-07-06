@@ -13,16 +13,13 @@
       --text: #e0e0e0;
       --bg-input: #2a2a2a;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background: #111;
       color: var(--text);
     }
-
     .chat-wrapper {
       max-width: 800px;
       margin: 3rem auto;
@@ -31,14 +28,12 @@
       background: var(--bg1);
       border: 1px solid var(--accent2);
     }
-
     header h1 {
       margin: 0 0 1rem;
       color: var(--accent);
       font-size: 2rem;
       text-align: center;
     }
-
     #chat-container {
       min-height: 300px;
       max-height: 55vh;
@@ -49,7 +44,6 @@
       border-radius: 10px;
       font-size: 1rem;
     }
-
     .bubble {
       max-width: 80%;
       margin: 0.4rem 0;
@@ -58,26 +52,22 @@
       line-height: 1.4;
       word-wrap: break-word;
     }
-
     .user {
       margin-left: auto;
       background: var(--accent2);
       color: #000;
     }
-
     .assistant {
       background: #333;
       border: 1px solid var(--accent);
       color: var(--accent2);
     }
-
     .input-area {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 1rem;
     }
-
     #user-input {
       flex: 1 1 100%;
       min-height: 70px;
@@ -89,7 +79,6 @@
       font-size: 1rem;
       resize: none;
     }
-
     .btn {
       padding: 12px 20px;
       border: none;
@@ -101,12 +90,10 @@
       transition: 0.3s;
       flex: 1 1 auto;
     }
-
     .btn:hover {
       background: var(--accent);
       color: #fff;
     }
-
     /* Overlay styles */
     #overlay {
       display: none;
@@ -117,7 +104,6 @@
       align-items: center;
       z-index: 999;
     }
-
     #overlay-content {
       background: var(--bg1);
       padding: 20px;
@@ -125,8 +111,10 @@
       width: 90%;
       max-width: 500px;
       border: 1px solid var(--accent2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
     #system-prompt-editor {
       width: 100%;
       min-height: 120px;
@@ -136,11 +124,37 @@
       color: white;
       border: 1px solid var(--accent2);
       font-family: monospace;
-      margin-bottom: 10px;
+      resize: vertical;
+      flex-grow: 1;
     }
-
+    #overlay-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    #save-prompt-btn, #reset-prompt-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
     #save-prompt-btn {
-      width: 100%;
+      background: var(--accent2);
+      color: #000;
+    }
+    #save-prompt-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    #reset-prompt-btn {
+      background: #b0413e;
+      color: #fff;
+    }
+    #reset-prompt-btn:hover {
+      background: #8a312e;
     }
   </style>
 </head>
@@ -164,7 +178,10 @@
   <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
     <div id="overlay-content">
       <textarea id="system-prompt-editor" aria-label="Edit Personality Prompt"></textarea>
-      <button class="btn" id="save-prompt-btn">Save Personality</button>
+      <div id="overlay-buttons">
+        <button id="save-prompt-btn">Save Personality</button>
+        <button id="reset-prompt-btn">Reset Personality</button>
+      </div>
     </div>
   </div>
 
@@ -192,10 +209,9 @@
     const resetIdBtn = document.getElementById('reset-id-button');
     const promptEditor = document.getElementById('system-prompt-editor');
     const savePromptBtn = document.getElementById('save-prompt-btn');
+    const resetPromptBtn = document.getElementById('reset-prompt-btn');
     const editPromptBtn = document.getElementById('edit-prompt-btn');
     const overlay = document.getElementById('overlay');
-
-    let conversation = [];
 
     const defaultPrompt = `You're an assistant with a chill, casual vibe. Your goal is to keep things relaxed, informal, and fun! You don't always need to give detailed answers—feel free to keep things light and easy. You can share a quick thought, ask a question, or just vibe with the user. You don't need to always answer directly but rather keep the conversation flowing smoothly. If the user asks for specific info, just keep it simple and not too heavy. Always be friendly and approachable.`;
 
@@ -216,35 +232,57 @@
     });
 
     editPromptBtn.addEventListener('click', () => {
-      overlay.style.display = 'flex';
-      if (!location.search.includes('change-personality')) {
-        history.pushState(null, '', '?change-personality');
+      if (overlay.style.display === 'flex') {
+        closeOverlay();
+      } else {
+        openOverlay();
       }
     });
 
     savePromptBtn.addEventListener('click', () => {
-      systemPrompt = promptEditor.value.trim();
-      localStorage.setItem('customPrompt', systemPrompt);
-      appendMessage('assistant', '✅ Personality updated!');
-      overlay.style.display = 'none';
-      if (location.search.includes('change-personality')) {
-        history.replaceState(null, '', location.pathname);
-      }
+      savePersonality(true);
+      closeOverlay();
+    });
+
+    resetPromptBtn.addEventListener('click', () => {
+      promptEditor.value = defaultPrompt;
+      savePersonality(false); // silently reset, no chat message
+      // no appendMessage here for reset to keep it quiet
     });
 
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        overlay.style.display = 'none';
-        if (location.search.includes('change-personality')) {
-          history.replaceState(null, '', location.pathname);
-        }
+        closeOverlay();
       }
     });
 
-    // ✅ Open overlay automatically if URL includes ?change-personality
     if (location.search.includes('change-personality')) {
-      overlay.style.display = 'flex';
+      openOverlay();
     }
+
+    function openOverlay() {
+      overlay.style.display = 'flex';
+      if (!location.search.includes('change-personality')) {
+        history.pushState(null, '', '?change-personality');
+      }
+    }
+
+    function closeOverlay() {
+      overlay.style.display = 'none';
+      if (location.search.includes('change-personality')) {
+        history.replaceState(null, '', location.pathname);
+      }
+    }
+
+    function savePersonality(showMessage = true) {
+      systemPrompt = promptEditor.value.trim();
+      localStorage.setItem('customPrompt', systemPrompt);
+      if (showMessage) {
+        appendMessage('assistant', '✅ Personality updated!');
+      }
+    }
+
+    let conversation = [];
 
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener("keydown", (e) => {
