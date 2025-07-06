@@ -155,15 +155,15 @@
     <div class="input-area">
       <textarea id="user-input" placeholder="Type your message…"></textarea>
       <button id="send-button" class="btn" type="button">Send</button>
-      <button id="reset-id-button" class="btn" type="button" title="Reset The Conversation">Reset</button>
+      <button id="reset-id-button" class="btn" type="button" title="Reset your ID">Reset ID</button>
       <button id="edit-prompt-btn" class="btn" type="button">Change Personality</button>
     </div>
   </div>
 
   <!-- Overlay -->
-  <div id="overlay">
+  <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
     <div id="overlay-content">
-      <textarea id="system-prompt-editor"></textarea>
+      <textarea id="system-prompt-editor" aria-label="Edit Personality Prompt"></textarea>
       <button class="btn" id="save-prompt-btn">Save Personality</button>
     </div>
   </div>
@@ -240,6 +240,11 @@
         }
       }
     });
+
+    // ✅ Open overlay automatically if URL includes ?change-personality
+    if (location.search.includes('change-personality')) {
+      overlay.style.display = 'flex';
+    }
 
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener("keydown", (e) => {
