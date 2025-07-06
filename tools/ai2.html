@@ -107,10 +107,24 @@
       color: #fff;
     }
 
-    #prompt-editor-box {
+    /* Overlay styles */
+    #overlay {
       display: none;
-      width: 100%;
-      margin-top: 10px;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #overlay-content {
+      background: var(--bg1);
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      border: 1px solid var(--accent2);
     }
 
     #system-prompt-editor {
@@ -122,6 +136,11 @@
       color: white;
       border: 1px solid var(--accent2);
       font-family: monospace;
+      margin-bottom: 10px;
+    }
+
+    #save-prompt-btn {
+      width: 100%;
     }
   </style>
 </head>
@@ -136,12 +155,16 @@
     <div class="input-area">
       <textarea id="user-input" placeholder="Type your message…"></textarea>
       <button id="send-button" class="btn" type="button">Send</button>
-      <button id="reset-id-button" class="btn" type="button" title="Reset your ID">Reset ID</button>
-      <button id="edit-prompt-btn" class="btn" type="button">Change Prompt</button>
-      <div id="prompt-editor-box">
-        <textarea id="system-prompt-editor"></textarea>
-        <button class="btn" id="save-prompt-btn" style="margin-top: 10px; width: 100%;">Save Prompt</button>
-      </div>
+      <button id="reset-id-button" class="btn" type="button" title="Reset The Conversation">Reset</button>
+      <button id="edit-prompt-btn" class="btn" type="button">Change Personality</button>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay">
+    <div id="overlay-content">
+      <textarea id="system-prompt-editor"></textarea>
+      <button class="btn" id="save-prompt-btn">Save Personality</button>
     </div>
   </div>
 
@@ -170,7 +193,7 @@
     const promptEditor = document.getElementById('system-prompt-editor');
     const savePromptBtn = document.getElementById('save-prompt-btn');
     const editPromptBtn = document.getElementById('edit-prompt-btn');
-    const promptEditorBox = document.getElementById('prompt-editor-box');
+    const overlay = document.getElementById('overlay');
 
     let conversation = [];
 
@@ -193,14 +216,29 @@
     });
 
     editPromptBtn.addEventListener('click', () => {
-      promptEditorBox.style.display = promptEditorBox.style.display === 'block' ? 'none' : 'block';
+      overlay.style.display = 'flex';
+      if (!location.search.includes('change-personality')) {
+        history.pushState(null, '', '?change-personality');
+      }
     });
 
     savePromptBtn.addEventListener('click', () => {
       systemPrompt = promptEditor.value.trim();
       localStorage.setItem('customPrompt', systemPrompt);
-      appendMessage('assistant', '✅ Personality prompt updated!');
-      promptEditorBox.style.display = 'none';
+      appendMessage('assistant', '✅ Personality updated!');
+      overlay.style.display = 'none';
+      if (location.search.includes('change-personality')) {
+        history.replaceState(null, '', location.pathname);
+      }
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+        if (location.search.includes('change-personality')) {
+          history.replaceState(null, '', location.pathname);
+        }
+      }
     });
 
     sendBtn.addEventListener('click', sendMessage);
@@ -228,13 +266,11 @@
       try {
         await push(dbMessagesRef, { role: 'user', content: text });
       } catch (err) {
-        console.error('Firebase push error:', err);
         appendMessage('assistant', '[⚠️ Error saving your message.]');
         sendBtn.disabled = false;
         return;
       }
 
-      // Add typing indicator
       const typingDiv = document.createElement('div');
       typingDiv.className = 'bubble assistant';
       typingDiv.textContent = 'Rat AI is typing…';
@@ -276,7 +312,6 @@
         await push(dbMessagesRef, { role: 'assistant', content: aiText });
 
       } catch (err) {
-        console.error('Groq API error:', err);
         chatBox.removeChild(typingDiv);
         appendMessage('assistant', `[⚠️ Groq API error: ${err.message}]`);
       }
