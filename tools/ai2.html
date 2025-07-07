@@ -51,6 +51,7 @@
       border-radius: 12px;
       line-height: 1.4;
       word-wrap: break-word;
+      white-space: pre-wrap;
     }
     .user {
       margin-left: auto;
@@ -61,6 +62,17 @@
       background: #333;
       border: 1px solid var(--accent);
       color: var(--accent2);
+      position: relative;
+    }
+    .report-button {
+      display: inline-block;
+      margin-left: 10px;
+      font-weight: 600;
+      color: #3399ff;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.9rem;
+      text-decoration: underline;
     }
     .input-area {
       display: flex;
@@ -94,7 +106,6 @@
       background: var(--accent);
       color: #fff;
     }
-    /* Overlay styles */
     #overlay {
       display: none;
       position: fixed;
@@ -228,58 +239,43 @@
       dbMessagesRef = ref(db, `messages/${userId}`);
       conversation = [];
       chatBox.innerHTML = '';
-      appendMessage('assistant', `New ID created: ${userId}`);
+      appendMessage('assistant', `✅ New ID created: ${userId}`);
     });
 
     editPromptBtn.addEventListener('click', () => {
-      if (overlay.style.display === 'flex') {
-        closeOverlay();
-      } else {
-        openOverlay();
+      overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+      if (!location.search.includes('change-personality')) {
+        history.pushState(null, '', '?change-personality');
       }
     });
 
     savePromptBtn.addEventListener('click', () => {
-      savePersonality(true);
-      closeOverlay();
-    });
-
-    resetPromptBtn.addEventListener('click', () => {
-      promptEditor.value = defaultPrompt;
-      savePersonality(false); // silently reset, no chat message
-      // no appendMessage here for reset to keep it quiet
-    });
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        closeOverlay();
-      }
-    });
-
-    if (location.search.includes('change-personality')) {
-      openOverlay();
-    }
-
-    function openOverlay() {
-      overlay.style.display = 'flex';
-      if (!location.search.includes('change-personality')) {
-        history.pushState(null, '', '?change-personality');
-      }
-    }
-
-    function closeOverlay() {
+      systemPrompt = promptEditor.value.trim();
+      localStorage.setItem('customPrompt', systemPrompt);
+      appendMessage('assistant', '✅ Personality updated!');
       overlay.style.display = 'none';
       if (location.search.includes('change-personality')) {
         history.replaceState(null, '', location.pathname);
       }
-    }
+    });
 
-    function savePersonality(showMessage = true) {
-      systemPrompt = promptEditor.value.trim();
+    resetPromptBtn.addEventListener('click', () => {
+      promptEditor.value = defaultPrompt;
+      systemPrompt = defaultPrompt;
       localStorage.setItem('customPrompt', systemPrompt);
-      if (showMessage) {
-        appendMessage('assistant', '✅ Personality updated!');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+        if (location.search.includes('change-personality')) {
+          history.replaceState(null, '', location.pathname);
+        }
       }
+    });
+
+    if (location.search.includes('change-personality')) {
+      overlay.style.display = 'flex';
     }
 
     let conversation = [];
@@ -321,7 +317,7 @@
       scrollToBottom();
 
       try {
-        const groqApiKey = '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';
+        const groqApiKey = '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'; // ✅ updated key here
         const groqRequestBody = {
           model: "llama3-70b-8192",
           messages: [
@@ -347,7 +343,7 @@
         const aiText = data.choices?.[0]?.message?.content || "[⚠️ No valid response from Rat AI.]";
 
         chatBox.removeChild(typingDiv);
-        appendMessage('assistant', aiText);
+        appendAssistantMessage(aiText);
         conversation.push({ role: 'assistant', content: aiText });
         if (conversation.length > 30) {
           conversation = conversation.slice(-30);
@@ -356,7 +352,8 @@
 
       } catch (err) {
         chatBox.removeChild(typingDiv);
-        appendMessage('assistant', `[⚠️ Groq API error: ${err.message}]`);
+        const errorMsg = `[⚠️ Groq API error: ${err.message}]`;
+        appendAssistantMessage(errorMsg);
       }
 
       sendBtn.disabled = false;
@@ -373,6 +370,68 @@
       div.textContent = text;
       chatBox.appendChild(div);
       scrollToBottom();
+    }
+
+    function appendAssistantMessage(text) {
+      const div = document.createElement('div');
+      div.className = 'bubble assistant';
+
+      // Check if this message contains a Groq API error
+      if (text.includes('Groq API error')) {
+        // Create text span for the error message (excluding the "[⚠️ Groq API error: " prefix)
+        const errorText = text;
+
+        // Create span for the error message text
+        const errorSpan = document.createElement('span');
+        errorSpan.textContent = errorText;
+
+        // Create report button
+        const reportBtn = document.createElement('span');
+        reportBtn.textContent = 'Report';
+        reportBtn.className = 'report-button';
+        reportBtn.title = 'Click to report this error';
+
+        reportBtn.addEventListener('click', () => {
+          sendReportToDiscord(errorText, reportBtn);
+        });
+
+        div.appendChild(errorSpan);
+        div.appendChild(reportBtn);
+      } else {
+        div.textContent = text;
+      }
+
+      chatBox.appendChild(div);
+      scrollToBottom();
+    }
+
+    async function sendReportToDiscord(errorText, buttonElem) {
+      const webhookUrl = 'https://discord.com/api/webhooks/1391645161452339231/IH0UZIKcCovWBFoGluvoY_IiyCsjkjgBhFjAKtseqX35bp2T3eKtvCizQORt9E5J2q20';
+
+      buttonElem.textContent = 'Reporting...';
+      buttonElem.style.pointerEvents = 'none';
+      buttonElem.style.color = '#777';
+
+      try {
+        const payload = {
+          content: `🚨 Groq API error reported:\n\`\`\`\n${errorText}\n\`\`\``
+        };
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) throw new Error(`Webhook error status: ${response.status}`);
+
+        buttonElem.textContent = 'Reported ✓';
+        buttonElem.style.color = '#0a0';
+      } catch (err) {
+        buttonElem.textContent = 'Report failed';
+        buttonElem.style.color = '#a00';
+        buttonElem.style.pointerEvents = 'auto';
+        alert('Failed to send report: ' + err.message);
+      }
     }
 
     function scrollToBottom() {
