@@ -124,7 +124,7 @@
       border: 1px solid var(--accent2);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     #system-prompt-editor {
       width: 100%;
@@ -142,19 +142,18 @@
       display: flex;
       gap: 10px;
       justify-content: space-between;
+      flex-wrap: wrap;
     }
     #save-prompt-btn, #reset-prompt-btn {
-      flex: 1;
+      flex: 1 1 48%;
       padding: 12px 20px;
       border: none;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
-    }
-    #save-prompt-btn {
-      background: var(--accent2);
       color: #000;
+      background: var(--accent2);
     }
     #save-prompt-btn:hover {
       background: var(--accent);
@@ -167,6 +166,44 @@
     #reset-prompt-btn:hover {
       background: #8a312e;
     }
+    #user-action-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    #copy-user-btn, #load-user-btn {
+      flex: 1 1 48%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent2);
+      color: #000;
+      transition: 0.3s;
+    }
+    #copy-user-btn:hover, #load-user-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    #reset-id-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #b0413e; /* RED color */
+  color: #fff;
+  transition: 0.3s;
+  margin-top: 16px;
+}
+
+#reset-id-btn:hover {
+  background: #8a312e;
+}
   </style>
 </head>
 <body>
@@ -180,26 +217,41 @@
     <div class="input-area">
       <textarea id="user-input" placeholder="Type your message…"></textarea>
       <button id="send-button" class="btn" type="button">Send</button>
-      <button id="reset-id-button" class="btn" type="button" title="Reset your ID">Reset ID</button>
-      <button id="edit-prompt-btn" class="btn" type="button">Change Personality</button>
+      <button id="settings-button" class="btn" type="button">Settings</button>
     </div>
   </div>
 
   <!-- Overlay -->
   <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
     <div id="overlay-content">
+      <label for="system-prompt-editor" style="font-weight:600; margin-bottom:4px; color: var(--accent2);">Edit Personality Prompt</label>
       <textarea id="system-prompt-editor" aria-label="Edit Personality Prompt"></textarea>
       <div id="overlay-buttons">
         <button id="save-prompt-btn">Save Personality</button>
         <button id="reset-prompt-btn">Reset Personality</button>
       </div>
+
+      <hr style="border-color: var(--accent2); margin: 16px 0;" />
+
+      <div id="user-action-buttons">
+  <button id="copy-user-btn" title="Copy current User ID">Copy User</button>
+  <button id="load-user-btn" title="Load chat from User ID">Load Chat from User</button>
+</div>
+
+<div id="load-user-input-container" style="display:none; margin-top: 8px;">
+  <input id="load-user-input" type="text" placeholder="Enter User ID" style="width: 70%; padding: 8px; border-radius: 6px; border: 1px solid var(--accent2); background: var(--bg-input); color: var(--text); font-family: monospace;" />
+  <button id="load-user-confirm-btn" style="padding: 8px 14px; margin-left: 8px; border-radius: 6px; border:none; background: var(--accent2); color: #000; cursor: pointer;">OK</button>
+</div>
+
+      <hr style="border-color: var(--accent2); margin: 16px 0;" />
+
+      <button id="reset-id-btn" title="Reset your ID">Reset ID</button>
     </div>
   </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Your Supabase credentials (your own)
     const SUPABASE_URL = 'https://pykqtfzcucnphogghvgq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a3F0ZnpjdWNucGhvZ2dodmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NTYxODEsImV4cCI6MjA2NzUzMjE4MX0.tyTCHEN863VQDwm9YyRbJT9L5meoX8n9OQqoEp_cWeU';
 
@@ -208,11 +260,13 @@
     const chatBox = document.getElementById('chat-container');
     const input = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-button');
-    const resetIdBtn = document.getElementById('reset-id-button');
+    const settingsBtn = document.getElementById('settings-button');
     const promptEditor = document.getElementById('system-prompt-editor');
     const savePromptBtn = document.getElementById('save-prompt-btn');
     const resetPromptBtn = document.getElementById('reset-prompt-btn');
-    const editPromptBtn = document.getElementById('edit-prompt-btn');
+    const resetIdBtn = document.getElementById('reset-id-btn');
+    const copyUserBtn = document.getElementById('copy-user-btn');
+    const loadUserBtn = document.getElementById('load-user-btn');
     const overlay = document.getElementById('overlay');
 
     const defaultPrompt = `You're an assistant with a chill, casual vibe. Your goal is to keep things relaxed, informal, and fun! You don't always need to give detailed answers—feel free to keep things light and easy. You can share a quick thought, ask a question, or just vibe with the user. You don't need to always answer directly but rather keep the conversation flowing smoothly. If the user asks for specific info, just keep it simple and not too heavy. Always be friendly and approachable.`;
@@ -226,26 +280,54 @@
     let conversation = [];
 
     // Load previous messages from Supabase on start
-    async function loadChatHistory() {
-      try {
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: true });
-        if (error) throw error;
-        chatBox.innerHTML = '';
-        for (const msg of data) {
-          appendMessage(msg.role, msg.message);
-          conversation.push({ role: msg.role, content: msg.message });
-        }
-        scrollToBottom();
-      } catch (err) {
-        appendMessage('assistant', `[⚠️ Error loading chat history: ${err.message}]`);
-      }
+    async function loadChatHistory(loadUserId = null) {
+  const idToLoad = loadUserId || userId;
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('user_id', idToLoad)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    chatBox.innerHTML = '';
+    conversation = [];
+
+    // Attempt to find the personality prompt from the first message (if any)
+    // assuming personality_prompt is saved with every message, so pick from first
+    let loadedPrompt = null;
+    if (data.length > 0) {
+      loadedPrompt = data[0].personality_prompt || null;
     }
 
+    // Update prompt editor & systemPrompt if loading for a different user AND prompt exists
+    if (loadUserId && loadedPrompt) {
+      systemPrompt = loadedPrompt;
+      promptEditor.value = systemPrompt;
+      localStorage.setItem('customPrompt', systemPrompt);
+    }
+
+    for (const msg of data) {
+      appendMessage(msg.role, msg.message);
+      conversation.push({ role: msg.role, content: msg.message });
+    }
+    scrollToBottom();
+
+    if (loadUserId) {
+      userId = loadUserId;
+      localStorage.setItem('userId', userId);
+      appendMessage('assistant', `✅ Loaded chat from user: ${userId}`);
+    }
+  } catch (err) {
+    appendMessage('assistant', `[⚠️ Error loading chat history: ${err.message}]`);
+  }
+}
+
     loadChatHistory();
+
+    settingsBtn.addEventListener('click', () => {
+      overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+      promptEditor.value = systemPrompt; // refresh textarea with current prompt
+    });
 
     resetIdBtn.addEventListener('click', () => {
       userId = generateNewUserId();
@@ -253,13 +335,7 @@
       conversation = [];
       chatBox.innerHTML = '';
       appendMessage('assistant', `✅ New ID created: ${userId}`);
-    });
-
-    editPromptBtn.addEventListener('click', () => {
-      overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
-      if (!location.search.includes('change-personality')) {
-        history.pushState(null, '', '?change-personality');
-      }
+      overlay.style.display = 'none';
     });
 
     savePromptBtn.addEventListener('click', () => {
@@ -267,9 +343,6 @@
       localStorage.setItem('customPrompt', systemPrompt);
       appendMessage('assistant', '✅ Personality updated!');
       overlay.style.display = 'none';
-      if (location.search.includes('change-personality')) {
-        history.replaceState(null, '', location.pathname);
-      }
     });
 
     resetPromptBtn.addEventListener('click', () => {
@@ -278,18 +351,45 @@
       localStorage.setItem('customPrompt', systemPrompt);
     });
 
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        overlay.style.display = 'none';
-        if (location.search.includes('change-personality')) {
-          history.replaceState(null, '', location.pathname);
-        }
+    copyUserBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(userId);
+        alert(`User ID copied to clipboard:\n${userId}`);
+      } catch {
+        alert('Failed to copy user ID. Try manually selecting and copying.');
       }
     });
 
-    if (location.search.includes('change-personality')) {
-      overlay.style.display = 'flex';
-    }
+    loadUserBtn.addEventListener('click', () => {
+  const container = document.getElementById('load-user-input-container');
+  container.style.display = (container.style.display === 'flex') ? 'none' : 'flex';
+});
+
+// Replace the current "loadUserBtn" listener with the above, and then
+// REPLACE this existing line:
+//    (no current listener for 'load-user-confirm-btn')
+
+// Instead, find this existing line (if present) for 'load-user-confirm-btn' and replace it with:
+document.getElementById('load-user-confirm-btn').onclick = async () => {
+  const container = document.getElementById('load-user-input-container');
+  const inputEl = document.getElementById('load-user-input');
+  const id = inputEl.value.trim();
+  if (!id) {
+    alert('Please enter a User ID.');
+    return;
+  }
+  overlay.style.display = 'none';
+  await loadChatHistory(id);
+  inputEl.value = '';
+  container.style.display = 'none';
+};
+
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+      }
+    });
 
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener("keydown", (e) => {
@@ -333,7 +433,6 @@
       scrollToBottom();
 
       try {
-        // Fetch Groq API keys dynamically from site, pick one at random
         const keyResponse = await fetch('https://groq-api-keys.pages.dev/apikeys.txt');
         if (!keyResponse.ok) throw new Error('Failed to fetch API key');
         const keysText = await keyResponse.text();
