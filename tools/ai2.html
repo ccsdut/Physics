@@ -379,7 +379,38 @@ document.getElementById('load-user-confirm-btn').onclick = async () => {
     return;
   }
   overlay.style.display = 'none';
-  await loadChatHistory(id);
+  const { data, error } = await supabase
+  .from('messages')
+  .select('*')
+  .eq('user_id', id)
+  .order('created_at', { ascending: true });
+
+if (error) {
+  appendMessage('assistant', `[⚠️ Error loading chat history: ${error.message}]`);
+  return;
+}
+if (!data || data.length === 0) {
+  alert("❌ No messages found for this user.");
+  return;
+}
+chatBox.innerHTML = '';
+conversation = [];
+
+let loadedPrompt = data[0].personality_prompt || null;
+if (loadedPrompt) {
+  systemPrompt = loadedPrompt;
+  promptEditor.value = systemPrompt;
+  localStorage.setItem('customPrompt', systemPrompt);
+}
+
+for (const msg of data) {
+  appendMessage(msg.role, msg.message);
+  conversation.push({ role: msg.role, content: msg.message });
+}
+scrollToBottom();
+userId = id;
+localStorage.setItem('userId', userId);
+appendMessage('assistant', `✅ Loaded chat from user: ${userId}`);
   inputEl.value = '';
   container.style.display = 'none';
 };
