@@ -197,22 +197,13 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyACFdHnKCt-mpwXMz4aRO5jnAxmyOtl_d4",
-      authDomain: "ai-chat-48d1a.firebaseapp.com",
-      databaseURL: "https://ai-chat-48d1a-default-rtdb.firebaseio.com",
-      projectId: "ai-chat-48d1a",
-      storageBucket: "ai-chat-48d1a.appspot.com",
-      messagingSenderId: "856538226550",
-      appId: "1:856538226550:web:105a24acd395c2c8cca457",
-      measurementId: "G-4GCJTM2J16"
-    };
+    // Your Supabase credentials (your own)
+    const SUPABASE_URL = 'https://pykqtfzcucnphogghvgq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a3F0ZnpjdWNucGhvZ2dodmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NTYxODEsImV4cCI6MjA2NzUzMjE4MX0.tyTCHEN863VQDwm9YyRbJT9L5meoX8n9OQqoEp_cWeU';
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const chatBox = document.getElementById('chat-container');
     const input = document.getElementById('user-input');
@@ -231,12 +222,34 @@
 
     let userId = localStorage.getItem('userId') || generateNewUserId();
     localStorage.setItem('userId', userId);
-    let dbMessagesRef = ref(db, `messages/${userId}`);
+
+    let conversation = [];
+
+    // Load previous messages from Supabase on start
+    async function loadChatHistory() {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+        chatBox.innerHTML = '';
+        for (const msg of data) {
+          appendMessage(msg.role, msg.message);
+          conversation.push({ role: msg.role, content: msg.message });
+        }
+        scrollToBottom();
+      } catch (err) {
+        appendMessage('assistant', `[⚠️ Error loading chat history: ${err.message}]`);
+      }
+    }
+
+    loadChatHistory();
 
     resetIdBtn.addEventListener('click', () => {
       userId = generateNewUserId();
       localStorage.setItem('userId', userId);
-      dbMessagesRef = ref(db, `messages/${userId}`);
       conversation = [];
       chatBox.innerHTML = '';
       appendMessage('assistant', `✅ New ID created: ${userId}`);
@@ -278,8 +291,6 @@
       overlay.style.display = 'flex';
     }
 
-    let conversation = [];
-
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -303,7 +314,12 @@
       sendBtn.disabled = true;
 
       try {
-        await push(dbMessagesRef, { role: 'user', content: text });
+        await supabase.from('messages').insert([{
+          user_id: userId,
+          personality_prompt: systemPrompt,
+          role: 'user',
+          message: text,
+        }]);
       } catch (err) {
         appendMessage('assistant', '[⚠️ Error saving your message.]');
         sendBtn.disabled = false;
@@ -317,7 +333,13 @@
       scrollToBottom();
 
       try {
-        const groqApiKey = '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'; // ✅ updated key here
+        // Fetch Groq API keys dynamically from site, pick one at random
+        const keyResponse = await fetch('https://groq-api-keys.pages.dev/apikeys.txt');
+        if (!keyResponse.ok) throw new Error('Failed to fetch API key');
+        const keysText = await keyResponse.text();
+        const keys = keysText.trim().split('\n').filter(k => k);
+        const groqApiKey = keys[Math.floor(Math.random() * keys.length)];
+
         const groqRequestBody = {
           model: "llama3-70b-8192",
           messages: [
@@ -348,7 +370,12 @@
         if (conversation.length > 30) {
           conversation = conversation.slice(-30);
         }
-        await push(dbMessagesRef, { role: 'assistant', content: aiText });
+        await supabase.from('messages').insert([{
+          user_id: userId,
+          personality_prompt: systemPrompt,
+          role: 'assistant',
+          message: aiText,
+        }]);
 
       } catch (err) {
         chatBox.removeChild(typingDiv);
@@ -376,23 +403,17 @@
       const div = document.createElement('div');
       div.className = 'bubble assistant';
 
-      // Check if this message contains a Groq API error
       if (text.includes('Groq API error')) {
-        // Create text span for the error message (excluding the "[⚠️ Groq API error: " prefix)
-        const errorText = text;
-
-        // Create span for the error message text
         const errorSpan = document.createElement('span');
-        errorSpan.textContent = errorText;
+        errorSpan.textContent = text;
 
-        // Create report button
         const reportBtn = document.createElement('span');
         reportBtn.textContent = 'Report';
         reportBtn.className = 'report-button';
         reportBtn.title = 'Click to report this error';
 
         reportBtn.addEventListener('click', () => {
-          sendReportToDiscord(errorText, reportBtn);
+          sendReportToDiscord(text, reportBtn);
         });
 
         div.appendChild(errorSpan);
