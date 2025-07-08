@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rat AI Creator Tools</title>
+  <style>
+    body {
+      background: #111;
+      color: #e0e0e0;
+      font-family: 'Poppins', sans-serif;
+      margin: 1rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #6e5843;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+      gap: 10px;
+    }
+    button {
+      background: #b2a28f;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      color: #000;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #6e5843;
+      color: #fff;
+    }
+    #users-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1rem;
+      justify-content: center;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    button.user-btn {
+      background: #b2a28f;
+      color: #000;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button.user-btn:hover {
+      background: #6e5843;
+      color: #fff;
+    }
+    #conversation {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #1c1c1c;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid #b2a28f;
+      max-height: 50vh;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .bubble {
+      max-width: 80%;
+      margin: 0.4rem 0;
+      padding: 10px 14px;
+      border-radius: 12px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .user {
+      margin-left: auto;
+      background: #b2a28f;
+      color: #000;
+    }
+    .assistant {
+      background: #333;
+      border: 1px solid #6e5843;
+      color: #b2a28f;
+      position: relative;
+    }
+    #details {
+      max-width: 900px;
+      margin: 1rem auto 2rem auto;
+      background: #1a1a1a;
+      border-radius: 12px;
+      border: 1px solid #6e5843;
+      padding: 15px 20px;
+      font-family: monospace;
+      color: #b2a28f;
+      white-space: pre-wrap;
+      min-height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rat AI Creator Tools</h1>
+  <div id="controls">
+    <button id="refresh-users-btn">Refresh Users</button>
+  </div>
+  <div id="users-list" aria-label="User list">
+    <!-- User buttons go here -->
+  </div>
+  <div id="conversation" aria-live="polite" aria-atomic="true">
+    <em>Select a user to see their conversation.</em>
+  </div>
+  <div id="details" aria-live="polite" aria-atomic="true">
+    <em>User info will appear here when you select a conversation.</em>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = 'https://pykqtfzcucnphogghvgq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a3F0ZnpjdWNucGhvZ2dodmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NTYxODEsImV4cCI6MjA2NzUzMjE4MX0.tyTCHEN863VQDwm9YyRbJT9L5meoX8n9OQqoEp_cWeU';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Password prompt
+    const password = prompt("Enter creator password:");
+    if (password !== "486xtd") {
+      alert("Access denied!");
+      document.body.innerHTML = "<h2 style='color:#b0413e;text-align:center;margin-top:3rem;'>Access denied</h2>";
+      throw new Error("Unauthorized");
+    }
+
+    const usersList = document.getElementById('users-list');
+    const conversationDiv = document.getElementById('conversation');
+    const detailsDiv = document.getElementById('details');
+    const refreshBtn = document.getElementById('refresh-users-btn');
+
+    refreshBtn.addEventListener('click', () => {
+      loadUsers();
+      conversationDiv.innerHTML = "<em>Select a user to see their conversation.</em>";
+      detailsDiv.innerHTML = "<em>User info will appear here when you select a conversation.</em>";
+    });
+
+    // Fetch distinct users from messages table
+    async function loadUsers() {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('user_id', { count: 'exact', distinct: true });
+
+        if (error) throw error;
+
+        usersList.innerHTML = '';
+        const uniqueUsers = [...new Set(data.map(row => row.user_id))];
+
+        uniqueUsers.forEach(userId => {
+          const btn = document.createElement('button');
+          btn.textContent = userId;
+          btn.className = 'user-btn';
+          btn.addEventListener('click', () => loadConversation(userId));
+          usersList.appendChild(btn);
+        });
+
+      } catch (err) {
+        conversationDiv.innerHTML = `<em style="color:#b0413e;">Error loading users: ${err.message}</em>`;
+      }
+    }
+
+    // Load all messages for selected user, show conversation + info
+    async function loadConversation(userId) {
+      conversationDiv.innerHTML = `<em>Loading conversation for <strong>${userId}</strong>…</em>`;
+      detailsDiv.innerHTML = "";
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data.length) {
+          conversationDiv.innerHTML = `<em>No messages found for user <strong>${userId}</strong>.</em>`;
+          detailsDiv.innerHTML = "";
+          return;
+        }
+
+        conversationDiv.innerHTML = '';
+        data.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = `bubble ${msg.role === 'user' ? 'user' : 'assistant'}`;
+          div.textContent = msg.message;
+          conversationDiv.appendChild(div);
+        });
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
+
+        // Show user info below: earliest created_at and system prompt from first message or latest prompt saved
+        // Assuming prompt is stored in a column named personality_prompt on messages table or use first message's prompt field
+        // Let's try to get earliest created_at and first personality_prompt found
+
+        // Find earliest created_at
+        const earliest = data.reduce((min, msg) => {
+          const date = new Date(msg.created_at);
+          return date < min ? date : min;
+        }, new Date());
+
+        // Find unique personality prompts in data
+        const prompts = [...new Set(data.map(m => m.personality_prompt).filter(Boolean))];
+
+        detailsDiv.innerHTML = 
+          `User ID: ${userId}\n` +
+          `First Message Time: ${earliest.toISOString()}\n` +
+          `Personality Prompt(s):\n${prompts.length > 0 ? prompts.join('\n---\n') : 'N/A'}`;
+
+      } catch (err) {
+        conversationDiv.innerHTML = `<em style="color:#b0413e;">Error loading conversation: ${err.message}</em>`;
+        detailsDiv.innerHTML = "";
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
