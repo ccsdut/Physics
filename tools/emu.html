@@ -113,22 +113,22 @@
       border: none;
       width: 100%;
     }
-    #getGamesBtn {
-      margin-top: 20px;
-      padding: 10px 18px;
-      font-weight: 700;
-      font-size: 1rem;
-      border-radius: 8px;
-      background: #0b79f7;
-      border: none;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.25s ease;
-    }
-    #getGamesBtn:hover {
-      background: #0a5ecc;
-    }
+    #getGamesBtn, #getSWFBtn {
+  margin-top: 20px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 8px;
+  background: #0b79f7;
+  border: none;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.25s ease;
+}
+#getGamesBtn:hover, #getSWFBtn:hover {
+  background: #0a5ecc;
+}
     #loadingMessage {
       margin-top: 10px;
       font-style: italic;
@@ -144,6 +144,7 @@
   </div>
 
   <button id="getGamesBtn" aria-label="Get games for the emulator">Click Here To Get Games for the Emulator</button>
+<button id="getSWFBtn" aria-label="Get SWF files for the emulator" style="margin-left: 10px;">Get SWF Files</button>
 
   <div id="fileList" aria-live="polite" role="list" style="display:none"></div>
 
@@ -164,13 +165,22 @@
   </div>
 
   <div id="iframeOverlay" role="dialog" aria-modal="true" aria-label="Get Games Website">
-    <header>
-      <button id="backBtn" aria-label="Back to Emulator">⬅ Back</button>
-      <span>Get Games</span>
-      <div style="width:40px"></div>
-    </header>
-    <iframe src="https://www.romsgames.net/" title="Get Games"></iframe>
-  </div>
+  <header>
+    <button id="backBtn" aria-label="Back to Emulator">⬅ Back</button>
+    <span>Get Games</span>
+    <div style="width:40px"></div>
+  </header>
+  <iframe src="https://www.romsgames.net/" title="Get Games"></iframe>
+</div>
+
+<div id="swfOverlay" role="dialog" aria-modal="true" aria-label="Get SWF Files Website" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000c; flex-direction: column; z-index: 9999;">
+  <header style="background: #111c30; padding: 10px 15px; color: white; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+    <button id="swfBackBtn" aria-label="Back to Emulator">⬅ Back</button>
+    <span>Get SWF Files</span>
+    <div style="width:40px"></div>
+  </header>
+  <iframe src="https://archive.org/download/armorgames" title="Get SWF Files" style="flex-grow:1; border:none; width:100%; height:100%;"></iframe>
+</div>
 
 <script>
   const uploadBox = document.getElementById('uploadBox');
@@ -408,10 +418,26 @@
     }
   });
 
-  // Get Games iframe
   getGamesBtn.addEventListener('click', () => {
-    iframeOverlay.classList.add('active');
-  });
+  iframeOverlay.classList.add('active');
+});
+
+backBtn.addEventListener('click', () => {
+  iframeOverlay.classList.remove('active');
+});
+
+// New SWF button and back button handlers
+const getSWFBtn = document.getElementById('getSWFBtn');
+const swfOverlay = document.getElementById('swfOverlay');
+const swfBackBtn = document.getElementById('swfBackBtn');
+
+getSWFBtn.addEventListener('click', () => {
+  swfOverlay.style.display = 'flex';
+});
+
+swfBackBtn.addEventListener('click', () => {
+  swfOverlay.style.display = 'none';
+});
 
   backBtn.addEventListener('click', () => {
     iframeOverlay.classList.remove('active');
