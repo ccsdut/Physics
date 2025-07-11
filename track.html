@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Visit Stats</title>
+</head>
+<body>
+  <h2>Visit Stats</h2>
+  <p>Total Visits: <span id="totalVisits">Loading...</span></p>
+  <p>Unique Visitors: <span id="uniqueVisitors">Loading...</span></p>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://jfscpvfooviahjoqffkz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc2NwdmZvb3ZpYWhqb3FmZmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDk0ODYsImV4cCI6MjA2NzgyNTQ4Nn0.1RAefMzJRpOEGREICvGdRq9fHfKrC1sUnoagGgf9uwc";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function fetchStats() {
+      try {
+        let { data, error } = await supabase
+          .from('visits')
+          .select('ip');
+
+        if (error) throw error;
+
+        const totalVisits = data.length;
+
+        // Create a Set to track unique IPs
+        const uniqueIPs = new Set(data.map(row => row.ip));
+
+        document.getElementById('totalVisits').textContent = totalVisits;
+        document.getElementById('uniqueVisitors').textContent = uniqueIPs.size;
+
+      } catch (error) {
+        document.getElementById('totalVisits').textContent = 'Error';
+        document.getElementById('uniqueVisitors').textContent = 'Error';
+        console.error(error);
+      }
+    }
+
+    fetchStats();
+  </script>
+</body>
+</html>
