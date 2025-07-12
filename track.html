@@ -1,46 +1,671 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Simple Visit Stats</title>
-</head>
-<body>
-  <h2>Visit Stats</h2>
-  <p>Total Visits: <span id="totalVisits">Loading...</span></p>
-  <p>Unique Visitors: <span id="uniqueVisitors">Loading...</span></p>
-
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const SUPABASE_URL = "https://jfscpvfooviahjoqffkz.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc2NwdmZvb3ZpYWhqb3FmZmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDk0ODYsImV4cCI6MjA2NzgyNTQ4Nn0.1RAefMzJRpOEGREICvGdRq9fHfKrC1sUnoagGgf9uwc";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    async function fetchStats() {
-      try {
-        let { data, error } = await supabase
-          .from('visits')
-          .select('ip');
-
-        if (error) throw error;
-
-        const totalVisits = data.length;
-
-        // Create a Set to track unique IPs
-        const uniqueIPs = new Set(data.map(row => row.ip));
-
-        document.getElementById('totalVisits').textContent = totalVisits;
-        document.getElementById('uniqueVisitors').textContent = uniqueIPs.size;
-
-      } catch (error) {
-        document.getElementById('totalVisits').textContent = 'Error';
-        document.getElementById('uniqueVisitors').textContent = 'Error';
-        console.error(error);
-      }
+  <title>Visitor Dashboard Custom Dropdowns</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0e1117;
+      --card: #161b22;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --highlight: #21262d;
+      --flag-size: 24px;
     }
 
-    fetchStats();
-  </script>
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 2rem;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Container for filters */
+    .filters {
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: flex-end; /* Align labels and refresh baseline */
+      justify-content: center;
+      user-select: none;
+    }
+
+    /* Custom dropdown wrapper */
+    .dropdown {
+      position: relative;
+      width: 170px;
+      user-select: none;
+    }
+
+    .dropdown-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.9rem;
+      user-select: none;
+    }
+
+    /* Selected item box */
+    .dropdown-selected {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    /* Arrow icon */
+    .dropdown-selected::after {
+      content: '';
+      border: 6px solid transparent;
+      border-top-color: var(--text);
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    /* Dropdown list */
+    .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      max-height: 240px;
+      overflow-y: auto;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 4px;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .dropdown-list.open {
+      display: block;
+    }
+
+    /* Dropdown options */
+    .dropdown-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .dropdown-option:hover,
+    .dropdown-option[aria-selected="true"] {
+      background-color: var(--highlight);
+    }
+
+    /* Flag icon in dropdown options */
+    .flag-icon {
+      width: var(--flag-size);
+      height: 18px;
+      object-fit: contain;
+      border-radius: 3px;
+      user-select: none;
+      position: relative;
+      top: 3px;   /* moved down 3px */
+      left: -2px; /* moved left 2px */
+    }
+
+    /* Emoji icon inside dropdown option */
+    .emoji-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+      user-select: none;
+      width: var(--flag-size);
+      text-align: center;
+    }
+
+    /* Refresh button wrapper to add label */
+    .refresh-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      width: 120px; /* roughly same width as dropdowns */
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .refresh-btn {
+      margin-top: 6px;
+      background-color: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      user-select: none;
+      height: 42px;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    .refresh-btn:hover {
+      background-color: var(--highlight);
+    }
+
+    /* Container for table */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      padding: 1.5rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .panel-header h2 {
+      font-size: 1.3rem;
+    }
+
+    .panel-header span {
+      font-size: 1.5rem;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      background: var(--highlight);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #1d232a;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📊 Visitor Dashboard</h1>
+
+<div class="filters" role="region" aria-label="Filters">
+  <!-- Location Dropdown -->
+  <div class="dropdown" id="locationDropdown">
+    <label class="dropdown-label" for="locationSelected">Location</label>
+    <div tabindex="0" class="dropdown-selected" aria-haspopup="listbox" aria-expanded="false" id="locationSelected" aria-labelledby="locationLabel" role="combobox" aria-controls="locationList">
+      <!-- selected value here -->
+    </div>
+    <div class="dropdown-list" id="locationList" role="listbox" tabindex="-1" aria-labelledby="locationSelected">
+      <!-- options added by JS -->
+    </div>
+  </div>
+
+  <!-- Date Dropdown -->
+  <div class="dropdown" id="dateDropdown">
+    <label class="dropdown-label" for="dateSelected">Date</label>
+    <div tabindex="0" class="dropdown-selected" aria-haspopup="listbox" aria-expanded="false" id="dateSelected" aria-labelledby="dateLabel" role="combobox" aria-controls="dateList"></div>
+    <div class="dropdown-list" id="dateList" role="listbox" tabindex="-1" aria-labelledby="dateSelected"></div>
+  </div>
+
+  <!-- View Dropdown -->
+  <div class="dropdown" id="viewDropdown">
+    <label class="dropdown-label" for="viewSelected">View</label>
+    <div tabindex="0" class="dropdown-selected" aria-haspopup="listbox" aria-expanded="false" id="viewSelected" aria-labelledby="viewLabel" role="combobox" aria-controls="viewList"></div>
+    <div class="dropdown-list" id="viewList" role="listbox" tabindex="-1" aria-labelledby="viewSelected"></div>
+  </div>
+
+  <div class="refresh-wrapper" role="region" aria-label="Refresh data">
+    <label class="dropdown-label" for="refreshBtn">Refresh</label>
+    <button class="refresh-btn" id="refreshBtn" aria-label="Refresh data">⟳ Refresh</button>
+  </div>
+</div>
+
+<div class="container" role="region" aria-label="Visitor Data">
+  <div class="panel">
+    <div class="panel-header">
+      <h2 id="panelTitle">Unique Visitors</h2>
+      <span id="totalCount">...</span>
+    </div>
+    <table id="resultsTable" aria-live="polite" role="table" aria-label="Visitor data table">
+      <thead>
+        <tr><th>IP</th><th>Location</th><th>Visited</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabase = createClient(
+    "https://jfscpvfooviahjoqffkz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc2NwdmZvb3ZpYWhqb3FmZmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNDk0ODYsImV4cCI6MjA2NzgyNTQ4Nn0.1RAefMzJRpOEGREICvGdRq9fHfKrC1sUnoagGgf9uwc"
+  );
+
+  let allData = [];
+  const filters = {
+    location: "all",
+    date: "all",
+    view: "unique",
+  };
+
+  // Dropdown options data
+
+  const locationOptions = [
+    {value:"all", label:"All", emoji:"🌍"},
+    {value:"us", label:"USA", flag:"https://www.countryflags.com/wp-content/uploads/united-states-of-america-flag-png-large.png"},
+    {value:"utah", label:"Utah", flag:"https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Utah.svg"}
+  ];
+
+  const dateOptions = [
+    {value:"all", label:"All Time", emoji:"🕓"},
+    {value:"today", label:"Today", emoji:"📅"},
+    {value:"yesterday", label:"Yesterday", emoji:"🗓️"}
+  ];
+
+  const viewOptions = [
+    {value:"unique", label:"Unique", emoji:"👤"},
+    {value:"all", label:"All", emoji:"👥"}
+  ];
+
+  // Format date string like 7/11/2025 6:47 PM
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+  }
+
+  function isToday(date) {
+    const today = new Date();
+    const d = new Date(date);
+    return d.toDateString() === today.toDateString();
+  }
+
+  function isYesterday(date) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const d = new Date(date);
+    return d.toDateString() === yesterday.toDateString();
+  }
+
+  function getFlagURL(location = "") {
+    const loc = location.toLowerCase();
+
+    if (loc.includes("united kingdom") || loc.includes("england") || loc.includes("scotland") || loc.includes("wales") || loc.includes("northern ireland")) {
+      return "https://www.countryflags.com/wp-content/uploads/united-kingdom-flag-png-large.png";
+    }
+    if (loc.includes("united states") || loc.includes("usa")) {
+      return "https://www.countryflags.com/wp-content/uploads/united-states-of-america-flag-png-large.png";
+    }
+    if (loc.includes("china")) {
+      return "https://www.countryflags.com/wp-content/uploads/china-flag-png-large.png";
+    }
+    if (loc.includes("south korea") || loc.includes("korea")) {
+      return "https://www.countryflags.com/wp-content/uploads/south-korea-flag-png-large.png";
+    }
+    if (loc.includes("germany")) {
+      return "https://www.countryflags.com/wp-content/uploads/germany-flag-png-large.png";
+    }
+    if (loc.includes("russia")) {
+      return "https://www.countryflags.com/wp-content/uploads/russia-flag-png-large.png";
+    }
+    if (loc.includes("pakistan")) {
+      return "https://www.countryflags.com/wp-content/uploads/pakistan-flag-png-large.png";
+    }
+    if (loc.includes("brazil")) {
+      return "https://www.countryflags.com/wp-content/uploads/brazil-flag-png-large.png";
+    }
+    if (loc.includes("mexico")) {
+      return "https://www.countryflags.com/wp-content/uploads/mexico-flag-png-large.png";
+    }
+
+    return null;
+  }
+
+  function renderDropdownOptions(dropdownEl, options, selectedValue) {
+    dropdownEl.innerHTML = "";
+    options.forEach(opt => {
+      const optionDiv = document.createElement("div");
+      optionDiv.className = "dropdown-option";
+      optionDiv.setAttribute("role", "option");
+      optionDiv.setAttribute("data-value", opt.value);
+      optionDiv.setAttribute("tabindex", "-1");
+      optionDiv.setAttribute("aria-selected", (opt.value === selectedValue).toString());
+
+      // Flag image or emoji
+      if(opt.flag){
+        const img = document.createElement("img");
+        img.className = "flag-icon";
+        img.src = opt.flag;
+        img.alt = opt.label + " flag";
+        optionDiv.appendChild(img);
+      } else if(opt.emoji){
+        const span = document.createElement("span");
+        span.className = "emoji-icon";
+        span.textContent = opt.emoji;
+        span.setAttribute("aria-hidden","true");
+        optionDiv.appendChild(span);
+      }
+
+      // Label text
+      const textNode = document.createTextNode(opt.label);
+      optionDiv.appendChild(textNode);
+
+      dropdownEl.appendChild(optionDiv);
+    });
+  }
+
+  function updateSelectedDisplay(selectedEl, options, selectedValue) {
+    selectedEl.innerHTML = "";
+    const selectedOpt = options.find(o => o.value === selectedValue) || options[0];
+
+    if(selectedOpt.flag){
+      const img = document.createElement("img");
+      img.className = "flag-icon";
+      img.src = selectedOpt.flag;
+      img.alt = selectedOpt.label + " flag";
+      selectedEl.appendChild(img);
+    } else if(selectedOpt.emoji){
+      const span = document.createElement("span");
+      span.className = "emoji-icon";
+      span.textContent = selectedOpt.emoji;
+      span.setAttribute("aria-hidden","true");
+      selectedEl.appendChild(span);
+    }
+    selectedEl.appendChild(document.createTextNode(selectedOpt.label));
+  }
+
+  // Dropdown open/close and keyboard navigation logic
+
+  function setupDropdown(dropdownId, options, onChange, initialValue){
+    const dropdown = document.getElementById(dropdownId);
+    const selected = dropdown.querySelector(".dropdown-selected");
+    const list = dropdown.querySelector(".dropdown-list");
+
+    let open = false;
+    let focusedIndex = -1;
+
+    function openDropdown(){
+      list.classList.add("open");
+      selected.setAttribute("aria-expanded", "true");
+      open = true;
+    }
+    function closeDropdown(){
+      list.classList.remove("open");
+      selected.setAttribute("aria-expanded", "false");
+      focusedIndex = -1;
+      open = false;
+    }
+    function toggleDropdown(){
+      if(open) closeDropdown();
+      else openDropdown();
+    }
+
+    function focusOption(index){
+      if(index < 0 || index >= options.length) return;
+      const optionDivs = Array.from(list.children);
+      if(focusedIndex >= 0) optionDivs[focusedIndex].classList.remove("focused");
+      focusedIndex = index;
+      optionDivs[focusedIndex].classList.add("focused");
+      optionDivs[focusedIndex].focus();
+    }
+
+    function clearFocus(){
+      const optionDivs = Array.from(list.children);
+      optionDivs.forEach(opt => opt.classList.remove("focused"));
+      focusedIndex = -1;
+    }
+
+    // Render options initially
+    renderDropdownOptions(list, options, initialValue);
+    updateSelectedDisplay(selected, options, initialValue);
+
+    selected.addEventListener("click", e => {
+      e.preventDefault();
+      toggleDropdown();
+    });
+
+    selected.addEventListener("keydown", e => {
+      switch(e.key){
+        case "ArrowDown":
+          e.preventDefault();
+          if(!open) openDropdown();
+          focusOption(0);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          if(!open) openDropdown();
+          focusOption(options.length - 1);
+          break;
+        case "Enter":
+        case " ":
+          e.preventDefault();
+          toggleDropdown();
+          break;
+        case "Escape":
+          if(open){
+            e.preventDefault();
+            closeDropdown();
+            selected.focus();
+          }
+          break;
+      }
+    });
+
+    list.addEventListener("keydown", e => {
+      const optionDivs = Array.from(list.children);
+      switch(e.key){
+        case "ArrowDown":
+          e.preventDefault();
+          if(focusedIndex < options.length - 1){
+            focusOption(focusedIndex + 1);
+          }
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          if(focusedIndex > 0){
+            focusOption(focusedIndex - 1);
+          }
+          break;
+        case "Enter":
+        case " ":
+          e.preventDefault();
+          if(focusedIndex >= 0){
+            const val = optionDivs[focusedIndex].dataset.value;
+            filters[dropdownId.replace("Dropdown","")] = val;
+            updateSelectedDisplay(selected, options, val);
+            applyFilters();
+            closeDropdown();
+            selected.focus();
+          }
+          break;
+        case "Escape":
+          e.preventDefault();
+          closeDropdown();
+          selected.focus();
+          break;
+      }
+    });
+
+    list.addEventListener("click", e => {
+      const optionDiv = e.target.closest(".dropdown-option");
+      if(optionDiv){
+        const val = optionDiv.dataset.value;
+        filters[dropdownId.replace("Dropdown","")] = val;
+        updateSelectedDisplay(selected, options, val);
+        applyFilters();
+        closeDropdown();
+        selected.focus();
+      }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener("click", e => {
+      if(!dropdown.contains(e.target)) closeDropdown();
+    });
+
+    // Initialize with selected value in filters
+    filters[dropdownId.replace("Dropdown","")] = initialValue;
+  }
+
+  // Data filtering and rendering table
+
+  function applyFilters(){
+    const filtered = allData.filter(entry => {
+      const location = (entry.location || "").toLowerCase();
+      const visitDate = new Date(entry.visited_at);
+
+      const locFilter = filters.location;
+      const dateFilter = filters.date;
+
+      const matchLoc =
+        locFilter === "all" ||
+        (locFilter === "us" && location.includes("united states")) ||
+        (locFilter === "utah" && location.includes("utah"));
+
+      const matchDate =
+        dateFilter === "all" ||
+        (dateFilter === "today" && isToday(visitDate)) ||
+        (dateFilter === "yesterday" && isYesterday(visitDate));
+
+      return matchLoc && matchDate;
+    });
+
+    const tableBody = document.querySelector("#resultsTable tbody");
+    const count = document.getElementById("totalCount");
+    const panelTitle = document.getElementById("panelTitle");
+    tableBody.innerHTML = "";
+
+    if(filters.view === "unique"){
+      panelTitle.textContent = "Unique Visitors";
+      const uniqueMap = new Map();
+      filtered.forEach(entry => {
+        if(!uniqueMap.has(entry.ip)) uniqueMap.set(entry.ip, entry);
+      });
+      [...uniqueMap.values()].forEach(entry => {
+        const flagURL = getFlagURL(entry.location);
+        tableBody.innerHTML += `<tr>
+          <td>${entry.ip}</td>
+          <td>${flagURL ? `<img class="flag-icon" src="${flagURL}" alt="flag">` : ''}${entry.location || "Unknown"}</td>
+          <td>${formatDate(entry.visited_at)}</td>
+        </tr>`;
+      });
+      count.textContent = uniqueMap.size;
+    } else {
+      panelTitle.textContent = "All Visits";
+      filtered.forEach(entry => {
+        const flagURL = getFlagURL(entry.location);
+        tableBody.innerHTML += `<tr>
+          <td>${entry.ip}</td>
+          <td>${flagURL ? `<img class="flag-icon" src="${flagURL}" alt="flag">` : ''}${entry.location || "Unknown"}</td>
+          <td>${formatDate(entry.visited_at)}</td>
+        </tr>`;
+      });
+      count.textContent = filtered.length;
+    }
+  }
+
+  // Load data from Supabase
+
+  async function loadData(){
+    try{
+      const { data, error } = await supabase
+        .from("visits")
+        .select("ip, location, visited_at");
+
+      if(error){
+        console.error("Supabase error:", error);
+        return;
+      }
+      allData = data.sort((a,b)=> new Date(a.visited_at) - new Date(b.visited_at));
+      applyFilters();
+    }catch(e){
+      console.error("Fetch error:", e);
+    }
+  }
+
+  // Setup dropdowns
+
+  setupDropdown("locationDropdown", locationOptions, val => {
+    filters.location = val;
+    applyFilters();
+  }, "all");
+
+  setupDropdown("dateDropdown", dateOptions, val => {
+    filters.date = val;
+    applyFilters();
+  }, "all");
+
+  setupDropdown("viewDropdown", viewOptions, val => {
+    filters.view = val;
+    applyFilters();
+  }, "unique");
+
+  // Refresh button event
+  document.getElementById("refreshBtn").addEventListener("click", () => {
+    loadData();
+  });
+
+  // Initial data load
+  loadData();
+
+</script>
+
 </body>
 </html>
