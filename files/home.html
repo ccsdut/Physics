@@ -78,12 +78,31 @@
 
     #down-arrow {
       position: absolute;
-      bottom: 20px;
+      bottom: 60px; /* raised for label */
       cursor: pointer;
-      width: 40px;
-      height: 40px;
+      width: 60px;
+      height: 60px;
       fill: #d2b48c;
-      animation: bounce 2s infinite;
+      filter: drop-shadow(0 0 6px #d2b48c);
+      animation: bounce 2s infinite, pulse 3s infinite;
+      transition: filter 0.3s ease;
+    }
+    #down-arrow:hover {
+      filter: drop-shadow(0 0 12px #f0d27a);
+    }
+
+    #down-label {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      color: #d2b48c;
+      font-family: 'Comic Sans MS', sans-serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      user-select: none;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+      pointer-events: none; /* so clicks pass through */
     }
 
     @keyframes bounce {
@@ -91,10 +110,19 @@
         transform: translateY(0);
       }
       40% {
-        transform: translateY(10px);
+        transform: translateY(15px);
       }
       60% {
-        transform: translateY(5px);
+        transform: translateY(8px);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
       }
     }
 
@@ -115,7 +143,7 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
       text-align: center;
       width: 150px;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       line-height: 1.2;
       display: flex;
       flex-direction: column;
@@ -175,8 +203,9 @@
     </div>
 
     <svg id="down-arrow" viewBox="0 0 24 24" onclick="document.getElementById('featured').scrollIntoView({ behavior: 'smooth' });" xmlns="http://www.w3.org/2000/svg" >
-      <path d="M6 9l6 6 6-6" stroke="#d2b48c" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6 9l6 6 6-6" stroke="#d2b48c" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
+    <div id="down-label">See more</div>
   </div>
 
   <section id="featured" class="info-box">
@@ -194,15 +223,15 @@
   </section>
 
   <section id="credits" class="info-box">
-  <h2>Credits</h2>
-  <p>
-    Just to clarify, we are not the creators of the games featured on our website, nor are we involved in their development. We would like to give full credit to all the talented individuals and teams who created the games you enjoy here.
-  </p>
-  <p>
-    If you are the creator of a game listed on our site and would like it removed, please reach out to me in the 
-    <a href="/files/survey.html" style="color: #d2b48c; text-decoration: underline;">feedback section</a>.
-  </p>
-</section>
+    <h2>Credits</h2>
+    <p>
+      Just to clarify, we are not the creators of the games featured on our website, nor are we involved in their development. We would like to give full credit to all the talented individuals and teams who created the games you enjoy here.
+    </p>
+    <p>
+      If you are the creator of a game listed on our site and would like it removed, please reach out to me in the 
+      <a href="/files/survey.html" style="color: #d2b48c; text-decoration: underline;">feedback section</a>.
+    </p>
+  </section>
 
   <div id="corner-ads">
     <div id="tracker-box">Loading...</div>
@@ -358,8 +387,8 @@
             </svg>
             <span>Visitors</span>
           </div>
-          <div style="font-size: 1rem; font-weight: bold; margin-top: 6px;">Total Visits: ${totalVisits}</div>
-          <div style="font-size: 1rem; font-weight: bold; margin-top: 2px;">Visits Today: ${todaysVisits}</div>
+          <div>Total Visits: ${totalVisits}</div>
+          <div>Visits Today: ${todaysVisits}</div>
         `;
       } catch (e) {
         box.textContent = "❌ Unexpected error:\n" + e.message;
