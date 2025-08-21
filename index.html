@@ -32,6 +32,7 @@
       border: none;
       padding: 0;
       cursor: pointer;
+      transition: opacity 0.4s ease;  /* fade animation */
     }
     #menu-btn img {
       width: 60px;
@@ -46,12 +47,13 @@
       background: rgba(0,0,0,0.6);
       z-index: 9998;
       display: none;
+      transition: opacity 0.4s ease;  /* fade animation */
     }
 
     /* Menu Box */
     #menu-box {
       position: fixed;
-      top: 80px;   /* slightly closer to menu button */
+      top: 80px;
       left: 12px;
       background: rgba(0,0,0,0.9);
       border-radius: 16px;
@@ -61,7 +63,8 @@
       gap: 12px;
       width: 200px;
       z-index: 9999;
-      border: 2px solid white;  /* white outline on edges */
+      border: 2px solid white;
+      transition: opacity 0.4s ease;  /* fade animation */
     }
     .menu-item {
       display: flex;
@@ -72,14 +75,15 @@
       border-radius: 10px;
       cursor: pointer;
       color: white;
-      font-size: 16px;
+      font-size: 14px;  /* smaller so "Remove Menu Button" fits one line */
       font-weight: bold;
+      white-space: nowrap; /* force one line */
     }
     .menu-item:hover {
       background: rgba(255,255,255,0.2);
     }
     .menu-item img {
-      width: 26px;  
+      width: 26px;
       height: 26px;
     }
   </style>
@@ -94,6 +98,10 @@
 
   <!-- Menu Box -->
   <div id="menu-box">
+    <!-- Remove Menu Button -->
+    <div class="menu-item" onclick="removeMenu()">
+      <img src="https://ratgames.vercel.app/media/no-menu.png" alt="Remove Menu"> Remove Menu Button
+    </div>
     <div class="menu-item" onclick="goHome()">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home"> Home
     </div>
@@ -118,17 +126,33 @@
     menuBtn.onclick = () => {
       const open = menuBox.style.display === "flex";
       if (open) {
-        menuBox.style.display = "none";
-        overlay.style.display = "none";
+        menuBox.style.opacity = 0;
+        overlay.style.opacity = 0;
+        setTimeout(() => {
+          menuBox.style.display = "none";
+          overlay.style.display = "none";
+        }, 400);
       } else {
         menuBox.style.display = "flex";
         overlay.style.display = "block";
+        setTimeout(() => {
+          menuBox.style.opacity = 1;
+          overlay.style.opacity = 1;
+        }, 10);
       }
     };
     overlay.onclick = () => {
-      menuBox.style.display = "none";
-      overlay.style.display = "none";
+      closeMenu();
     };
+
+    function closeMenu() {
+      menuBox.style.opacity = 0;
+      overlay.style.opacity = 0;
+      setTimeout(() => {
+        menuBox.style.display = "none";
+        overlay.style.display = "none";
+      }, 400);
+    }
 
     // Menu actions
     function goHome() {
@@ -143,9 +167,17 @@
       }
       closeMenu();
     }
-    function closeMenu() {
-      menuBox.style.display = "none";
-      overlay.style.display = "none";
+
+    function removeMenu() {
+      // fade out all menu elements
+      menuBtn.style.opacity = 0;
+      menuBox.style.opacity = 0;
+      overlay.style.opacity = 0;
+      setTimeout(() => {
+        menuBtn.remove();
+        menuBox.remove();
+        overlay.remove();
+      }, 400); // match transition duration
     }
 
     // PWA Install
