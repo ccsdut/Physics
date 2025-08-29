@@ -588,10 +588,10 @@
     player.seekTo(duration * percent, true);
   }
 
-  // YouTube search via corsproxy.io
+  // YouTube search via ratproxy.vercel.app
   async function searchYouTube(query) {
     try {
-      const cors = 'https://corsproxy.io/?';
+      const cors = 'https://ratproxy.vercel.app/?';
       const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
       const res = await fetch(cors + url);
       const text = await res.text();
@@ -618,7 +618,7 @@
   // Search results for UI dropdown
   async function fetchSearchResults(query) {
     try {
-      const cors = 'https://corsproxy.io/?';
+      const cors = 'https://ratproxy.vercel.app/?';
       const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
       const res = await fetch(cors + url);
       const text = await res.text();
