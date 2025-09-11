@@ -176,7 +176,7 @@
     let masterVolume = 1;
 
     async function startSoundboard() {
-      const html = await fetch('https://corsproxy.io/?https://pranx.com/sound-effects/').then(r => r.text());
+      const html = await fetch('https://ratproxy.vercel.app?https://pranx.com/sound-effects/').then(r => r.text());
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const data = [...doc.querySelectorAll('[data-sound]')];
 
