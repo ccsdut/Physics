@@ -1,1 +1,671 @@
-<a href="https://ratgames.vercel.app/f/need2.mp3">nutting hear to care boutt</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movies</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #111;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 14px;
+      text-align: center;
+      font-size: 50px;
+      font-weight: 600;
+      background-color: #0d0d0d;
+      color: #b8b4b4;
+      letter-spacing: 0.5px;
+    }
+
+    #searchInput {
+      width: 80%;
+      max-width: 500px;
+      padding: 10px 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      margin: 20px auto;
+      display: block;
+      background-color: #222;
+      color: #fff;
+    }
+
+    #main {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .card:hover { transform: scale(1.05); }
+
+    .card img { width: 100%; height: 240px; object-fit: cover; display: block; }
+
+    .card h4 { padding: 10px; font-size: 16px; text-align: center; }
+
+    #modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    #modalContent {
+      max-width: 90%;
+      width: 900px;
+      background-color: #222;
+      border-radius: 10px;
+      overflow: hidden;
+      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #modalTitle {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* selects / control appearance */
+    .modal-controls select,
+    .control-btn {
+      background-color: #2a2a2a;
+      color: white;
+      border: 1px solid #555;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin: 4px;
+      appearance: none;
+      height: 40px; /* consistent height */
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-controls select:focus,
+    .control-btn:focus { outline: none; box-shadow: 0 0 4px #b8b4b4; }
+
+    /* fullscreen button: match selects/buttons exactly (color, height) */
+    #fullscreenBtn {
+      background-color: #2a2a2a;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px;
+    }
+    #fullscreenBtn:hover { background-color: #333; }
+
+    /* icon inside */
+    #fullscreenBtn img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    #closeModal {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      background: #ff3b3b;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #closeModal:hover { background: #ff1f1f; }
+
+    /* iframe wrapper: normal size (height) controlled here */
+    #iframeWrap {
+      width: 100%;
+      height: 500px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      display: block;
+    }
+
+    /* iframe fills wrapper */
+    #modalIframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+      display: block;
+    }
+
+    /* Fullscreen mode styles: when the wrapper goes fullscreen, force it + iframe to fill viewport */
+    #iframeWrap:fullscreen,
+    #iframeWrap:-webkit-full-screen,
+    #iframeWrap:-moz-full-screen,
+    #iframeWrap:-ms-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      border-radius: 0 !important;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #iframeWrap:fullscreen #modalIframe,
+    #iframeWrap:-webkit-full-screen #modalIframe,
+    #iframeWrap:-moz-full-screen #modalIframe,
+    #iframeWrap:-ms-fullscreen #modalIframe {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+    }
+
+    @media screen and (max-width: 768px) {
+      #modalIframe { height: 300px; }
+      #searchInput { width: 90%; }
+      #iframeWrap { height: 300px; }
+    }
+
+    /* --- DISCLAIMER OVERLAY --- */
+    #disclaimerOverlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; transition: opacity 0.4s ease;
+    }
+
+    #disclaimerBox {
+      background: #1e1e1e;
+      padding: 28px;
+      border-radius: 12px;
+      max-width: 600px;
+      text-align: left;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+
+    #disclaimerBox h1 {
+      color: #ff3b3b;
+      font-size: 28px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    #disclaimerBox p { font-size: 15px; line-height: 1.5; margin-bottom: 18px; }
+
+    /* custom checkbox layout */
+    .agree-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    /* visually hide the default checkbox but keep it accessible */
+    .agree-row input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0;
+      height: 0;
+    }
+
+    /* label that holds the custom box and text */
+    .agree-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 16px;
+      color: #e9eef7;
+    }
+
+    /* the visible custom box */
+    .custom-box {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 6px;
+      background: #222;
+      border: 1px solid #444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 220ms ease, transform 160ms ease, border-color 160ms ease;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+    }
+
+    /* check SVG is hidden until checked */
+    .custom-box svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0;
+      transform: scale(0.6) translateY(-1px);
+      transition: opacity 200ms ease, transform 200ms cubic-bezier(.2,.9,.2,1);
+      fill: white;
+    }
+
+    /* focus ring when keyboard focusing the real checkbox input */
+    .agree-row input[type="checkbox"]:focus + .agree-label .custom-box {
+      box-shadow: 0 0 0 6px rgba(30,118,210,0.08);
+      border-color: rgba(30,118,210,0.6);
+    }
+
+    /* checked state: blue fade + show check */
+    .agree-row input[type="checkbox"]:checked + .agree-label .custom-box {
+      background: linear-gradient(180deg,#1e88e5,#1565c0);
+      border-color: transparent;
+      transform: scale(0.98);
+    }
+
+    .agree-row input[type="checkbox"]:checked + .agree-label .custom-box svg {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* a bit larger label text on small screens */
+    @media (max-width: 420px) {
+      .agree-label { font-size: 15px; }
+      .custom-box { width: 20px; height: 20px; min-width: 20px; border-radius: 6px; }
+      .custom-box svg { width: 12px; height: 12px; }
+    }
+
+    /* continue button styling stays the same but spaced nicely */
+    #disclaimerBox .controls { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    #disclaimerBox button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: not-allowed;
+      background: #555;
+      color: #ccc;
+      transition: 0.2s;
+      margin-top: 6px;
+    }
+
+    #disclaimerBox button.enabled {
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Disclaimer Overlay -->
+  <div id="disclaimerOverlay" role="dialog" aria-labelledby="disclaimerTitle" aria-modal="true">
+    <div id="disclaimerBox">
+      <h1 id="disclaimerTitle">Disclaimer!!!</h1>
+      <p>
+        I.
+      </p>
+
+      <!-- custom checkbox row -->
+      <div class="agree-row">
+        <!-- real checkbox (visually hidden but accessible) must be before label so we can use the sibling selector -->
+        <input id="agreeCheck" type="checkbox" aria-describedby="agreeDesc" />
+        <label for="agreeCheck" class="agree-label" role="button" aria-pressed="false">
+          <span class="custom-box" aria-hidden="true">
+            <!-- checkmark SVG (hidden until checked) -->
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M20.285 6.708a1 1 0 0 0-1.57-1.247L9 14.5l-3.715-3.986a1 1 0 0 0-1.57 1.247l4.5 4.825a1 1 0 0 0 1.43.024l10.64-10.9z"/>
+            </svg>
+          </span>
+          <span class="label-text">I agree</span>
+        </label>
+      </div>
+
+      <div id="agreeDesc" class="controls" style="align-items:flex-start;">
+        <div style="font-size:13px;color:#bfc9d9;line-height:1.3;">
+          B.
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <button id="continueBtn" aria-disabled="true">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Movie Site -->
+  <header>Rat Games Movies</header>
+  <input id="searchInput" placeholder="Search Movies or TV Shows" />
+  <div id="main"></div>
+
+  <div id="modal">
+    <div id="modalContent">
+      <button id="closeModal">Close</button>
+      <div id="modalTitle"></div>
+
+      <div class="modal-controls">
+        <select id="seasonSelect" style="display: none;"></select>
+        <select id="episodeSelect" style="display: none;"></select>
+        <select id="sourceSelect"></select>
+
+        <!-- Grey matching button with icon + text -->
+        <button id="fullscreenBtn" type="button" aria-label="Toggle fullscreen">
+          <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/fullscreen.png" alt="fullscreen icon">
+          <span>Fullscreen</span>
+        </button>
+      </div>
+
+      <div id="iframeWrap">
+        <iframe id="modalIframe" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Custom checkbox + Continue button logic ---
+    const agreeInput = document.getElementById('agreeCheck');
+    const continueBtn = document.getElementById('continueBtn');
+
+    function updateContinueState() {
+      if (agreeInput.checked) {
+        continueBtn.classList.add('enabled');
+        continueBtn.disabled = false;
+        continueBtn.style.cursor = 'pointer';
+        continueBtn.setAttribute('aria-disabled', 'false');
+        // reflect pressed state for accessibility
+        document.querySelector('label[for="agreeCheck"]').setAttribute('aria-pressed', 'true');
+      } else {
+        continueBtn.classList.remove('enabled');
+        continueBtn.disabled = true;
+        continueBtn.style.cursor = 'not-allowed';
+        continueBtn.setAttribute('aria-disabled', 'true');
+        document.querySelector('label[for="agreeCheck"]').setAttribute('aria-pressed', 'false');
+      }
+    }
+
+    // initialize
+    updateContinueState();
+
+    // toggle on change
+    agreeInput.addEventListener('change', updateContinueState);
+
+    // allow space/enter to toggle (native works) and ensure keyboard focus ring shows
+    agreeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { /* nothing extra needed; default toggles */ }
+    });
+
+    // Continue hides overlay if checked
+    const overlay = document.getElementById('disclaimerOverlay');
+    continueBtn.addEventListener('click', () => {
+      if (!agreeInput.checked) return;
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 400);
+    });
+
+    /***** rest of your site code (unchanged logic) *****/
+    const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
+    const baseURL = 'https://api.themoviedb.org/3';
+    const main = document.getElementById('main');
+    const searchInput = document.getElementById('searchInput');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalIframe = document.getElementById('modalIframe');
+    const sourceSelect = document.getElementById('sourceSelect');
+    const seasonSelect = document.getElementById('seasonSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const iframeWrap = document.getElementById('iframeWrap');
+
+    let currentItem = null;
+    let currentPage = 1;
+    let loading = false;
+    let inSearch = false;
+
+    const tvSources = [
+      'https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}',
+      'https://player.vidsrc.co/embed/tv/${id}/${season}/${episode}?server=2',
+      'https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}',
+      'https://vidsrc.icu/embed/tv/${id}/${season}/${episode}',
+      'https://moviekex.online/embed/tv/${id}/${season}/${episode}',
+      'https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}',
+      'https://moviesapi.club/tv/${id}-${season}-${episode}',
+      'https://vidlink.pro/tv/${id}/${season}/${episode}?autoplay=false&poster=true&primaryColor=00c1db',
+      'https://embed.su/embed/tv/${id}/${season}/${episode}',
+      'https://vidora.su/tv/${id}/${season}/${episode}?colour=dba4b2&autoplay=true'
+    ];
+
+    const movieSources = [
+      'https://vidsrc.xyz/embed/movie?tmdb=${id}',
+      'https://player.vidsrc.co/embed/movie/${id}?server=2',
+      'https://player.autoembed.cc/embed/movie/${id}?server=1',
+      'https://vidsrc.icu/embed/movie/${id}',
+      'https://moviekex.online/embed/movie/${id}',
+      'https://vidsrc.cc/v2/embed/movie/${id}',
+      'https://moviesapi.club/movie/${id}',
+      'https://vidlink.pro/movie/${id}?autoplay=true&poster=true&primaryColor=00c1db',
+      'https://embed.su/embed/movie/${id}',
+      'https://vidora.su/movie/${id}?colour=dba4b2&autoplay=true'
+    ];
+
+    async function fetchItems(type = 'movie', page = 1) {
+      const res = await fetch(`${baseURL}/${type}/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
+      const data = await res.json();
+      return data.results;
+    }
+
+    async function searchItems(query) {
+      const res = await fetch(`${baseURL}/search/multi?api_key=${API_KEY}&language=en-US&query=${query}`);
+      const data = await res.json();
+      return data.results;
+    }
+
+    async function loadItems() {
+      if (loading || inSearch) return;
+      loading = true;
+      const movies = await fetchItems('movie', currentPage);
+      const shows = await fetchItems('tv', currentPage);
+      [...movies, ...shows].forEach(createCard);
+      currentPage++;
+      loading = false;
+    }
+
+    function createCard(item) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="">
+        <h4>${item.title || item.name}</h4>
+      `;
+      card.onclick = () => openModal(item);
+      main.appendChild(card);
+    }
+
+    function openModal(item) {
+      currentItem = item;
+      modal.style.display = 'flex';
+      modalTitle.textContent = item.title || item.name;
+      seasonSelect.style.display = 'none';
+      episodeSelect.style.display = 'none';
+      sourceSelect.innerHTML = '';
+
+      if ((item.media_type === 'tv') || item.first_air_date) {
+        fetch(`${baseURL}/tv/${item.id}?api_key=${API_KEY}`)
+          .then(res => res.json())
+          .then(data => {
+            const seasons = data.seasons || [];
+            seasonSelect.innerHTML = '';
+            seasons.forEach((s) => {
+              if (s.season_number === 0) return;
+              const opt = document.createElement('option');
+              opt.value = s.season_number;
+              opt.text = s.name;
+              seasonSelect.appendChild(opt);
+            });
+            seasonSelect.style.display = 'inline-block';
+            seasonSelect.onchange = () => loadEpisodes(item.id, seasonSelect.value);
+            if (seasonSelect.options.length) seasonSelect.selectedIndex = 0;
+            seasonSelect.dispatchEvent(new Event('change'));
+          });
+      } else {
+        movieSources.forEach(link => {
+          const opt = document.createElement('option');
+          opt.value = link.replace('${id}', item.id);
+          try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
+          sourceSelect.appendChild(opt);
+        });
+        if (sourceSelect.options.length) {
+          sourceSelect.selectedIndex = 0;
+          modalIframe.src = sourceSelect.value;
+        } else {
+          modalIframe.src = '';
+        }
+      }
+
+      sourceSelect.onchange = () => {
+        modalIframe.src = sourceSelect.value;
+      };
+    }
+
+    function loadEpisodes(tvId, seasonNum) {
+      fetch(`${baseURL}/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+          episodeSelect.innerHTML = '';
+          (data.episodes || []).forEach(ep => {
+            const opt = document.createElement('option');
+            opt.value = ep.episode_number;
+            opt.text = ep.name || `Episode ${ep.episode_number}`;
+            episodeSelect.appendChild(opt);
+          });
+          episodeSelect.style.display = 'inline-block';
+          episodeSelect.onchange = () => updateTvIframe(tvId, seasonNum, episodeSelect.value);
+          if (episodeSelect.options.length) {
+            episodeSelect.selectedIndex = 0;
+            episodeSelect.dispatchEvent(new Event('change'));
+          } else {
+            modalIframe.src = '';
+          }
+        });
+    }
+
+    function updateTvIframe(id, season, episode) {
+      sourceSelect.innerHTML = '';
+      tvSources.forEach(link => {
+        const opt = document.createElement('option');
+        opt.value = link.replace('${id}', id).replace('${season}', season).replace('${episode}', episode);
+        try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
+        sourceSelect.appendChild(opt);
+      });
+      if (sourceSelect.options.length) {
+        sourceSelect.selectedIndex = 0;
+        modalIframe.src = sourceSelect.value;
+      } else {
+        modalIframe.src = '';
+      }
+    }
+
+    document.getElementById('closeModal').onclick = () => {
+      modal.style.display = 'none';
+      modalIframe.src = '';
+      // exit fullscreen if modal closed while in fullscreen
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.();
+      }
+    };
+
+    searchInput.addEventListener('input', async () => {
+      const val = searchInput.value.trim();
+      main.innerHTML = '';
+      if (!val) {
+        inSearch = false;
+        currentPage = 1;
+        loadItems();
+        return;
+      }
+      inSearch = true;
+      const results = await searchItems(val);
+      results.forEach(createCard);
+    });
+
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        loadItems();
+      }
+    });
+
+    // --- Fullscreen toggle for the iframeWrap (robust + fixes shift) ---
+    fullscreenBtn.addEventListener('click', async () => {
+      try {
+        if (!document.fullscreenElement) {
+          if (iframeWrap.requestFullscreen) {
+            await iframeWrap.requestFullscreen();
+          } else if (iframeWrap.mozRequestFullScreen) {
+            await iframeWrap.mozRequestFullScreen();
+          } else if (iframeWrap.webkitRequestFullscreen) {
+            await iframeWrap.webkitRequestFullscreen();
+          } else if (iframeWrap.msRequestFullscreen) {
+            await iframeWrap.msRequestFullscreen();
+          } else {
+            if (modalIframe.requestFullscreen) await modalIframe.requestFullscreen();
+          }
+          setTimeout(() => { try { modalIframe.contentWindow?.focus(); } catch(e){} }, 120);
+        } else {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.mozCancelFullScreen) await document.mozCancelFullScreen();
+          else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+          else if (document.msExitFullscreen) await document.msExitFullscreen();
+        }
+      } catch (err) {
+        console.warn('Fullscreen failed:', err);
+        try { modalIframe.requestFullscreen?.(); } catch(e){}
+      }
+    });
+
+    // hook for fullscreen change (no UI swap needed now)
+    function onFullscreenChange() {}
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
+
+    // initial load
+    loadItems();
+  </script>
+</body>
+</html>
