@@ -364,15 +364,22 @@ Zuma, https://ratgames.vercel.app/files/games/Zuma.html
       })
       .filter(Boolean);
 
+    // Keep the first 9 exactly as-written, sort the rest alphabetically
+    const firstFive = games.slice(0, 9);
+    const restSorted = games
+      .slice(9)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    const finalGames = [...firstFive, ...restSorted];
+
     // update placeholder to show count dynamically
     const searchInput = document.getElementById('search');
     const sampleHint = 'Minecraft, Clash Royale, 1v1.lol';
-    searchInput.placeholder = `Search through ${games.length} games (try: ${sampleHint})`;
+    searchInput.placeholder = `Search through ${finalGames.length} games (try: ${sampleHint})`;
 
     // populate buttons
     const container = document.getElementById('game-buttons');
     const buttonMap = new Map();
-    games.forEach(({name, url}) => {
+    finalGames.forEach(({name, url}) => {
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.textContent = name;
@@ -382,11 +389,11 @@ Zuma, https://ratgames.vercel.app/files/games/Zuma.html
     });
 
     // fuzzy search
-    const fuse = new Fuse(games, { keys:['name'], threshold:0.4 });
+    const fuse = new Fuse(finalGames, { keys:['name'], threshold:0.4 });
 
     searchInput.addEventListener('input', (e) => {
       const q = e.target.value.trim();
-      const results = q ? fuse.search(q).map(r => r.item.name) : games.map(g => g.name);
+      const results = q ? fuse.search(q).map(r => r.item.name) : finalGames.map(g => g.name);
       const showSet = new Set(results);
       buttonMap.forEach((btn, name) => btn.style.display = showSet.has(name) ? 'block' : 'none');
     });
@@ -415,7 +422,7 @@ Zuma, https://ratgames.vercel.app/files/games/Zuma.html
 
     // optional: expose number of games in the visible label too
     const labelText = document.getElementById('label-text');
-    labelText.textContent = `Find a game — ${games.length} available`;
+    labelText.textContent = `Find a game — ${finalGames.length} available`;
   </script>
 </body>
 </html>
