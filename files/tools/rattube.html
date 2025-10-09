@@ -1,522 +1,202 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <base target="_blank" />
-  <meta charset="UTF-8" />
-  <title>YouTube</title>
-  <style>
-    body {
-      background-color: #12100e;
-      font-family: 'Segoe UI', sans-serif;
-      color: #d1c7b7;
-      margin: 0;
-      padding: 20px;
-      overflow-x: hidden;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>YouTube Player — animation</title>
+<style>
+  :root{
+    --bg:#060712;
+    --bar:#ffffff;
+    --muted:#94a3b8;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+  body{
+    background:var(--bg);
+    color: #fff;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
 
-    h1 {
-      color: #8b7765;
-      text-align: center;
-      font-size: 3rem;
-      margin-bottom: 30px;
-      user-select: none;
-      font-weight: 600;
-    }
+  /* background player */
+  #player {
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background:#000;
+  }
+  #player iframe{
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+  }
 
-    #search-bar {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 30px;
-    }
+  /* center bar */
+  .bar-wrap {
+    position:relative;
+    z-index:2;
+    width:min(880px,92%);
+    max-width:980px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    pointer-events:auto;
+  }
 
-    input {
-      padding: 12px;
-      width: 340px;
-      border-radius: 30px;
-      border: 1.5px solid #5a4d3b;
-      font-size: 16px;
-      background-color: #2c2a26;
-      color: #d1c7b7;
-      outline: none;
-      transition: border-color 0.3s ease;
-    }
+  .bar {
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--bar);
+    color:#071127;
+    padding:14px 18px;
+    border-radius:12px;
+    box-shadow:0 12px 40px rgba(2,6,23,0.6);
+    transform:translateY(0);
+    will-change:transform, opacity;
+  }
 
-    input::placeholder {
-      color: #7f7769;
-    }
+  .bar input{
+    flex:1;
+    border:0;
+    outline:0;
+    font-size:16px;
+    font-weight:600;
+    background:transparent;
+    color:inherit;
+  }
+  .bar button{
+    background:#071127;
+    color:#fff;
+    border:0;
+    padding:10px 14px;
+    border-radius:8px;
+    font-weight:700;
+    cursor:pointer;
+  }
 
-    input:focus {
-      border-color: #8b7765;
-      background-color: #3c3a35;
-    }
+  /* shake for invalid input */
+  .shake { animation:shake 420ms; }
+  @keyframes shake {
+    0%{ transform:translateX(0) } 20%{ transform:translateX(-8px) }
+    40%{ transform:translateX(6px) } 60%{ transform:translateX(-4px) }
+    80%{ transform:translateX(2px) } 100%{ transform:translateX(0) }
+  }
 
-    button {
-      padding: 12px 25px;
-      margin-left: 12px;
-      background-color: #5a4d3b;
-      color: #d1c7b7;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-      box-shadow: none;
-    }
+  /* animation: starts slow, then accelerates and flies off top */
+  .launched .bar {
+    animation: liftAway 820ms forwards;
+    animation-timing-function: linear;
+    opacity:1;
+  }
 
-    button:hover {
-      background-color: #7e6e55;
-    }
+  @keyframes liftAway {
+    0%   { transform: translateY(0); opacity:1; }
+    25%  { transform: translateY(-6vh); opacity:0.98; }
+    55%  { transform: translateY(-30vh); opacity:0.86; }
+    80%  { transform: translateY(-80vh); opacity:0.6; }
+    100% { transform: translateY(-140vh); opacity:0; }
+  }
 
-    #results {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 25px;
-      justify-content: center;
-    }
+  /* once hidden, remove pointer events so nothing interferes */
+  .gone { display:none !important; }
 
-    .video-card {
-      background: linear-gradient(145deg, #2f2b26, #25221d);
-      border-radius: 15px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      box-shadow: none;
-      user-select: none;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .video-card:hover {
-      transform: scale(1.05);
-    }
-
-    .video-card img {
-      width: 100%;
-      display: block;
-      height: 170px;
-      object-fit: cover;
-    }
-
-    .video-info {
-      padding: 15px;
-      color: #b5a78f;
-      flex-grow: 1;
-    }
-
-    .video-info h3 {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1.2;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(18, 16, 14, 0.95);
-      justify-content: center;
-      align-items: center;
-      animation: fadeIn 0.4s ease;
-    }
-
-    .modal-content {
-      position: relative;
-      width: 90%;
-      max-width: 900px;
-      background-color: #1e1b18;
-      padding: 20px;
-      border-radius: 20px;
-      box-shadow: 0 0 15px #5a4d3b;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
-      border-radius: 10px;
-      background-color: #000;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: -0px;
-      right: -0px;
-      font-size: 40px;
-      color: #8b7765;
-      cursor: pointer;
-      user-select: none;
-      background-color: #2c2a26;
-      padding: 8px 14px;
-      border-radius: 12px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.7);
-      transition: background-color 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 38px;
-    }
-
-    .close-btn:hover {
-      background-color: #7e6e55;
-    }
-
-    #download-btn {
-      background-color: #5a4d3b;
-      color: #d1c7b7;
-      border: none;
-      padding: 12px 0;
-      border-radius: 20px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 15px;
-      display: block;
-      width: 300px;
-      text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #download-btn:hover {
-      background-color: #7e6e55;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    #loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(18, 16, 14, 0.95);
-      color: #d1c7b7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 2000;
-    }
-
-    .spinner {
-      border: 6px solid #2c2a26;
-      border-top: 6px solid #8b7765;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* NEW: Enter Link button top right */
-    #manual-link-button {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background-color: #5a4d3b;
-  color: #d1c7b7;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 6px rgba(0,0,0,0.5);
-  transition: background-color 0.3s ease;
-  z-index: 3000;
-  user-select: none;
-}
-
-#manual-link-button:hover {
-  background-color: #7e6e55;
-}
-
-    /* NEW: Manual input container in modal */
-    #manual-input-container {
-      display: flex;
-      margin-bottom: 10px;
-    }
-
-    #manual-link-input {
-      flex-grow: 1;
-      padding: 10px 15px;
-      border-radius: 25px;
-      border: 1.5px solid #5a4d3b;
-      background-color: #2c2a26;
-      color: #d1c7b7;
-      font-size: 16px;
-      outline: none;
-      transition: border-color 0.3s ease;
-    }
-
-    #manual-link-input::placeholder {
-      color: #7f7769;
-    }
-
-    #manual-link-input:focus {
-      border-color: #8b7765;
-      background-color: #3c3a35;
-    }
-
-    #manual-link-enter-btn {
-      margin-left: 10px;
-      padding: 10px 20px;
-      border-radius: 25px;
-      background-color: #5a4d3b;
-      border: none;
-      color: #d1c7b7;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      user-select: none;
-    }
-
-    #manual-link-enter-btn:hover {
-      background-color: #7e6e55;
-    }
-  </style>
+  @media (max-width:520px){
+    .bar { padding:12px 12px; font-size:15px; gap:8px; }
+    .bar button{ padding:9px 10px; }
+  }
+</style>
 </head>
 <body>
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <p>Loading API keys…</p>
+  <!-- Player in background -->
+  <div id="player" aria-hidden="true">
+    <iframe id="ytframe"
+      src=""
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      title="YouTube player"></iframe>
   </div>
 
-  <button id="manual-link-button" title="Not working? Enter Link">Not working? Enter Link</button>
-
-  <h1>YouTube</h1>
-  <div id="search-bar">
-    <input id="search" placeholder="Search..." />
-    <button onclick="searchYouTube()">Search</button>
+  <!-- Center input bar -->
+  <div class="bar-wrap" id="barWrap">
+    <form id="form" class="bar" autocomplete="off" spellcheck="false" novalidate>
+      <input id="input" type="text" placeholder="Paste YouTube link or ID (e.g. goiWrNiaT0I)" aria-label="YouTube link or ID" />
+      <button type="submit">Launch</button>
+    </form>
   </div>
 
-  <div id="results"></div>
+<script>
+(function(){
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const frame = document.getElementById('ytframe');
+  const body = document.body;
+  const wrap = document.getElementById('barWrap');
 
-  <div class="modal" id="videoModal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">×</span>
-
-      <!-- Manual link input with Enter button -->
-      <div id="manual-input-container" style="display:none;">
-        <input id="manual-link-input" placeholder="Enter YouTube video link here" />
-        <button id="manual-link-enter-btn">Enter</button>
-      </div>
-
-      <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-      <div id="download-container" style="text-align: center;">
-        <button id="download-btn">Download</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    let apiKeys = [];
-    let currentKeyIndex = 0;
-    let nextPageToken = '';
-    let currentQuery = '';
-    const defaultQueries = [
-      "I bought", "last to leave wins", "futuristic tech",
-      "try not to laugh", "stick figure animated storytime", "Fred Buyers"
-    ];
-    const shownVideoIds = new Set();
-
-    const manualLinkButton = document.getElementById('manual-link-button');
-    const manualInputContainer = document.getElementById('manual-input-container');
-    const manualLinkInput = document.getElementById('manual-link-input');
-    const manualLinkEnterBtn = document.getElementById('manual-link-enter-btn');
-    const modal = document.getElementById('videoModal');
-    const iframe = document.getElementById('videoPlayer');
-    const downloadBtn = document.getElementById('download-btn');
-
-    manualLinkButton.addEventListener('click', () => {
-      manualInputContainer.style.display = 'flex';
-      modal.style.display = 'flex';
-      manualLinkInput.focus();
-    });
-
-    manualLinkEnterBtn.addEventListener('click', () => {
-      const url = manualLinkInput.value.trim();
-      if (!url) return alert("Please enter a YouTube video link.");
-
-      const videoId = extractVideoId(url);
-      if (!videoId) {
-        alert("Invalid YouTube video link.");
-        return;
+  function parseYouTubeId(text){
+    if(!text) return null;
+    text = text.trim();
+    const raw = text.match(/^([A-Za-z0-9_-]{11})$/);
+    if(raw) return raw[1];
+    try {
+      const maybe = text.includes('://') ? text : 'https://'+text;
+      const url = new URL(maybe);
+      const host = url.hostname.toLowerCase();
+      if(host === 'youtu.be'){
+        const id = url.pathname.slice(1).split(/[?/]/)[0];
+        if(id && id.length===11) return id;
       }
-
-      openModal(videoId);
-    });
-
-    function extractVideoId(url) {
-      // Simple regex to extract YouTube video ID from various URL formats
-      const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-      const match = url.match(regex);
-      return match ? match[1] : null;
-    }
-
-    async function loadApiKeysFromRemote() {
-      const sources = [
-        'https://vpl1aza.github.io/audio/index.html',
-        'https://sites.google.com/view/3l1te-g4m32/apps/youtube'
-      ];
-      const proxy = 'https://ratproxy.vercel.app/?';
-      const keys = new Set();
-
-      for (const url of sources) {
-        try {
-          const res = await fetch(proxy + url);
-          const text = await res.text();
-          const fromAddApiKey = [...text.matchAll(/addApiKey\(['"](.+?)['"]\);/g)];
-          const fromConst = [...text.matchAll(/const apiKey\s*=\s*['"](.+?)['"]/g)];
-          fromAddApiKey.forEach(match => keys.add(match[1]));
-          fromConst.forEach(match => keys.add(match[1]));
-        } catch (e) {
-          console.warn("Failed to load keys from:", url, e);
+      if(host.endsWith('youtube.com') || host.endsWith('youtube-nocookie.com')){
+        const v = url.searchParams.get('v');
+        if(v && /^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+        const seg = url.pathname.split('/');
+        for(let i=seg.length-1;i>=0;i--){
+          if(/^[A-Za-z0-9_-]{11}$/.test(seg[i])) return seg[i];
         }
       }
+      const m = text.match(/([A-Za-z0-9_-]{11})/);
+      if(m) return m[1];
+    } catch(e){
+      const m = text.match(/([A-Za-z0-9_-]{11})/);
+      if(m) return m[1];
+    }
+    return null;
+  }
 
-      apiKeys = Array.from(keys);
-      console.log(`Loaded ${apiKeys.length} API keys.`);
+  function showInvalid(){
+    wrap.classList.add('shake');
+    setTimeout(()=> wrap.classList.remove('shake'), 420);
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const id = parseYouTubeId(input.value);
+    if(!id){
+      showInvalid();
+      return;
     }
 
-    async function fetchWithKey(url) {
-      const totalTries = apiKeys.length * 2;
-      for (let i = 0; i < totalTries; i++) {
-        const keyIndex = (currentKeyIndex + i) % apiKeys.length;
-        const requestUrl = url.replace('{API_KEY}', apiKeys[keyIndex]);
-        try {
-          const res = await fetch(requestUrl);
-          if (!res.ok) continue;
-          const data = await res.json();
-          currentKeyIndex = keyIndex;
-          return data;
-        } catch (e) {
-          continue;
-        }
+    const src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1`;
+    // set src before animation so it loads as the bar moves
+    frame.src = src;
+
+    body.classList.add('launched');
+    wrap.style.pointerEvents = 'none';
+    // after animation completes, hide the bar entirely
+    const onAnimEnd = function(){
+      if(wrap && wrap.parentNode){
+        wrap.classList.add('gone');
       }
-      throw new Error("All API keys failed or quota exceeded.");
-    }
-
-    async function searchYouTube(loadMore = false, customQuery = '') {
-      const queryInput = document.getElementById("search");
-      const query = customQuery || queryInput.value.trim() || defaultQueries[0];
-
-      if (!loadMore) {
-        if (!customQuery) document.getElementById("results").innerHTML = '';
-        nextPageToken = '';
-      }
-
-      currentQuery = query;
-      const pageTokenParam = nextPageToken ? `&pageToken=${nextPageToken}` : '';
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key={API_KEY}&maxResults=6${pageTokenParam}`;
-
-      try {
-        const data = await fetchWithKey(url);
-        nextPageToken = data.nextPageToken || '';
-        appendResults(data.items);
-      } catch (error) {
-        console.error(`Failed to fetch for "${query}":`, error);
-      }
-    }
-
-    function appendResults(items) {
-      const results = document.getElementById("results");
-      items.forEach(item => {
-        const videoId = item.id.videoId;
-        if (shownVideoIds.has(videoId)) return;
-        shownVideoIds.add(videoId);
-
-        const title = item.snippet.title;
-        const thumbnail = item.snippet.thumbnails.high.url;
-
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        card.innerHTML = `
-          <img src="${thumbnail}" alt="${title}" loading="lazy" />
-          <div class="video-info">
-            <h3>${title}</h3>
-          </div>
-        `;
-        card.onclick = () => openModal(videoId);
-        results.appendChild(card);
-      });
-    }
-
-    function openModal(videoId) {
-      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-      iframe.src = `https://embed-player.com/video/?source=${encodeURIComponent(youtubeUrl)}&color=%238b7765&preload=metadata`;
-      modal.style.display = "flex";
-
-      downloadBtn.onclick = () => {
-        const downloadUrl = `https://yt1d.com/watch?v=${videoId}`;
-        window.open(downloadUrl, '_blank');
-      };
-
-      // Clear manual input & hide input container when modal opens normally
-      manualInputContainer.style.display = 'none';
-      manualLinkInput.value = '';
-    }
-
-    function closeModal() {
-      modal.style.display = "none";
-      iframe.src = "";
-      manualInputContainer.style.display = 'none';
-      manualLinkInput.value = '';
-    }
-
-    window.onclick = function(event) {
-      if (event.target === modal) closeModal();
-    }
-
-    window.onscroll = () => {
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-        if (nextPageToken) searchYouTube(true);
-      }
-    }
-
-    window.onload = async () => {
-      await loadApiKeysFromRemote();
-      if (apiKeys.length === 0) {
-        alert("No API keys loaded. Cannot continue.");
-        return;
-      }
-
-      document.getElementById("loading-overlay").style.display = "none";
-
-      const queries = defaultQueries.sort(() => Math.random() - 0.5);
-      for (const query of queries) {
-        await searchYouTube(false, query);
-      }
+      form.removeEventListener('animationend', onAnimEnd);
     };
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("search").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          searchYouTube();
-        }
-      });
-
-      manualLinkInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          manualLinkEnterBtn.click();
-        }
-      });
-    });
-  </script>
+    form.addEventListener('animationend', onAnimEnd);
+    input.blur();
+  });
+})();
+</script>
 </body>
 </html>
