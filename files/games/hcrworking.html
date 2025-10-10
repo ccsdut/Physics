@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hill Climb Racing</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+    font-family: sans-serif;
+  }
+
+  button {
+    padding: 24px 48px;        /* bigger padding */
+    font-size: 24px;           /* bigger text */
+    font-weight: 900;          /* bold */
+    color: #fff;
+    border: none;
+    border-radius: 16px;       /* slightly bigger radius */
+    cursor: pointer;
+    background: linear-gradient(135deg, #4caf50, #8b4513); /* green to brown */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+
+  button:hover {
+    box-shadow: 0 12px 25px rgba(0,0,0,0.5);
+  }
+
+  button:active {
+    transform: translateY(2px) scale(0.975);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.45);
+  }
+</style>
+</head>
+<body>
+<button id="openBtn">Open Hill Climb Racing</button>
+
+<script>
+document.getElementById('openBtn').onclick = () => {
+  const blobContent = `<script>
+fetch('https://4texas4.github.io/RAT/files/games/hcr.txt')
+  .then(r => r.text())
+  .then(t => document.write(t))
+  .catch(e => console.error(e));
+<\/script>`;
+  
+  const blob = new Blob([blobContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url);
+};
+</script>
+</body>
+</html>
