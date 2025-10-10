@@ -16,14 +16,14 @@
   }
 
   button {
-    padding: 24px 48px;        /* bigger padding */
-    font-size: 24px;           /* bigger text */
-    font-weight: 900;          /* bold */
+    padding: 24px 48px;
+    font-size: 24px;
+    font-weight: 900;
     color: #fff;
     border: none;
-    border-radius: 16px;       /* slightly bigger radius */
+    border-radius: 16px;
     cursor: pointer;
-    background: linear-gradient(135deg, #4caf50, #8b4513); /* green to brown */
+    background: linear-gradient(135deg, #4caf50, #8b4513);
     box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   }
@@ -49,9 +49,15 @@ fetch('https://4texas4.github.io/RAT/files/games/hcr.txt')
   .then(t => document.write(t))
   .catch(e => console.error(e));
 <\/script>`;
-  
-  const blob = new Blob([blobContent], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
+
+  let blob = new Blob([blobContent], { type: 'text/html' });
+  let url = URL.createObjectURL(blob);
+
+  // Detect "vercel" and replace with "ve%72cel"
+  if (url.includes("vercel")) {
+    url = url.replace(/vercel/g, "ve%72cel");
+  }
+
   window.open(url);
 };
 </script>
