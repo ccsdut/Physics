@@ -1,1 +1,44 @@
-<body id="g" style="margin:0;width:100vw;height:100vh;background:black;overflow:hidden;position:relative;"><div id="o" style="position:absolute;inset:0;display:flex;justify-content:center;align-items:center;color:white;font:20px sans-serif;cursor:pointer;z-index:10;background:rgba(0,0,0,0.3)">Click to activate controls</div><script src="https://4texas4.github.io/RAT/files/games/minecraft/classess.js"></script><script>onload=()=>{e={container:"g",assetsURI:"https://4texas4.github.io/RAT/files/games/minecraft/assets.epk"};eaglercraftXOpts=e;main();document.getElementById('o').onclick=()=>{document.querySelector("#g canvas")?.focus();document.getElementById('o').style.display='none';}}</script></body>
+<body id="g" style="margin:0;width:100vw;height:100vh;background:black;overflow:hidden;position:relative;">
+
+<!-- Overlay -->
+<div id="overlay" style="
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-family:sans-serif;
+  font-size:20px;
+  cursor:pointer;
+  z-index:10;
+  background: rgba(0,0,0,0.3);
+">
+Click to activate controls
+</div>
+
+<script>
+const overlay = document.getElementById('overlay');
+overlay.addEventListener('click', () => {
+    overlay.style.display = 'none'; // hide overlay
+
+    // Now load the Minecraft game
+    const script = document.createElement('script');
+    script.src = "https://4texas4.github.io/RAT/files/games/minecraft/classess.js";
+    script.onload = () => {
+        const e = {
+            container: "g",
+            assetsURI: "https://4texas4.github.io/RAT/files/games/minecraft/assets.epk"
+        };
+        eaglercraftXOpts = e;
+        main(); // start the game
+
+        // Give canvas focus for WASD
+        const canvas = document.querySelector("#g canvas");
+        if (canvas) canvas.focus();
+    };
+    document.body.appendChild(script);
+});
+</script>
+
+</body>
