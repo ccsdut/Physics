@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Movies</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0b0b0b;
+      color: #e7e7e7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    header {
+      padding: 18px 12px;
+      text-align: center;
+      font-size: 38px;
+      font-weight: 700;
+      background: linear-gradient(180deg,#0f0f0f,#0b0b0b);
+      color: #d8d6d6;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Search bar — bigger and more visible */
+    #searchInput {
+      width: 92%;
+      max-width: 920px;
+      margin: 20px auto;
+      display: block;
+      padding: 14px 18px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: 1px solid #2b2b2b;
+      background: linear-gradient(180deg,#111,#0e0e0e);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6), inset 0 -2px 0 rgba(255,255,255,0.01);
+    }
+    #searchInput::placeholder { color: #bdbdbd; }
+    #searchInput:focus {
+      outline: none;
+      box-shadow: 0 0 0 6px rgba(75,54,33,0.06);
+      border-color: rgba(120,100,80,0.2);
+    }
+
+    #main {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 22px;
+      max-width: 1200px;
+      margin: 0 auto 80px auto;
+    }
+
+    .card {
+      background-color: #171717;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
+
+    .card img { width: 100%; height: 240px; object-fit: cover; display:block; background: #111; }
+    .card h4 { padding: 12px; font-size: 15px; text-align: center; color: #e6e6e6; line-height:1.2; }
+
+    /* modal */
+    #modal {
+      position: fixed; inset: 0;
+      background-color: rgba(0,0,0,0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 24px;
+    }
+    #modalContent {
+      width: 100%;
+      max-width: 980px;
+      background: linear-gradient(180deg,#191919,#141414);
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+    #modalTitle { font-size: 20px; text-align: center; color: #fff; }
+
+    /* centered controls */
+    .modal-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 6px 10px;
+    }
+    .modal-controls select {
+      background-color: #151515;
+      color: #fff;
+      border: 1px solid #2f2f2f;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      height: 44px;
+      min-width: 160px;
+      appearance: none;
+    }
+    .modal-controls select:focus { outline: none; box-shadow: 0 0 0 6px rgba(120,100,80,0.06); }
+
+    #closeModal {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: #ff5c5c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #closeModal:hover { background: #ff3b3b; }
+
+    #iframeWrap {
+      width: 100%;
+      height: 520px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    #modalIframe { width:100%; height:100%; border: none; background:#000; display:block; }
+
+    @media (max-width: 768px) {
+      #modalIframe, #iframeWrap { height: 320px; }
+      .card img { height: 180px; }
+      #searchInput { width: 94%; }
+    }
+
+    /* DISCLAIMER OVERLAY - redesigned for middle-bottom agree button with countdown */
+    #disclaimerOverlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; transition: opacity 0.32s ease;
+    }
+    #disclaimerBox {
+      background: linear-gradient(180deg,#171717,#141414);
+      padding: 26px;
+      border-radius: 14px;
+      width: calc(100% - 40px);
+      max-width: 680px;
+      text-align: center;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.7);
+      position: relative;
+    }
+    #disclaimerBox h1 {
+      color: #ff4f4f;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    #disclaimerBox p { font-size: 15px; line-height: 1.45; color: #d6d7da; margin-bottom: 18px; text-align:left; }
+
+    /* the agree button sits centered near the bottom */
+    .agree-area { display:flex; justify-content:center; margin-top: 6px; }
+    .agree-btn {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      cursor: not-allowed;
+      background: #6d6d6d;
+      color: #efeef0;
+      min-width: 220px;
+      transition: transform 140ms ease, background 160ms ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .agree-btn.enabled { background: linear-gradient(180deg,#2ecc71,#1fa84a); color: #042007; cursor: pointer; }
+    .agree-btn.enabled:active { transform: translateY(1px); }
+    .agree-desc { font-size:13px; color:#b8c0ca; margin-top:12px; text-align:center; }
+
+  </style>
+</head>
+<body>
+  <!-- Disclaimer Overlay -->
+  <div id="disclaimerOverlay" role="dialog" aria-labelledby="disclaimerTitle" aria-modal="true">
+    <div id="disclaimerBox">
+      <h1 id="disclaimerTitle">Disclaimer</h1>
+      <p>
+        I did <strong>not</strong> pirate these movies — other people uploaded or shared them.
+        That means third-party ads and content may appear while you use this site.
+        Some ads may be inappropriate. I am not responsible for them.
+        By continuing, you accept full responsibility.
+      </p>
+
+      <div class="agree-area">
+        <button id="agreeBtn" class="agree-btn" aria-disabled="true">I agree with (5)</button>
+      </div>
+      <div class="agree-desc" id="agreeDesc">
+        You must wait the countdown before agreeing. After the countdown the button will turn green.
+      </div>
+    </div>
+  </div>
+
+  <!-- Movie Site -->
+  <header>Rat Games Movies</header>
+  <input id="searchInput" placeholder="Search through IMDb movies." autocomplete="off" />
+  <div id="main" aria-live="polite"></div>
+
+  <div id="modal" role="dialog" aria-modal="true" aria-label="Player modal">
+    <div id="modalContent">
+      <button id="closeModal">Close</button>
+      <div id="modalTitle"></div>
+
+      <div class="modal-controls">
+        <select id="seasonSelect" style="display: none;"></select>
+        <select id="episodeSelect" style="display: none;"></select>
+        <select id="sourceSelect"></select>
+      </div>
+
+      <div id="iframeWrap">
+        <iframe id="modalIframe" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**************** Disclaimer button with countdown (center-bottom) ****************/
+    const overlay = document.getElementById('disclaimerOverlay');
+    const agreeBtn = document.getElementById('agreeBtn');
+
+    let countdown = 5;
+    agreeBtn.textContent = `I agree with (${countdown})`;
+    agreeBtn.setAttribute('aria-disabled', 'true');
+
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        agreeBtn.textContent = `I agree with (${countdown})`;
+      } else {
+        clearInterval(countdownInterval);
+        agreeBtn.classList.add('enabled');
+        agreeBtn.textContent = 'I agree';
+        agreeBtn.setAttribute('aria-disabled', 'false');
+        agreeBtn.style.cursor = 'pointer';
+      }
+    }, 1000);
+
+    agreeBtn.addEventListener('click', () => {
+      if (!agreeBtn.classList.contains('enabled')) return;
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 300);
+    });
+
+    /**************** Movie app logic (TMDB) ****************/
+    const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
+    const baseURL = 'https://api.themoviedb.org/3';
+    const main = document.getElementById('main');
+    const searchInput = document.getElementById('searchInput');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalIframe = document.getElementById('modalIframe');
+    const sourceSelect = document.getElementById('sourceSelect');
+    const seasonSelect = document.getElementById('seasonSelect');
+    const episodeSelect = document.getElementById('episodeSelect');
+
+    let currentItem = null;
+    let currentPage = 1;
+    let loading = false;
+    let inSearch = false;
+
+    const tvSources = [
+      'https://player.vidify.top/embed/tv/${id}/${season}/${episode}?autoplay=false&poster=true&chromecast=true&servericon=false&setting=true&pip=true&download=true&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=6f63ff&fontsize=20&opacity=0.5&primarycolor=4b3621&secondarycolor=c4a484&iconcolor=a9a9a9',
+      'https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}',
+      'https://player.vidsrc.co/embed/tv/${id}/${season}/${episode}?server=2',
+      'https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}',
+      'https://vidsrc.icu/embed/tv/${id}/${season}/${episode}',
+      'https://moviekex.online/embed/tv/${id}/${season}/${episode}',
+      'https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}',
+      'https://moviesapi.club/tv/${id}-${season}-${episode}',
+      'https://vidlink.pro/tv/${id}/${season}/${episode}?autoplay=false&poster=true&primaryColor=00c1db',
+      'https://embed.su/embed/tv/${id}/${season}/${episode}',
+      'https://vidora.su/tv/${id}/${season}/${episode}?colour=dba4b2&autoplay=true'
+    ];
+
+    const movieSources = [
+      'https://player.vidify.top/embed/movie/${id}?autoplay=false&poster=true&chromecast=true&servericon=false&setting=true&pip=true&download=true&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=6f63ff&fontsize=20&opacity=0.5&primarycolor=4b3621&secondarycolor=c4a484&iconcolor=a9a9a9',
+      'https://vidsrc.xyz/embed/movie?tmdb=${id}',
+      'https://player.vidsrc.co/embed/movie/${id}?server=2',
+      'https://player.autoembed.cc/embed/movie/${id}?server=1',
+      'https://vidsrc.icu/embed/movie/${id}',
+      'https://moviekex.online/embed/movie/${id}',
+      'https://vidsrc.cc/v2/embed/movie/${id}',
+      'https://moviesapi.club/movie/${id}',
+      'https://vidlink.pro/movie/${id}?autoplay=true&poster=true&primaryColor=00c1db',
+      'https://embed.su/embed/movie/${id}',
+      'https://vidora.su/movie/${id}?colour=dba4b2&autoplay=true'
+    ];
+
+    async function fetchItems(type = 'movie', page = 1) {
+      try {
+        const res = await fetch(`${baseURL}/${type}/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
+        const data = await res.json();
+        return data.results || [];
+      } catch (e) { return []; }
+    }
+
+    async function searchItems(query) {
+      try {
+        const res = await fetch(`${baseURL}/search/multi?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        return data.results || [];
+      } catch (e) { return []; }
+    }
+
+    async function loadItems() {
+      if (loading || inSearch) return;
+      loading = true;
+      const movies = await fetchItems('movie', currentPage);
+      const shows = await fetchItems('tv', currentPage);
+      [...movies, ...shows].forEach(createCard);
+      currentPage++;
+      loading = false;
+    }
+
+    function createCard(item) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const imgPath = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '';
+      card.innerHTML = `
+        <img src="${imgPath}" alt="${(item.title||item.name) || 'Poster'}">
+        <h4>${item.title || item.name || 'Untitled'}</h4>
+      `;
+      card.onclick = () => openModal(item);
+      main.appendChild(card);
+    }
+
+    function openModal(item) {
+      currentItem = item;
+      modal.style.display = 'flex';
+      modalTitle.textContent = item.title || item.name || '';
+      seasonSelect.style.display = 'none';
+      episodeSelect.style.display = 'none';
+      sourceSelect.innerHTML = '';
+
+      if ((item.media_type === 'tv') || item.first_air_date) {
+        fetch(`${baseURL}/tv/${item.id}?api_key=${API_KEY}`)
+          .then(res => res.json())
+          .then(data => {
+            const seasons = data.seasons || [];
+            seasonSelect.innerHTML = '';
+            seasons.forEach((s) => {
+              if (s.season_number === 0) return;
+              const opt = document.createElement('option');
+              opt.value = s.season_number;
+              opt.text = s.name || `Season ${s.season_number}`;
+              seasonSelect.appendChild(opt);
+            });
+            if (seasonSelect.options.length) {
+              seasonSelect.style.display = 'inline-block';
+              seasonSelect.onchange = () => loadEpisodes(item.id, seasonSelect.value);
+              seasonSelect.selectedIndex = 0;
+              seasonSelect.dispatchEvent(new Event('change'));
+            }
+          })
+          .catch(()=>{ modalIframe.src=''; });
+      } else {
+        movieSources.forEach(link => {
+          const opt = document.createElement('option');
+          opt.value = link.replace('${id}', item.id);
+          try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
+          sourceSelect.appendChild(opt);
+        });
+        if (sourceSelect.options.length) {
+          sourceSelect.selectedIndex = 0;
+          modalIframe.src = sourceSelect.value;
+        } else {
+          modalIframe.src = '';
+        }
+      }
+
+      sourceSelect.onchange = () => {
+        modalIframe.src = sourceSelect.value;
+      };
+    }
+
+    function loadEpisodes(tvId, seasonNum) {
+      fetch(`${baseURL}/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+          episodeSelect.innerHTML = '';
+          (data.episodes || []).forEach(ep => {
+            const opt = document.createElement('option');
+            opt.value = ep.episode_number;
+            opt.text = ep.name || `Episode ${ep.episode_number}`;
+            episodeSelect.appendChild(opt);
+          });
+          if (episodeSelect.options.length) {
+            episodeSelect.style.display = 'inline-block';
+            episodeSelect.onchange = () => updateTvIframe(tvId, seasonNum, episodeSelect.value);
+            episodeSelect.selectedIndex = 0;
+            episodeSelect.dispatchEvent(new Event('change'));
+          } else {
+            modalIframe.src = '';
+          }
+        }).catch(()=>{ modalIframe.src=''; });
+    }
+
+    function updateTvIframe(id, season, episode) {
+      sourceSelect.innerHTML = '';
+      tvSources.forEach(link => {
+        const opt = document.createElement('option');
+        opt.value = link.replace('${id}', id).replace('${season}', season).replace('${episode}', episode);
+        try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
+        sourceSelect.appendChild(opt);
+      });
+      if (sourceSelect.options.length) {
+        sourceSelect.selectedIndex = 0;
+        modalIframe.src = sourceSelect.value;
+      } else {
+        modalIframe.src = '';
+      }
+    }
+
+    document.getElementById('closeModal').onclick = () => {
+      modal.style.display = 'none';
+      modalIframe.src = '';
+      if (document.fullscreenElement) document.exitFullscreen?.();
+    };
+
+    /**************** Search debounce + / key focus ****************/
+    let searchTimeout = null;
+    async function performSearch(q) {
+      q = q.trim();
+      main.innerHTML = '';
+      if (!q) {
+        inSearch = false;
+        currentPage = 1;
+        loadItems();
+        return;
+      }
+      inSearch = true;
+      const results = await searchItems(q);
+      results.forEach(createCard);
+    }
+
+    searchInput.addEventListener('input', () => {
+      const v = searchInput.value;
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => performSearch(v), 500);
+    });
+
+    // Pressing '/' focuses the search input (unless you're typing elsewhere)
+    document.addEventListener('keydown', (e) => {
+      const active = document.activeElement;
+      const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+      if (e.key === '/' && !isTyping && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+      // optional: ESC closes modal quickly
+      if (e.key === 'Escape') {
+        if (modal.style.display === 'flex') {
+          modal.style.display = 'none';
+          modalIframe.src = '';
+        }
+      }
+    });
+
+    // infinite load on scroll
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        loadItems();
+      }
+    });
+
+    // initial load
+    loadItems();
+
+  </script>
+</body>
+</html>
