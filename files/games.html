@@ -107,9 +107,6 @@
     }
 
     /* ========== GAME LIST ==========
-       Replace the content of gameList below with your full game list.
-       Format: One game per line, "Name, https://url"
-       I added two placeholder games at the end that you can overwrite.
     */
     const gameList = `
 1v1.lol, https://1v1lol-unblocked-free.github.io/
@@ -121,6 +118,8 @@ Daddy Long Legs, https://class811.github.io/g50/daddy-long-legs/
 Drive Mad, https://drive-madgame.github.io/file/
 Dune, https://db.duck.quackprep.com/html/dune/
 Subway Surfers, https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210324/jj01/index.html
+Hill Climb Racing, https://script.google.com/macros/s/AKfycbzIDrvwctUWezvwwd0OcEkl7qlNECySeG7CtsYgKweZ0i9ihqNH7hcvFqPdbwm9KZAKKw/exec
+Magic Tiles 3, https://script.google.com/macros/s/AKfycbwIwhpCAS3JfJ1d3opbP8wPMaErTNUmaKYv-3nKoAsSadEsmvGSjjLrAxz-xrEs9zLb/exec
 2048, https://www.hoodamath.com/mobile/games/2048-game/game.html?nocheckorient=1
 9007199254740992, https://dmitrykuzmenko.github.io/2048/
 A Dance of Fire and Ice, https://www.gamenora.com/upload/games/html5/A%20Dance%20of%20Fire%20and%20Ice/
@@ -373,7 +372,6 @@ Crossy Road, https://crossy-road.gitlab.io/file/
 Flappy Dunk, https://flappydunk.com/wp-content/uploads/games/F/flappy-dunk/index.html
 Pou, https://ubg98.github.io/Pou/
 Tall Man Run, https://www.bestgames.com/games/Tall-Man-Run/index.html?bestgames
-Hill Climb Racing, https://script.google.com/macros/s/AKfycbzIDrvwctUWezvwwd0OcEkl7qlNECySeG7CtsYgKweZ0i9ihqNH7hcvFqPdbwm9KZAKKw/exec
 Powder Game 2, https://dan-ball.jp/en/javagame/dust2/
 Pepsi Skate 3D, https://the.deconstructors.co.uk/tam-pepi-skate-3d/
 Free Head Skate, https://www.hoodamath.com/mobile/games/freehead-skate/game.html?nocheckorient=1
@@ -395,10 +393,10 @@ Color Block Jam, https://gamedistro.rhenrywarren.workers.dev/rvvASMiM/bea1d88682
       })
       .filter(Boolean);
 
-    // Keep the first 9 exactly as-written, sort the rest alphabetically
-    const firstFive = games.slice(0, 9);
+    // Keep the first 11 exactly as-written, sort the rest alphabetically
+    const firstFive = games.slice(0, 11);
     const restSorted = games
-      .slice(9)
+      .slice(11)
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     const finalGames = [...firstFive, ...restSorted];
 
