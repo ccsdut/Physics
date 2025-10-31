@@ -205,19 +205,22 @@
      * @param {boolean} show - True to show, False to hide.
      */
     function toggleOverlay(show) {
-        if (show) {
-            // Show overlay: make it fully opaque and allow mouse interaction
-            googleOverlay.style.opacity = '1';
-            googleOverlay.style.pointerEvents = 'auto';
-        } else {
-            // Hide overlay: make it transparent and block mouse interaction
-            googleOverlay.style.opacity = '0';
-            googleOverlay.style.pointerEvents = 'none';
-        }
-        isOverlayVisible = show;
-        // Ensure the menu closes if it was open (safety call)
-        closeMenu(); 
+    if (show) {
+        // REFRESH: Reload the Google iframe to its initial state when opening
+        googleOverlay.src = "https://www.google.com?igu=1";
+        
+        // Show overlay: make it fully opaque and allow mouse interaction
+        googleOverlay.style.opacity = '1';
+        googleOverlay.style.pointerEvents = 'auto';
+    } else {
+        // Hide overlay: make it transparent and block mouse interaction
+        googleOverlay.style.opacity = '0';
+        googleOverlay.style.pointerEvents = 'none';
     }
+    isOverlayVisible = show;
+    // Ensure the menu closes if it was open (safety call)
+    closeMenu(); 
+}
 
     /**
      * Toggles the visibility of the bottom island element via the menu.
