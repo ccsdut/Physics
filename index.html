@@ -154,15 +154,10 @@
     <div class="menu-item" onclick="toggleFullscreen()">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/fullscreen.png" alt="Fullscreen"> Fullscreen
     </div>
-    
-    <!-- 3. MENU ITEM: Toggle Island -->
-    <div class="menu-item" onclick="toggleIslandVisibility()">
-      <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/g.png" alt="Toggle"> Toggle Tab-Switch Island
-    </div>
 
     <!-- 4. Remove 3 Lines (Renamed) -->
     <div class="menu-item" onclick="removeMenu()">
-      <img src="https://ratgames.vercel.app/media/no-menu.png" alt="Remove Menu"> Remove 3 Lines/island
+      <img src="https://ratgames.vercel.app/media/no-menu.png" alt="Remove Menu"> Remove 3 Lines
     </div>
 
     <!-- PWA Install (Stays last and hidden by default) -->
@@ -222,23 +217,6 @@
     closeMenu(); 
 }
 
-    /**
-     * Toggles the visibility of the bottom island element via the menu.
-     */
-    function toggleIslandVisibility() {
-        isIslandVisible = !isIslandVisible;
-        if (isIslandVisible) {
-            island.style.display = 'flex';
-        } else {
-            island.style.display = 'none';
-            // If we hide the island, also hide the overlay if it was open
-            if (isOverlayVisible) {
-                toggleOverlay(false); 
-            }
-        }
-        closeMenu();
-    }
-
     // Toggle menu
     menuBtn.onclick = () => {
       const open = menuBox.style.display === "flex";
@@ -294,7 +272,6 @@
         menuBtn.remove();
         menuBox.remove();
         overlay.remove();
-        island.remove(); // Also remove the island if the user removes the menu
       }, 400); // match transition duration
     }
 
