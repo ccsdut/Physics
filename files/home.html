@@ -69,21 +69,21 @@
 
     /* THE ACTUAL ANIMATED CONTAINER — positioned within the slot (centred) */
     .phrase-container {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      gap: 18px;
-      align-items: center;
-      justify-content: center;
-      z-index: 1; /* behind the H1 (z-index:3) but below buttons (buttons are z-index:4) */
-      white-space: nowrap;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-      pointer-events: none;
-    }
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  white-space: nowrap;
+  font-size: 2.25em;                /* bigger text */
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);  /* stronger shadow */
+  pointer-events: none;
+}
 
     .phrase-container .word {
       opacity: 0;
@@ -100,21 +100,26 @@
     }
 
     .btn {
-      background-color: #333;
-      color: white;
-      font-size: 20px;
-      padding: 15px 30px;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      pointer-events: auto;
-    }
+  background-color: #333;           /* original grey */
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 16px 32px;
+  margin: 12px;
+  border: 2px solid transparent;    /* base border is invisible */
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;        /* smooth transition for all properties */
+  pointer-events: auto;
+}
 
-    .btn:hover {
-      background-color: #555;
-    }
+.btn:hover {
+  background-color: #555;           /* lighter grey on hover */
+  transform: scale(1.05);           /* subtle zoom */
+  border-color: #ddd;               /* light grey/white outline */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+}
 
     @media (max-width: 600px) {
       .btn {
@@ -122,7 +127,7 @@
       }
       /* slightly lower on mobile so it doesn't overlap the title */
       .phrase-slot { height: calc(var(--phrase-slot-height) + 0.6rem); }
-      .phrase-container { font-size: 1.1rem; }
+      .phrase-container { font-size: 1.7rem; }
     }
 
     #down-arrow {
