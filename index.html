@@ -132,54 +132,43 @@
     #toggle-island:hover {
         background: rgba(255, 255, 255, 0.15); /* Slightly visible on hover */
     }
+  </style>
+</head>
+<body>
 
-    /* Indicator Dot Styles REMOVED */
-  </style></head><body>
-
-  <!-- Menu Button -->
   <button id="menu-btn"><img src="https://ratgames.vercel.app/media/menu.png" alt="Menu"></button>
 
-  <!-- Overlay -->
   <div id="overlay"></div>
 
-  <!-- Menu Box -->
   <div id="menu-box">
     
-    <!-- 1. Home -->
     <div class="menu-item" onclick="goHome()">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/homeicon.png" alt="Home"> Home
     </div>
 
-    <!-- 2. Fullscreen -->
     <div class="menu-item" onclick="toggleFullscreen()">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/fullscreen.png" alt="Fullscreen"> Fullscreen
     </div>
 
-    <!-- 4. Remove 3 Lines (Renamed) -->
     <div class="menu-item" onclick="removeMenu()">
       <img src="https://ratgames.vercel.app/media/no-menu.png" alt="Remove Menu"> Remove 3 Lines
     </div>
 
-    <!-- PWA Install (Stays last and hidden by default) -->
     <div class="menu-item" id="installBtn" style="display:none;">
       <img src="https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/install.png" alt="Install"> Install
     </div>
   </div>
 
-  <!-- Game Iframe (Background) -->
-  <iframe id="game-iframe" src="https://ratgames.vercel.app/files/home.html" allow="fullscreen; autoplay; encrypted-media; pointer-lock"></iframe>
+  <iframe id="game-iframe" src="https://ratgames.vercel.app/files/home.html" allow="autoplay; encrypted-media; pointer-lock"></iframe>
 
-  <!-- NEW: Google Overlay Iframe (Covers everything below z-index 10004) -->
   <iframe 
     id="google-overlay" 
     src="https://www.google.com?igu=1" 
     title="Google Overlay">
   </iframe>
   
-  <!-- UPDATED: Tab Switch Island (Stays on top) -->
   <div id="toggle-island" onclick="toggleOverlay(!isOverlayVisible)">
-    <!-- Indicator content REMOVED -->
-  </div>
+    </div>
 
   <script>
     const menuBtn = document.getElementById('menu-btn');
@@ -192,30 +181,30 @@
     const island = document.getElementById('toggle-island');
 
     // STATE
+    // CLEANUP: Removed unused 'isIslandVisible' variable
     let isOverlayVisible = false;
-    let isIslandVisible = true; 
 
     /**
      * Toggles the visibility and interactivity of the Google overlay iframe.
      * @param {boolean} show - True to show, False to hide.
      */
     function toggleOverlay(show) {
-    if (show) {
-        // REFRESH: Reload the Google iframe to its initial state when opening
-        googleOverlay.src = "https://www.google.com?igu=1";
-        
-        // Show overlay: make it fully opaque and allow mouse interaction
-        googleOverlay.style.opacity = '1';
-        googleOverlay.style.pointerEvents = 'auto';
-    } else {
-        // Hide overlay: make it transparent and block mouse interaction
-        googleOverlay.style.opacity = '0';
-        googleOverlay.style.pointerEvents = 'none';
+      if (show) {
+          // REFRESH: Reload the Google iframe to its initial state when opening
+          googleOverlay.src = "https://www.google.com?igu=1";
+          
+          // Show overlay: make it fully opaque and allow mouse interaction
+          googleOverlay.style.opacity = '1';
+          googleOverlay.style.pointerEvents = 'auto';
+      } else {
+          // Hide overlay: make it transparent and block mouse interaction
+          googleOverlay.style.opacity = '0';
+          googleOverlay.style.pointerEvents = 'none';
+      }
+      isOverlayVisible = show;
+      // Ensure the menu closes if it was open (safety call)
+      closeMenu(); 
     }
-    isOverlayVisible = show;
-    // Ensure the menu closes if it was open (safety call)
-    closeMenu(); 
-}
 
     // Toggle menu
     menuBtn.onclick = () => {
@@ -254,14 +243,25 @@
       iframe.src = "https://ratgames.vercel.app/files/home.html";
       closeMenu();
     }
+    
+    /**
+     * Toggles fullscreen on the entire document (<html> element).
+     * This keeps fixed position elements (like the menu and island) visible.
+     */
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        iframe.requestFullscreen?.() || iframe.webkitRequestFullscreen?.() || iframe.msRequestFullscreen?.();
-      } else {
-        document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msRequestFullscreen?.();
-      }
+      // FIX: Target the <html> element (document.documentElement) instead of the iframe
+      const docEl = document.documentElement; 
       closeMenu();
+
+      if (!document.fullscreenElement) {
+        // Enter fullscreen
+        docEl.requestFullscreen?.() || docEl.webkitRequestFullscreen?.() || docEl.msRequestFullscreen?.();
+      } else {
+        // Exit fullscreen
+        document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.();
+      }
     }
+    // END OF FULLSCREEN CHANGE
 
     function removeMenu() {
       // fade out all menu elements
@@ -290,4 +290,6 @@
         document.getElementById('installBtn').style.display = 'none';
       });
     };
-  </script></body></html>
+  </script>
+</body>
+</html>
