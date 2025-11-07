@@ -22,22 +22,19 @@ const overlay = document.getElementById('overlay');
 overlay.addEventListener('click', () => {
     overlay.style.display = 'none'; // hide overlay
 
-    // Now load the Minecraft game
-    const script = document.createElement('script');
-    script.src = "https://4texas4.github.io/RAT/files/games/minecraft/classess.js";
-    script.onload = () => {
-        const e = {
-            container: "g",
-            assetsURI: "https://4texas4.github.io/RAT/files/games/minecraft/assets.epk"
-        };
-        eaglercraftXOpts = e;
-        main(); // start the game
+    // Instead of loading scripts, load the Eaglercraft 1.12 iframe
+    const iframe = document.createElement('iframe');
+    iframe.src = "https://client.eaglercraft.win/eagler-files/1.12/Main/index.html";
+    iframe.style.position = "absolute";
+    iframe.style.top = "0";
+    iframe.style.left = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    iframe.allow = "fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; cross-origin-isolated";
+    iframe.allowFullscreen = true;
 
-        // Give canvas focus for WASD
-        const canvas = document.querySelector("#g canvas");
-        if (canvas) canvas.focus();
-    };
-    document.body.appendChild(script);
+    document.getElementById('g').appendChild(iframe);
 });
 </script>
 
