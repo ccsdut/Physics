@@ -962,6 +962,9 @@
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'playlist-item-title';
 
+                // Add a simple indicator if videoId hasn't been found yet
+                titleSpan.textContent = item.title + (item.videoId ? '' : '  ');
+
                 // Delete Button Element
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
