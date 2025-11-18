@@ -961,9 +961,6 @@
                 // Song Title Span (for visual separation from the button)
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'playlist-item-title';
-                
-                // Add a simple indicator if videoId hasn't been found yet
-                titleSpan.textContent = item.title + (item.videoId ? '' : ' (Loading...)');
 
                 // Delete Button Element
                 const deleteBtn = document.createElement('button');
