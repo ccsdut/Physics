@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Rat Tools</title>
+  <title>Rat Games</title>
   <link rel="icon" href="/media/favicon.png" type="image/png" />
   <style>
     :root{
@@ -12,7 +12,7 @@
       --search-font-size: 20px;
       --search-width-desktop: 80%;
       --search-width-mobile: 95%;
-      --pulse-duration: 1400ms;
+      --pulse-duration: 1600ms;
     }
 
     html,body{height:100%;margin:0;padding:0;}
@@ -22,7 +22,6 @@
       background-size: cover;
       background-color: #121212;
       color:#fff;
-      -webkit-font-smoothing:antialiased;
     }
 
     .container{
@@ -35,13 +34,11 @@
       border-radius:12px;
       box-shadow:0 10px 30px rgba(0,0,0,0.6);
     }
-
-    h1{margin:0 0 20px 0;font-size:34px;letter-spacing:1px;}
+    h1{margin:0 0 20px 0;font-size:34px;}
     .search-area{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 26px;}
     .search-label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,0.6);}
     .search-wrapper{position:relative;width:var(--search-width-desktop);max-width:980px;transition:transform .18s ease;}
     .search-wrapper .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:20px;opacity:.95;}
-
     input.search-input{
       width:100%;
       height:var(--search-height);
@@ -68,12 +65,66 @@
     }
     .pulse-once{ animation: pulseGlow var(--pulse-duration) ease-in-out 1; }
 
-    .search-hint{font-size:12px;color:#cfd8dc;opacity:.85;}
-    .button-container{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;margin-top:18px;}
-    .btn{width:48%;padding:15px;border-radius:8px;border:none;background:#333;color:#fff;cursor:pointer;font-weight:600;transition:background .25s,transform .12s;text-align:center;}
-    .btn:hover{background:#555;transform:translateY(-3px);}
+   .search-hint{font-size:12px;color:#cfd8dc;opacity:.85;}
+    
+/* --- Game Grid Styles (New) --- */
+.game-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); /* Min 200px, 3 per row on wide screens */
+  gap:20px;
+  margin-top:20px;
+}
+.game-card{
+  background:#282828;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  transition:transform .2s ease, box-shadow .2s ease;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  text-align:left;
+  text-decoration:none;
+  color:inherit;
+}
+.game-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+}
+.game-image-wrapper{
+  width:100%;
+  /* This creates the square aspect ratio */
+  padding-top:100%; 
+  position:relative;
+  overflow:hidden;
+}
+.game-image-wrapper img{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  object-fit:cover; /* Crops and zooms the image to cover the square */
+  transition:transform .3s ease;
+}
+.game-card:hover img{
+  transform:scale(1.05);
+}
+.game-info{
+  padding:10px 15px;
+}
+.game-title{
+  font-size:18px;
+  font-weight:700;
+  margin:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-    @media (max-width:900px){ .search-wrapper{width:var(--search-width-mobile);} .btn{width:100%} }
+/* Hide the original button container */
+.button-container{display:none;}
+
+    @media (max-width:900px){ .search-wrapper{width:var(--search-width-mobile);} .game-grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));} }
+
     @media (max-width:420px){ :root{--search-height:56px;--search-font-size:18px;} h1{font-size:28px;} }
   </style>
 </head>
@@ -98,85 +149,116 @@
       <div class="search-hint">Tip: press the <kbd>/</kbd> key to jump to search</div>
     </div>
 
-    <div class="button-container" id="tool-buttons"></div>
+    <div class="game-grid" id="game-grid"></div>         <div class="button-container" id="game-buttons"></div>
   </div>
 
   <script type="module">
     import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
 
-    function openViewer(url){
+    // Constants
+const NO_IMAGE_URL = 'https://ratgames.vercel.app/media/noimage.png';
+
+function openViewer(url){
       const encoded = encodeURIComponent(url);
       window.location.href = `/viewer.html?site=${encoded}`;
     }
 
-    /* --------- TOOL LIST ----------
-       Replace or extend this block as needed.
-       Format: One tool per line, "Name, https://url"
-       I added two example placeholders at the end for you to swap.
-    */
-    const toolList = `
-Website Unbl0ck3rs, https://ratgames.vercel.app/files/tools/unbl0ck3rs.html
-Movies, https://ratgames.vercel.app/files/tools/movies.html
-Chat, https://ratchatyep.vercel.app/
-AI, https://ratgames.vercel.app/files/tools/ai
-Music, https://ratgames.vercel.app/files/tools/music.html
-Youtube Unbl0ck3d, https://ratgames.vercel.app/files/tools/rattube.html
-Soundboard, https://ratgames.vercel.app/files/tools/soundboard.html
-Code Editor, https://ratgames.vercel.app/files/tools/codeeditor.html
-Data URL Maker, https://ratgames.vercel.app/files/tools/base.html
-Ewasion, https://ratgames.vercel.app/files/tools/ewasion.html
-Internet Archive, https://archive.org/
-Clock, https://ratgames.vercel.app/files/tools/clock.html
-Emulator, https://ratgames.vercel.app/files/tools/emu.html
-Random Website, https://ratgames.vercel.app/files/tools/random.html
-Cloud Moon, https://web.cloudmoonapp.com/
-    `;
+   /* ========== GAME LIST ==========
+  Structure is now: Name, Image URL, Viewer URL
+*/
+const gameList = `
+Website Unbl0ck3rs, https://ratgames.vercel.app/media/toolsimages/unlock.jpg, https://ratgames.vercel.app/files/tools/unbl0ck3rs.html
+Movies, , https://ratgames.vercel.app/files/tools/movies.html
+Chat, , https://ratchatyep.vercel.app/
+AI, , https://ratgames.vercel.app/files/tools/ai
+Music, , https://ratgames.vercel.app/files/tools/music.html
+Youtube Unbl0ck3d, , https://ratgames.vercel.app/files/tools/rattube.html
+Soundboard, , https://ratgames.vercel.app/files/tools/soundboard.html
+Code Editor, , https://ratgames.vercel.app/files/tools/codeeditor.html
+Data URL Maker, , https://ratgames.vercel.app/files/tools/base.html
+Ewasion, , https://ratgames.vercel.app/files/tools/ewasion.html
+Internet Archive, , https://archive.org/
+Clock, , https://ratgames.vercel.app/files/tools/clock.html
+Emulator, , https://ratgames.vercel.app/files/tools/emu.html
+Random Website, , https://ratgames.vercel.app/files/tools/random.html
+Cloud Moon, , https://web.cloudmoonapp.com/
+`;
 
-    // parse robustly (handles commas inside URL if present)
-    const tools = toolList
-      .trim()
-      .split('\n')
-      .map(line => {
-        const parts = line.split(',');
-        if (!parts || parts.length < 2) return null;
-        const name = parts.shift().trim();
-        const url = parts.join(',').trim();
-        if (!name || !url) return null;
-        return { name, url };
-      })
-      .filter(Boolean);
+    // parse the list robustly - expecting: name, image, url
+const games = gameList
+  .trim()
+  .split('\n')
+  .map(line => {
+    const parts = line.split(',');
+    if (!parts || parts.length < 2) return null;
+    
+    const name = parts.shift().trim();
+    const image = parts.shift().trim() || NO_IMAGE_URL; // Takes the second item (image), uses placeholder if empty
+    const url = parts.join(',').trim(); // Takes the rest as the URL (third item)
 
-    // dynamic placeholder and label
+    if (!name || !url) return null;
+    
+    return { 
+      name, 
+      url, 
+      image 
+    };
+  })
+  .filter(Boolean);
+
+// Keep the first 11 exactly as-written, sort the rest alphabetically
+const firstEleven = games.slice(0, 11);
+const restSorted = games
+  .slice(11)
+  .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+const finalGames = [...firstEleven, ...restSorted];
+
+// New function to render a single game card
+function createGameCard({name, url, image}) {
+  const card = document.createElement('a');
+  card.href = '#'; // Prevent default navigation
+  card.className = 'game-card';
+  card.onclick = (e) => {
+    e.preventDefault(); // Stop the link from acting as a normal link
+    openViewer(url);
+  };
+
+  card.innerHTML = `
+    <div class="game-image-wrapper">
+      <img src="${image}" alt="${name} cover" onerror="this.src='${NO_IMAGE_URL}'">
+    </div>
+    <div class="game-info">
+      <h3 class="game-title">${name}</h3>
+    </div>
+  `;
+  return card;
+}
+
+    // update placeholder to show count dynamically
     const searchInput = document.getElementById('search');
-    const sampleHint = 'Chat, AI, Website Unbl0ck3rs';
-    searchInput.placeholder = `Search through ${tools.length} tools (try: ${sampleHint})`;
+    const sampleHint = 'Movies, AI, Cloudmoon';
+    searchInput.placeholder = `Search through ${finalGames.length} tools (try: ${sampleHint})`;
 
-    const labelText = document.getElementById('label-text');
-    labelText.textContent = `Find a tool — ${tools.length} available`;
-
-    // populate tool buttons
-    const container = document.getElementById('tool-buttons');
-    const buttonMap = new Map();
-    tools.forEach(({name, url}) => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = name;
-      btn.onclick = () => openViewer(url);
-      container.appendChild(btn);
-      buttonMap.set(name, btn);
+    // populate grid
+    const gridContainer = document.getElementById('game-grid');
+    const cardMap = new Map();
+    finalGames.forEach((game) => {
+      const card = createGameCard(game);
+      gridContainer.appendChild(card);
+      cardMap.set(game.name, card);
     });
 
     // fuzzy search
-    const fuse = new Fuse(tools, { keys:['name'], threshold:0.4 });
+    const fuse = new Fuse(finalGames, { keys:['name'], threshold:0.4 });
 
     searchInput.addEventListener('input', (e) => {
       const q = e.target.value.trim();
-      const results = q ? fuse.search(q).map(r => r.item.name) : tools.map(t => t.name);
+      const results = q ? fuse.search(q).map(r => r.item.name) : finalGames.map(g => g.name);
       const showSet = new Set(results);
-      buttonMap.forEach((btn, name) => btn.style.display = showSet.has(name) ? 'block' : 'none');
+      cardMap.forEach((card, name) => card.style.display = showSet.has(name) ? 'flex' : 'none');
     });
 
-    // hotkey: '/'
+    // focus shortcut
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== searchInput) {
         e.preventDefault();
@@ -185,18 +267,22 @@ Cloud Moon, https://web.cloudmoonapp.com/
       }
     });
 
-    // one-time pulse to draw attention
+    // pulse on load
     const wrapper = document.getElementById('search-wrapper');
     wrapper.classList.add('pulse-once');
-    setTimeout(()=> wrapper.classList.remove('pulse-once'), 1500);
+    setTimeout(()=> wrapper.classList.remove('pulse-once'), 1700);
 
-    // support ?q= prefill in URL
+    // support ?q= prefill
     const params = new URLSearchParams(location.search);
     if (params.get('q')) {
       searchInput.value = params.get('q');
       searchInput.dispatchEvent(new Event('input'));
       searchInput.focus();
     }
+
+    // optional: expose number of games in the visible label too
+    const labelText = document.getElementById('label-text');
+    labelText.textContent = `Find a tool — ${finalGames.length} available`;
   </script>
 </body>
 </html>
