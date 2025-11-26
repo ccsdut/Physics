@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rat Games</title>
+  <link rel="icon" href="/media/favicon.png" type="image/png" />
+  <style>
+    :root{
+      --accent: #b36b2d;            /* brown highlight */
+      --search-height: 64px;
+      --search-font-size: 20px;
+      --search-width-desktop: 80%;
+      --search-width-mobile: 95%;
+      --pulse-duration: 1600ms;
+    }
+
+    html,body{height:100%;margin:0;padding:0;}
+    body{
+      font-family: 'Comic Sans MS', sans-serif;
+      background: url('https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #121212;
+      color:#fff;
+    }
+
+    .container{
+      width:90%;
+      max-width:1100px;
+      margin:32px auto;
+      padding:36px 24px;
+      text-align:center;
+      background:rgba(18,18,18,0.88);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    }
+    h1{margin:0 0 20px 0;font-size:34px;}
+    .search-area{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 26px;}
+    .search-label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,0.6);}
+    .search-wrapper{position:relative;width:var(--search-width-desktop);max-width:980px;transition:transform .18s ease;}
+    .search-wrapper .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:20px;opacity:.95;}
+    input.search-input{
+      width:100%;
+      height:var(--search-height);
+      padding-left:54px;padding-right:18px;
+      font-size:var(--search-font-size);
+      border-radius:14px;border:2px solid rgba(255,255,255,0.06);
+      background:linear-gradient(180deg, rgba(30,30,30,0.95), rgba(18,18,18,0.85));
+      color:#fff;outline:none;box-shadow:0 6px 20px rgba(0,0,0,0.6);
+      transition:box-shadow .18s ease,transform .12s ease,border-color .12s ease;
+    }
+    input.search-input::placeholder{color:#d0d6db;opacity:.9;font-weight:600;}
+    input.search-input:focus,input.search-input:hover{
+      transform:translateY(-3px);border-color:var(--accent);
+      box-shadow:0 8px 30px rgba(0,0,0,0.7),0 0 28px 3px rgba(179,107,45,0.06);
+    }
+    input.search-input:focus{
+      box-shadow:0 10px 40px rgba(0,0,0,0.7),0 0 40px 8px rgba(179,107,45,0.08);
+    }
+
+    @keyframes pulseGlow{
+      0% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); }
+      50% { box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 36px rgba(179,107,45,0.12); transform:translateY(-1px); }
+      100% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); transform:translateY(0); }
+    }
+    .pulse-once{ animation: pulseGlow var(--pulse-duration) ease-in-out 1; }
+
+   .search-hint{font-size:12px;color:#cfd8dc;opacity:.85;}
+    
+/* --- Game Grid Styles (New) --- */
+.game-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); /* Min 200px, 3 per row on wide screens */
+  gap:20px;
+  margin-top:20px;
+}
+.game-card{
+  background:#282828;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  transition:transform .2s ease, box-shadow .2s ease;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  text-align:left;
+  text-decoration:none;
+  color:inherit;
+}
+.game-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+}
+.game-image-wrapper{
+  width:100%;
+  /* This creates the square aspect ratio */
+  padding-top:100%; 
+  position:relative;
+  overflow:hidden;
+}
+.game-image-wrapper img{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  object-fit:cover; /* Crops and zooms the image to cover the square */
+  transition:transform .3s ease;
+}
+.game-card:hover img{
+  transform:scale(1.05);
+}
+.game-info{
+  padding:10px 15px;
+}
+.game-title{
+  font-size:18px;
+  font-weight:700;
+  margin:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Hide the original button container */
+.button-container{display:none;}
+
+    @media (max-width:900px){ .search-wrapper{width:var(--search-width-mobile);} .game-grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));} }
+
+    @media (max-width:420px){ :root{--search-height:56px;--search-font-size:18px;} h1{font-size:28px;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Games</h1>
+
+    <div class="search-area">
+      <div class="search-label" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+        </svg>
+        <span id="label-text">Find a game</span>
+      </div>
+
+      <div class="search-wrapper" id="search-wrapper">
+        <div class="icon" aria-hidden="true">🔎</div>
+        <input type="search" id="search" class="search-input" aria-label="Search games" autocomplete="off">
+      </div>
+
+      <div class="search-hint">Tip: press the <kbd>/</kbd> key to jump to search</div>
+    </div>
+
+    <div class="game-grid" id="game-grid"></div>         <div class="button-container" id="game-buttons"></div>
+  </div>
+
+  <script type="module">
+    import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
+
+    // Constants
+const NO_IMAGE_URL = 'https://ratgames.vercel.app/media/noimage.png';
+
+function openViewer(url){
+      const encoded = encodeURIComponent(url);
+      window.location.href = `/viewer.html?site=${encoded}`;
+    }
+
+   /* ========== GAME LIST ==========
+  Structure is now: Name, Image URL, Viewer URL
+*/
+const gameList = `
+1v1.lol, , https://1v1lol-unblocked-free.github.io/
+Minecraft, , https://4texas4.github.io/EaglyMC/
+Clash Royale, , https://www.friv.com/z/games/clashofvikings/index-x.html
+Geometry Dash, , https://geometrydashwave.io/game/gd/?v=5
+Obby Faster, , https://ratgames.vercel.app/files/games/obbyfaster.html
+Daddy Long Legs, , https://class811.github.io/g50/daddy-long-legs/
+Drive Mad, , https://drive-madgame.github.io/file/
+Dune, , https://game.azgame.io/curve-rush/
+Subway Surfers, , https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210324/jj01/index.html
+Hill Climb Racing, , https://script.google.com/macros/s/AKfycbxk6r9om-zK1QwAqUG3i1iCwbcQFQBONYET6bELaAC3V512iVxb7w3ajCd6Bi2NT9YL/exec
+Magic Tiles 3, , https://script.google.com/macros/s/AKfycbwAcyQDrgkMV5t4fyvpk4oSZIlsAsskku4RQlq0IdKVv-JtZ8xT4Y_rbBew58_hbKby/exec
+2048, , https://www.hoodamath.com/mobile/games/2048-game/game.html?nocheckorient=1
+9007199254740992, , https://dmitrykuzmenko.github.io/2048/
+A Dance of Fire and Ice, , https://www.gamenora.com/upload/games/html5/A%20Dance%20of%20Fire%20and%20Ice/
+A Difficult Game About Climbing, , https://g.vseigru.net/10/igra-a-difficult-game-about-climbing/game.html
+Among Us, , https://coolubg.github.io/coolubg-list/among-us-online-scratch/
+Among Us Singleplayer, , https://kdata1.com/2020/12/3054073/
+Angry Birds, , https://funhtml5games.com/angrybirds/index.html
+Backflip Dive 3D, , https://html5.gamedistribution.com/rvvASMiM/a9d7229d3be14c0284d5281d125f27f3/index.html?gd_sdk_referrer_url=https%3A%2F%2Fgamaverse.com%2Fbackflip-dive-3d-game%2F&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2dhbWF2ZXJzZS5jb20vYmFja2ZsaXAtZGl2ZS0zZC1nYW1lLyIsInBhcmVudERvbWFpbiI6ImdhbWF2ZXJzZS5jb20iLCJ0b3BEb21haW4iOiJnYW1hdmVyc2UuY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Backflipper, , https://ubg76.gitlab.io/backflipper/
+Backrooms 2D, , https://selenite.cc/semag/2d/index.html
+Backrooms 3D, , https://quiz-20.pro/lessons/lesson-20/
+Bad Ice Cream 1, , https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x4/index.html
+Bad Ice Cream 2, , https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x6/index.html
+Bad Ice Cream 3, , https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x5/index.html
+Bad Parenting, , https://ratgames.vercel.app/files/games/Bad%20Parenting%201.html
+Baldi's Basics, , https://baldis-basics-online.github.io/file/
+Ball Hop, , https://ug17.github.io/play/Ball-Hop/
+Basket Random, , https://t9lat22.github.io/basket-random/
+BasketBall Stars, , https://basketball-stars.io/game/basketball-stars/
+Bit Planes, , https://medv.io/bit-planes/
+Bitlife, , https://tylerpalko.github.io/gamehub/bitlife/
+Blob Opera, , https://gacembed.withgoogle.com/blob-opera/#/
+Block Blast, , https://reunbozdo.github.io/
+Bloons Tower Defense, , https://ad-freegames.github.io/flash/game/bloons-tower-defense.html
+Bloxd, , https://bloxd.io/
+Bloxorz, , https://ad-freegames.github.io/flash/game/bloxorz.html
+Bob the robber 2, , https://t9lat22.github.io/bob-the-robber-2/
+Bongo Cat, , https://bongo.cat/
+Bonk, , https://multiplayer.gg/physics/
+Boxing Random, , https://soccerrandomgame.com/gg/boxing-random/
+Break Stick Completely, , https://storage.y8.com/y8-studio/html5/Playgama/break_stick_completely/?key=y8&value=default
+Car Drawing Game, , https://slope-game.github.io/car-drawing-game/
+Car Simulator Arena, , https://files.vitalitygames.com/games/webgl/2017/12/13/car-simulator-arena/
+Cat Tennis, , https://sz-games.github.io/Games11/cat%20tennis/
+Charlie The Steak, , https://charliethesteakonline.com/gg/charlie-the-steak-online/
+Choir, , https://d21u3ic0kp9e91.cloudfront.net/choir/04/index.html
+CircleO, , https://g.igroutka.ru/games/164/aJQAOvjXMnFLdVPS/circloo/
+Climbing Over It, , https://ubg76.gitlab.io/climbing-over-it/
+Cluster Rush, , https://www.yoosfuhl.com/game/clusterrush/game.html
+Color Combat, , https://cbgamesdev.github.io/chilibowlflash/colorcombat.html
+Color Roll 3D, , https://html5.gamedistribution.com/rvvASMiM/a216492f41f74bd8ad98eb55ad097dda/index.html?gd_sdk_referrer_url=https://www.mathnook.com/fun-games-2/color-roll-3d.html&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5tYXRobm9vay5jb20vZnVuLWdhbWVzLTIvY29sb3Itcm9sbC0zZC5odG1sIiwicGFyZW50RG9tYWluIjoibWF0aG5vb2suY29tIiwidG9wRG9tYWluIjoibWF0aG5vb2suY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Color Tunnel, , https://html5.gamedistribution.com/rvvASMiM/b067ade7a13a4d50bc3f65e2401b55c8/index.html?gd_sdk_referrer_url=https://colortunnel.io&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2NvbG9ydHVubmVsLmlvIiwicGFyZW50RG9tYWluIjoiY29sb3J0dW5uZWwuaW8iLCJ0b3BEb21haW4iOiJjb2xvcnR1bm5lbC5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D
+Core Ball, , https://bigsmacky3.github.io/games/flash48.html
+Cookie Clicker, , https://orcatech2711.github.io/nano/games/cookieclicker/index.html
+Crazy Cattle 3D, , https://rawcdn.githack.com/genizy/google-class/main/crazycattle3d/index.html
+Crazy Chicken 3D, , https://html-classic.itch.zone/html/13448030/crazychicken%20web%20port/index.html
+Crazy Crash 3d, , https://ratgames.vercel.app/files/games/crazycrash3d.html
+Crazy Kitty 3d, , https://1games.io/game/crazy-kitty-3d/
+Creatur, , https://www.creatur.io/
+Cut The Rope, , https://cbgamesdev.github.io/chilibowlflash/ctr/index.html
+Cyber Race, , https://ratgames.vercel.app/files/games/cybercarspunkracing.html
+Dante, , https://bidoofery.github.io/nativegames/dante/
+Defend Your Nuts, , https://www.friv.com/z/games/defendyournuts/game.html
+Digdig, , https://digdig.io/
+Doblox, , https://ratgames.vercel.app/files/games/DOBLOX.html
+Donkey Kong, , https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/donkeykong64/
+Doodle Cricket, , https://f3.silvergames.com/m/doodle-cricket/
+Doodle Jump, , https://doodle-jump.co/game/doodle-jump/
+Doom, , https://raz0red.github.io/webprboom/
+Draw Climber, , https://unblockedgames76.gitlab.io/draw-climber/
+Dreader, , https://bidoofery.github.io/nativegames/dreader/
+DreadHead Parkour, , https://bestofgooglesites.com/games/dreadhead-parkour/index.html
+Drift Boss, , https://www.hoodamath.com/mobile/games/drift-boss/game.html?nocheckorient=1
+Duck Life, , https://narrow-one.github.io/n/duck-life/
+Duck Life 2, , https://gswitch3.github.io/g/duck-life-2-world-champion/
+Duck Life 3, , https://www.hoodamath.com/mobile/games/duck-life-3-evolution/game.html?nocheckorient=1
+Duck Life 4, , https://htmlxm.github.io/h/duck-life-4/
+Earn To Die, , https://selenite.cc/semag/ern/index.html
+Eggy Car, , https://ubg98.github.io/EggyCar/
+Elastic Man, , https://d21u3ic0kp9e91.cloudfront.net/elasticman/0/index.html
+Escape Road Winter, , https://azgames.io/escape-road-winter.embed
+Factory Balls Forever, , https://tylerpalko.github.io/gamehub/factoryballsforever/
+Feud, , https://googlefeud.com/
+Fire Boy Water Girl, , https://html5.gamedistribution.com/rvvASMiM/03f124074b0049f89fdace0cacf8ead5/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzAzZjEyNDA3NGIwMDQ5Zjg5ZmRhY2UwY2FjZjhlYWQ1LyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Flappy Bird, , https://www.hoodamath.com/mobile/games/flappy-bird/game.html
+Flight, , https://games.engineering.com/PaperFlight1/index.html
+Flow Lines, , https://html5.gamedistribution.com/rvvASMiM/a7a0226fd3c349caaa3c41ca63680d3a/index.html?gd_sdk_referrer_url=https://www.y8.com/games/flow_lines&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy55OC5jb20vZ2FtZXMvZmxvd19saW5lcyIsInBhcmVudERvbWFpbiI6Ink4LmNvbSIsInRvcERvbWFpbiI6Ink4LmNvbSIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D&key=y8&value=default
+Fluid Sim, , https://fivestarontop.pages.dev/fluidsim/
+FNAF 1, , https://run3.io/popgame/fnaf/fnaf1/
+FNAF 2, , https://run3.io/popgame/fnaf/fnaf2.html
+FNAF 4, , https://run3.io/popgame/fnaf/fnaf4.html
+FNAF3, , https://run3.io/popgame/fnaf/fnaf3.html
+Free Rider Jumps, , https://freeriderjumps.com/
+Friday Night Funkin', , https://4texas4.github.io/FNF
+Fruit Basket, , https://html5.gamedistribution.com/rvvASMiM/634a50cca48b4c0d87cedb3add5c5c81/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzYzNGE1MGNjYTQ4YjRjMGQ4N2NlZGIzYWRkNWM1YzgxLyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Fruit Ninja, , https://emulatoros.github.io/gfile/fruitninja/
+G-Switch 4 Creator, , https://www.seriusgames.com/html5/g-switch-4-1.3.32/
+Go Ball, , https://t9lat22.github.io/go-ball/
+Gobble, , https://sz-games.github.io/Games11/Gobble/Gobble.html
+Going Balls, , https://html5.gamedistribution.com/rvvASMiM/2d44a0c8ce704965b2031bcc4ae6a9a8/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzJkNDRhMGM4Y2U3MDQ5NjViMjAzMWJjYzRhZTZhOWE4LyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Google Baseball, , https://freeonlinegames.github.io/fourth-of-july-2019.html
+Google Snake Mods, , https://googlesnakemods.com/v/current/
+Granny, , https://1games.io/game/granny-horror/
+Grow a Garden, , https://script.google.com/macros/s/AKfycbwK_YDMKEccZyVOz_fpe66G4Je4VyFPdT10OdaKpM699Utzbq41n2m6OXqAzpX0oqrLTA/exec
+GTA, , https://cbgamesdev.github.io/chilibowlflash/GBA-gh-pages/launcher.html#gta
+Happy Filled Glass, , https://www.hoodamath.com/mobile/games/happy-filled-glass/game.html?nocheckorient=1
+Happy Wheels, , https://happy-wheels-online.github.io/file/
+Helix Jump, , https://cdn.gamesnacks.com/helixjump1/gameCode/index.html
+Hextris, , https://hextris.io/
+Hoop Stack, , https://html5.gamedistribution.com/rvvASMiM/4b17dd99b4b3438680a3051a44912adb/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzRiMTdkZDk5YjRiMzQzODY4MGEzMDUxYTQ0OTEyYWRiLyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+House Of Hazards, , https://t9lat22.github.io/house-of-hazards/
+Hypersnake, , https://game-cdn.ikop.xyz/uploads/game/html5/7297/
+Idle Ants, , https://szhong.4399.com/4399swf//upload_swf/ftp37/gamehwq/20211224/13/index.html
+Incredibox, , https://incredibox-game.io/game/incredibox-mod/
+Interactive Buddy, , https://cbgamesdev.github.io/chilibowlflash/ib.html
+Italian Brainrot Bike Rush, , https://files.twoplayergames.org/files/games/h1/italian-brainrot-bike-rush-v01f/index.html
+Jelly Truck, , https://t9lat22.github.io/jelly-truck/
+Jetpack Joy Ride, , https://emulatoros.github.io/gfile/jetpackjoyride/
+Keep Out, , https://www.playkeepout.com/
+Kour, , https://kour.io/
+Kick The Teddy, , https://unblocked-games.s3.amazonaws.com/games/kick-the-teddy-bear/unblocked.html
+Lay Eggs, , https://ubg76.gitlab.io/lay-eggs/
+Learn To Fly, , https://ad-freegames.github.io/flash/game/learn-to-fly.html
+Level Devil, , https://leveldevil2.io/game/level-devil-2/
+Little Alchemy, , https://littlealchemy2.com/
+lolbeans.io, , https://lolbeans.io/
+Long cat, , https://game.enjoy4fun.com/longcat/v1/index.html
+Ludo, , https://ludoking.com/play/
+Magic Cat, , https://html5-games.io/game/magic_cat/
+Make It Meme, , https://gnhustgames.org/makeitmeme-source/#/
+Mario Kart 64, , https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/mariokart64/
+Mini Monkey Mart, , https://monkey-mart.io/iframe/index.html
+Monster Tracks, , https://monstertracks.github.io/file/
+Monster Trucks, , https://ratgames.vercel.app/files/games/monstertruck.html
+Moto X3M, , https://motox3m.gitlab.io/game/moto-x3m/
+Narrow One, , https://narrow.one/
+Neon Rider, , https://html5.gamedistribution.com/rvvASMiM/3c48eb1a56064a83b3c2ca0acbe01bb2/index.html?gd_sdk_referrer_url=https%3A%2F%2Fwww.twoplayergames.org%2Fgame%2Fneon-rider&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy50d29wbGF5ZXJnYW1lcy5vcmcvZ2FtZS9uZW9uLXJpZGVyIiwicGFyZW50RG9tYWluIjoidHdvcGxheWVyZ2FtZXMub3JnIiwidG9wRG9tYWluIjoidHdvcGxheWVyZ2FtZXMub3JnIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Neon Swing, , https://mazahackasgan.github.io/neon-swing/
+Nut Clicker, , https://nutsimulator.github.io/index.html
+Obby But Your On A Bike, , https://db.duck.quackprep.com/html/obby_but_youre_on_a_bike/
+Obby Robby, , https://www.rapidwebapp.com/game/obbyrobby/index.html
+Only Up, , https://g.vseigru.net/10/igra-onli-ap-2/
+Orange, , https://www.hoodamath.com/mobile/games/orange/game.html?nocheckorient=1
+Overtake, , https://play.fancade.com/621913A1EAF5CF24?istart=1&max_h=9999999&max_w=999999
+OvO, , https://www.coolmathgames.com/sites/default/files/public_games/50208/
+Pacman, , https://ad-freegames.github.io/flash/game/pacman.html
+Papa's Burgeria, , https://t9lat22.github.io/papas-burgeria/
+Paper IO, , https://paperio-2.github.io/a9/paper-io-2/
+Pixel Gun 4D, , https://play.unity.com/api/v1/games/game/d4fc8fd5-f4eb-48e3-a64f-a76cceef7734/build/latest/frame
+Plants Versus Zombies, , https://roblnet13.github.io/pvz/game/iframe
+Pointer Pointer, , https://pointerpointer.com/
+Poly Track, , https://t9lat22.github.io/polytrack/
+Pool, , https://www.hoodamath.com/mobile/games/8-ball-pool/game.html?nocheckorient=1
+Portal, , https://75kh0.github.io/projects/portalflash/index.html
+Pull Pins, , https://games.cdn.famobi.com/html5games/p/pull-pins/v220/?fg_domain=play.famobi.com&fg_aid=A-FAMOBI-COM&fg_uid=c24e5a78-927a-4b7c-a536-3452d1f57021&fg_pid=96ab9c2f-6013-4b31-96dc-ccb5c7a89329&fg_beat=955&original_ref=https%3A%2F%2Fgames.cdn.famobi.com%2F
+Push Your Luck, , https://sz-games.github.io/Games2/push-your-luck/index.html
+Ragdoll Playground, , https://1games.io/game/ragdoll-playground/
+Rat Simulator, , https://ratcar.netlify.app/
+Red Ball 4, , https://redball4online.github.io/file/
+Re Run, , https://ratgames.vercel.app/files/games/RE_RUN.html
+Resizer, , https://www.hoodamath.com/mobile/games/resizer/game.html?nocheckorient=1
+Retro Bowl, , https://game316009.konggames.com/gamez/0031/6009/live/index.html
+Rise Higher, , https://www.hoodamath.com/mobile/games/rise-higher/game.html
+Rocket League, , https://ubg77.github.io/edit/rocket-soccer-derby/
+Rocket Pult, , https://scrap-metal.github.io/s9/rocket-pult/
+Rolling Ball 3D, , https://www.hoodamath.com/mobile/games/rolling-ball-3d/game.html?nocheckorient=1
+Run 3, , https://lekug.github.io/tn6pS9dCf37xAhkJv/index.html
+Rythem Heaven, , https://rightful-valuable-mum.glitch.me/
+Sandboxels, , https://sandboxels.r74n.com/
+Sandtris, , https://sandtris.com/
+Sausage Flip, , https://t9lat22.github.io/sausage-flip/
+School Boy Escape, , https://ratgames.vercel.app/files/games/schoolboyescape.html
+Shell Shockers, , https://scrambled.world/
+ShortCut Race, , https://www.hoodamath.com/mobile/games/shortcut-race/game.html
+Simply Up, , https://blob.gamezfun.com/807c4b26-8eff-492e-9ba9-88d6e3694295/index.html?noads=true
+Sink It, , https://gamesonline86.github.io/sink-it/
+Skibidi Toilet Puzzle, , https://g.igroutka.ru/games/23/sxwIYS2PNkzF9vul/rvvASMiM/0a5d7f62d76d464592bc5f99c2032b58/
+Sky Race 3D, , https://ratgames.vercel.app/files/games/skyrace3d.html
+Sky Riders, , https://glseries.net/assets/applications/content/sky-riders/
+Slice Master, , https://bitlifeonline.github.io/slice-master/
+Slope, , https://freeonlinegames.github.io/slope/
+Slow Roads, , https://slowroads.io/
+Fast Roads, , https://siegfriedschmidt.github.io/fastroads/
+Smash Karts, , https://smashkarts.io/
+Smashy Roads, , https://game.azgame.io/escape-road-city/
+Smashyroads 2, , https://azgames.io/escape-road-city-2.embed
+Snow Rider, , https://itsvijaysingh.github.io/Snow-Rider3D/
+Soccer Random, , https://math-lessons.online/_games/soccer-random/
+Solitaire, , https://www.calculators.org/games/solitaire/game.php
+Sprunki, , https://www.yoosfuhl.com/game/sprunkiincredibox/index.html
+Squid Game, , https://www.yoosfuhl.com/game/squidgame/index.html
+Stack Game, , https://www.coolmathgames.com/sites/default/files/public_games/50382/
+Steal a Brainrot, , https://script.google.com/macros/s/AKfycbxJalyip_ETy_kolDAlSVxdcnLtn16P6gIoJ5kDwt1abHFX32SUJEOLCWU31veTffv2/exec
+Stick Fight The Chaos, , https://html5.gamedistribution.com/rvvASMiM/06cdcc1cd320472ab3f3574d702ff217/index.html?gd_sdk_referrer_url=https%3A%2F%2Fgamedistribution.com%2Fgames%2Fstick-fight-the-chaos%2F&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2dhbWVkaXN0cmlidXRpb24uY29tL2dhbWVzL3N0aWNrLWZpZ2h0LXRoZS1jaGFvcy8iLCJwYXJlbnREb21haW4iOiJnYW1lZGlzdHJpYnV0aW9uLmNvbSIsInRvcERvbWFpbiI6ImFnZW9md2FyZ2FtZS5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D
+Stick RGP, , https://ad-freegames.github.io/flash/game/stick-rpg.html
+Stickman Hook, , https://mexisofunny.github.io/stickhook/
+Stumble Guys, , https://www.stumbleguys.com/play
+Super Liquid Soccer, , https://gnhustgames.github.io/super-liquid-soccer/
+Super Mario 64, , https://ratgames.vercel.app/files/games/sm64.html
+Super Mario Bros, , https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/supermariobros/
+SWOOOP, , https://playcanv.as/p/JtL2iqIH/
+Temple Run 2, , https://www.yoosfuhl.com/game/templerun2/index.html
+The Impossible Quiz, , https://ad-freegames.github.io/flash/game/the-impossible-quiz.html
+The Little Giant, , https://grims.pro/_games/thelittlegiant/
+The Man from the Window, , https://games.builds.gamepix.com/MNH1W/7033839986784862208/index.html?sid=e4515&lang=en&namespace=the-man-from-the-window
+This is Sand, , https://thisissand.com/
+Thorns And Balloons, , https://www.hoodamath.com/mobile/games/thorn-and-balloons/game.html
+Tiny Fishing, , https://blackoutgames.pages.dev/games/annoyingfishgame
+Tomb Of The Mask, , https://cbgamesdev.github.io/chilibowlflash/totm/index.html
+Town Scaper, , https://oskarstalberg.com/Townscaper/
+Tunnel Rush 2, , https://gamesbun.github.io/tunnel-rush-2/
+Twisted Tangle, , https://cargames.click/twisted-tangle/
+Ultrakill, , https://html5.gdata1.com/ULTRAKILL%20Prelude/?v=20250827221755
+UnderTale, , https://truffled.lol/gamefile/Undertale.html
+UNO, , https://www.xpgameplus.com/games/uno/default.html
+Vex 3, , https://tylerpalko.github.io/gamehub/vex3/
+Vex 4, , https://tylerpalko.github.io/gamehub/vex4/
+Vex 5, , https://tylerpalko.github.io/gamehub/vex5/
+Vex 6, , https://tylerpalko.github.io/gamehub/vex6/
+Vex 7, , https://tylerpalko.github.io/gamehub/vex7/
+Volley Random, , https://soccerrandomgame.com/gg/volleyball-random/
+War Bot, , https://warbot.io/
+Weave Silk, , https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/apps/weavesilk/
+We Become What We Behold, , https://unblocked-games.s3.amazonaws.com/games/2024/more/we-become-what-we-behold/index.html
+Whack Your Boss, , https://ad-freegames.github.io/flash/game/whack-your-boss.html
+Wheelie Bike, , https://www.hoodamath.com/mobile/games/wheelie-bike/game.html
+Wood Turning, , https://www.bestgames.com/games/Woodturning-3d/index.html?bestgames
+Worlds hardest Game, , https://cbgamesdev.github.io/chilibowlflash/hardestgame.html
+Worlds Hardest Game 2, , https://cbgamesdev.github.io/chilibowlflash/hardestgame2.html
+xx142b2exe, , https://tylerpalko.github.io/gamehub/xx142b2.exe/
+Zen Word, , https://ratgames.vercel.app/files/games/ZenWord.html
+Zuma, , https://ratgames.vercel.app/files/games/Zuma.html
+Line Rider, , https://demonzero.lat/game/line.html
+Ragdoll Archers, , https://db.duck.quackprep.com/html/ragdoll_archers/
+Race Survival Arena King, , https://db.duck.quackprep.com/html/race_survival_arena_king/
+99 Nights In a Forest, , https://db.duck.quackprep.com/html/99_nights_in_the_forest/
+Retro Bowl College, , https://ethonion10.neocities.org/
+Hollow Knight, , https://db.duck.quackprep.com/html/hollow_knight/
+FNAF Pizzaria Simulator, , https://db.duck.quackprep.com/html/fnaf_pizzeria_simulator/
+Spider Dude Parkour, , https://db.duck.quackprep.com/html/spider_dude_parkour/
+Growden IO, , https://db.duck.quackprep.com/html/growden_io/
+Rainbow Friends Return, , https://db.duck.quackprep.com/html/rainbow_friends_return/
+Buckshot Roulette, , https://db.duck.quackprep.com/html/buckshot_roulette/
+The Binding Of Isaac, , https://db.duck.quackprep.com/html/thebindingofisaac/
+Escape The Prison, , https://db.duck.quackprep.com/html/escapetheprison/
+Funny Shooter 2, , https://db.duck.quackprep.com/html/funny_shooter_2/
+Spiral Roll, , https://db.duck.quackprep.com/html/spiral_roll/
+Duck Life 5, , https://elite-gamez.github.io/g/Duck%20Life%205.html
+Duck Life Battle, , https://elite-gamez.github.io/g/Duck%20Life%20Battle.html
+60 Seconds, , https://www.puzzlegame.com/games/60-Seconds-Atomic-Adventure/index.html?yad
+Papers Grade Please, , https://www.yad.com/games/Papers-Grade-Please/index.html?yad
+CS, , https://db.duckmath.org/html/cs_online/
+Aquapark Io, , https://unblocked-games.s3.amazonaws.com/games/slidepark-io/unblocked.html
+Attack Hole, , https://html5.gamedistribution.com/fb2c54f5d26c4009ae5b5dafca416c99/?gdpr-targeting=1&gd_sdk_referrer_url=https://www.silvergames.com/en/black-hole-attack
+Bottle Jump 3d, , https://game.azgame.io/bottle-jump/
+Bottle Flip 3d, , https://play.wgplayground.com/game/5fa116c15ddf2e4894b341fc1e3c1d8c/?r=bottleflip3d.com
+Bouncemasters, , https://maxwellstevenson.com/Vafor_IT/bouncemasters/
+Bowmasters, , https://g.igroutka.ru/games/3/igra_boumasters/7/igra-boumasters/
+Crossy Road, , https://crossy-road.gitlab.io/file/
+Flappy Dunk, , https://flappydunk.com/wp-content/uploads/games/F/flappy-dunk/index.html
+Pou, , https://ubg98.github.io/Pou/
+Tall Man Run, , https://www.bestgames.com/games/Tall-Man-Run/index.html?bestgames
+Powder Game 2, , https://dan-ball.jp/en/javagame/dust2/
+Pepsi Skate 3D, , https://the.deconstructors.co.uk/tam-pepi-skate-3d/
+Free Head Skate, , https://www.hoodamath.com/mobile/games/freehead-skate/game.html?nocheckorient=1
+Amaze, , https://maxwellstevenson.com/Vafor_IT/amaze/
+Color Block Jam, , https://gamedistro.rhenrywarren.workers.dev/rvvASMiM/bea1d886820c494091bf1df4e77b956a/index.html?gd_sdk_referrer_url=https://lupine.red#translate.google.com
+Just Fall Lol, , https://just-fall-lol.github.io/file/
+Talking Ben, , https://turbowarp.org/649123736/embed?autostart=true&fullscreen-background=true
+Under The Red Sky, , https://st.8games.net/7/8g/igra-parkur-pod-krasnym-nebom/
+Overide, , https://overtide.io/
+Solar Smash, , https://noahsamazingtutoringhelp.github.io/Noahs-Calculus-Tutor/games/31.html
+Ragdoll Hit, , https://ragdollhit.gitlab.io/file/
+Poxel, , https://poxel.io/
+Tag, , https://kdata1.com/2024/05/tag/
+Summer Rider 3D, , https://html5.gamedistribution.com/rvvASMiM/3ff5df9f5d0248fd9dcd70e2cc253de5/index.html?timestamp=-62135596800&siteid=88&siteLocale=en&locale=en&channelid=1&gd_sdk_referrer_url=https%3A%2F%2Fwww.gamesgames.com%2Fgame%2Fsummer-rider-3d%23theatermode&countryCode=en&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5nYW1lc2dhbWVzLmNvbS9nYW1lL3N1bW1lci1yaWRlci0zZCN0aGVhdGVybW9kZSIsInBhcmVudERvbWFpbiI6ImdhbWVzZ2FtZXMuY29tIiwidG9wRG9tYWluIjoiZ2FtZXNnYW1lcy5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xOCJ9
+SoftWheelieLife, , https://scratch.mit.edu/projects/1231016758/embed/
+Front Wars IO, , https://frontwars.io/
+Hasmob, , https://html5.gamedistribution.com/rvvASMiM/623baec23d504c83acab0b5250859ba8/index.html?gd_sdk_referrer_url=https%3A%2F%2Fhazmob.io&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2hhem1vYi5pbyIsInBhcmVudERvbWFpbiI6Imhhem1vYi5pbyIsInRvcERvbWFpbiI6Imhhem1vYi5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE4In0%253D
+Handless Millionare, , https://pixel-cave.com/games/hm/
+Night City Racing, , https://html5.gamedistribution.com/rvvASMiM/837aa1aafa2442cf81a622b505bff752/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5mcml2LmNtLyIsInBhcmVudERvbWFpbiI6ImZyaXYuY20iLCJ0b3BEb21haW4iOiJmcml2LmNtIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTgifQ%253D%253D
+Pokemon Green, , https://script.google.com/macros/s/AKfycbxWYXzXN3TRwxELxgrTkjmE5hyqPMgzdNn6clWSzVcU-m0m9MDdHHb-VP-VDnz06vNe/exec
+Pokemon Red, , https://picklekid31.github.io/GBA-unblocked-games/launcher.html#pokemonred
+Roof Top Snipers, , https://rooftop-snipers.github.io/file/
+Roof Top Snipers 2, , https://htmlxm.github.io/h6/rooftop-snipers-2/
+Water Rider 3D, , https://www.hoodamath.com/mobile/games/water-rider-3d/game.html?nocheckorient=1
+Drift Hunters, , https://geometrygames.gitlab.io/drift-hunters/
+I Wanna Be That Guy, , https://copy.sh/iw/
+67 clicker, , https://2games.io/game/67-clicker/
+Minesweeper, , https://www.minesweepergoogle.com/gameapp.html
+Krunker, , https://krunker.io/
+Infinite Craft, , https://script.google.com/macros/s/AKfycby6VkmafM4044keDc4OclZ4Saq2a8lth-pAC1XY_7c1_qVsH9IsVKrqbuWH-SJO1puW/exec
+Extreme Car Driving Simulator, , https://ubg365.github.io/extreme-car-driving-simulator/play.html
+`;
+
+    // parse the list robustly - expecting: name, image, url
+const games = gameList
+  .trim()
+  .split('\n')
+  .map(line => {
+    const parts = line.split(',');
+    if (!parts || parts.length < 2) return null;
+    
+    const name = parts.shift().trim();
+    const image = parts.shift().trim() || NO_IMAGE_URL; // Takes the second item (image), uses placeholder if empty
+    const url = parts.join(',').trim(); // Takes the rest as the URL (third item)
+
+    if (!name || !url) return null;
+    
+    return { 
+      name, 
+      url, 
+      image 
+    };
+  })
+  .filter(Boolean);
+
+// Keep the first 11 exactly as-written, sort the rest alphabetically
+const firstEleven = games.slice(0, 11);
+const restSorted = games
+  .slice(11)
+  .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+const finalGames = [...firstEleven, ...restSorted];
+
+// New function to render a single game card
+function createGameCard({name, url, image}) {
+  const card = document.createElement('a');
+  card.href = '#'; // Prevent default navigation
+  card.className = 'game-card';
+  card.onclick = (e) => {
+    e.preventDefault(); // Stop the link from acting as a normal link
+    openViewer(url);
+  };
+
+  card.innerHTML = `
+    <div class="game-image-wrapper">
+      <img src="${image}" alt="${name} cover" onerror="this.src='${NO_IMAGE_URL}'">
+    </div>
+    <div class="game-info">
+      <h3 class="game-title">${name}</h3>
+    </div>
+  `;
+  return card;
+}
+
+    // update placeholder to show count dynamically
+    const searchInput = document.getElementById('search');
+    const sampleHint = 'Minecraft, Clash Royale, 1v1.lol';
+    searchInput.placeholder = `Search through ${finalGames.length} games (try: ${sampleHint})`;
+
+    // populate grid
+    const gridContainer = document.getElementById('game-grid');
+    const cardMap = new Map();
+    finalGames.forEach((game) => {
+      const card = createGameCard(game);
+      gridContainer.appendChild(card);
+      cardMap.set(game.name, card);
+    });
+
+    // fuzzy search
+    const fuse = new Fuse(finalGames, { keys:['name'], threshold:0.4 });
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim();
+      const results = q ? fuse.search(q).map(r => r.item.name) : finalGames.map(g => g.name);
+      const showSet = new Set(results);
+      cardMap.forEach((card, name) => card.style.display = showSet.has(name) ? 'flex' : 'none');
+    });
+
+    // focus shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+
+    // pulse on load
+    const wrapper = document.getElementById('search-wrapper');
+    wrapper.classList.add('pulse-once');
+    setTimeout(()=> wrapper.classList.remove('pulse-once'), 1700);
+
+    // support ?q= prefill
+    const params = new URLSearchParams(location.search);
+    if (params.get('q')) {
+      searchInput.value = params.get('q');
+      searchInput.dispatchEvent(new Event('input'));
+      searchInput.focus();
+    }
+
+    // optional: expose number of games in the visible label too
+    const labelText = document.getElementById('label-text');
+    labelText.textContent = `Find a game — ${finalGames.length} available`;
+  </script>
+</body>
+</html>
+
