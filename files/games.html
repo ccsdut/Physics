@@ -167,6 +167,7 @@ function openViewer(url){
   Structure is now: Name, Image URL, Viewer URL
 */
 const gameList = `
+Rat Simulator, https://ratgames.vercel.app/media/gameimages/rat.png, https://ratcar.netlify.app/
 1v1.lol, https://ratgames.vercel.app/media/gameimages/1v1lol.png, https://1v1lol-unblocked-free.github.io/
 Minecraft, https://ratgames.vercel.app/media/gameimages/minecraft.png, https://4texas4.github.io/EaglyMC/
 Clash Royale, https://ratgames.vercel.app/media/gameimages/clash.png, https://www.friv.com/z/games/clashofvikings/index-x.html
@@ -325,7 +326,6 @@ Portal, , https://75kh0.github.io/projects/portalflash/index.html
 Pull Pins, , https://games.cdn.famobi.com/html5games/p/pull-pins/v220/?fg_domain=play.famobi.com&fg_aid=A-FAMOBI-COM&fg_uid=c24e5a78-927a-4b7c-a536-3452d1f57021&fg_pid=96ab9c2f-6013-4b31-96dc-ccb5c7a89329&fg_beat=955&original_ref=https%3A%2F%2Fgames.cdn.famobi.com%2F
 Push Your Luck, , https://sz-games.github.io/Games2/push-your-luck/index.html
 Ragdoll Playground, , https://1games.io/game/ragdoll-playground/
-Rat Simulator, , https://ratcar.netlify.app/
 Red Ball 4, , https://redball4online.github.io/file/
 Re Run, , https://ratgames.vercel.app/files/games/RE_RUN.html
 Resizer, , https://www.hoodamath.com/mobile/games/resizer/game.html?nocheckorient=1
@@ -487,10 +487,10 @@ const games = gameList
   })
   .filter(Boolean);
 
-// Keep the first 11 exactly as-written, sort the rest alphabetically
-const firstEleven = games.slice(0, 11);
+// Keep the first 12 exactly as-written, sort the rest alphabetically
+const firstEleven = games.slice(0, 12);
 const restSorted = games
-  .slice(11)
+  .slice(12)
   .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 const finalGames = [...firstEleven, ...restSorted];
 
