@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rat Games</title>
+  <link rel="icon" href="/media/favicon.png" type="image/png" />
+  <style>
+    :root{
+      --accent: #b36b2d;
+      --search-height: 64px;
+      --search-font-size: 20px;
+      --search-width-desktop: 80%;
+      --search-width-mobile: 95%;
+      --pulse-duration: 1600ms;
+      --card-bg: #282828;
+      --card-text: #ffffff;
+      --heart-size: 36px;
+      --heart-red: #e53935;
+      --heart-grey: #9aa0a6;
+    }
+
+    html,body{height:100%;margin:0;padding:0;}
+    body{
+      font-family: 'Comic Sans MS', sans-serif;
+      background: url('https://cty3ctyc42yjmxt3499ctn924u9xaje5y.vercel.app/media/rat-spinning.gif') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #121212;
+      color:#fff;
+    }
+
+    .container{
+      width:90%;
+      max-width:1100px;
+      margin:32px auto;
+      padding:36px 24px;
+      text-align:center;
+      background:rgba(18,18,18,0.88);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    }
+    h1{margin:0 0 20px 0;font-size:34px;}
+    .search-area{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 26px;}
+    .search-label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,0.6);}
+    .search-wrapper{position:relative;width:var(--search-width-desktop);max-width:980px;transition:transform .18s ease;}
+    .search-wrapper .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:20px;opacity:.95;}
+    input.search-input{
+      width:100%;
+      height:var(--search-height);
+      padding-left:54px;padding-right:18px;
+      font-size:var(--search-font-size);
+      border-radius:14px;border:2px solid rgba(255,255,255,0.06);
+      background:linear-gradient(180deg, rgba(30,30,30,0.95), rgba(18,18,18,0.85));
+      color:#fff;outline:none;box-shadow:0 6px 20px rgba(0,0,0,0.6);
+      transition:box-shadow .18s ease,transform .12s ease,border-color .12s ease;
+    }
+    input.search-input::placeholder{color:#d0d6db;opacity:.9;font-weight:600;}
+    input.search-input:focus,input.search-input:hover{
+      transform:translateY(-3px);border-color:var(--accent);
+      box-shadow:0 8px 30px rgba(0,0,0,0.7),0 0 28px 3px rgba(179,107,45,0.06);
+    }
+
+    @keyframes pulseGlow{
+      0% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); }
+      50% { box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 36px rgba(179,107,45,0.12); transform:translateY(-1px); }
+      100% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); transform:translateY(0); }
+    }
+    .pulse-once{ animation: pulseGlow var(--pulse-duration) ease-in-out 1; }
+
+    .search-hint{font-size:12px;color:#cfd8dc;opacity:.85;}
+
+    /* Grid + Cards */
+    .game-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+      gap:20px;
+      margin-top:20px;
+    }
+    .game-card{
+      background:var(--card-bg);
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 4px 15px rgba(0,0,0,0.5);
+      transition:transform .2s ease, box-shadow .2s ease;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      text-decoration:none;
+      color:inherit;
+      min-height:250px;
+    }
+    .game-card:hover{ transform:translateY(-5px); box-shadow:0 10px 25px rgba(0,0,0,0.7); }
+    .game-image-wrapper{ width:100%; padding-top:100%; position:relative; overflow:hidden; }
+    .game-image-wrapper img{ position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform .3s ease; }
+    .game-card:hover img{ transform:scale(1.05); }
+    .game-info{ padding:10px 12px; display:flex; align-items:center; justify-content:flex-start; gap:8px; }
+    .game-title{ font-size:18px; font-weight:700; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--card-text); }
+
+    /* Overlay heart in top-right of image */
+    .image-overlay{
+      position:absolute;
+      top:8px;
+      right:8px;
+      display:flex;
+      align-items:center;
+      z-index:5;
+      pointer-events:none; /* container non-interactive */
+    }
+    .image-overlay .heart-btn{
+      pointer-events:auto;
+      background:rgba(0,0,0,0.45);
+      border-radius:10px;
+      padding:6px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:var(--heart-size);
+      height:var(--heart-size);
+      border:0;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .image-overlay .heart-btn:hover{ transform:scale(1.06); box-shadow:0 6px 18px rgba(0,0,0,0.45); }
+    .heart-svg{ width:100%; height:100%; display:block; }
+
+    /* small responsive tweaks */
+    @media (max-width:900px){ .search-wrapper{width:var(--search-width-mobile);} .game-grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));} }
+    @media (max-width:420px){ :root{--search-height:56px;--search-font-size:18px;} h1{font-size:28px;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Games</h1>
+
+    <div class="search-area">
+      <div class="search-label" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+        </svg>
+        <span id="label-text">Find a game</span>
+      </div>
+
+      <div class="search-wrapper" id="search-wrapper">
+        <div class="icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2"></circle>
+          </svg>
+        </div>
+        <input type="search" id="search" class="search-input" aria-label="Search games" autocomplete="off">
+      </div>
+
+      <div class="search-hint">Tip: press the <kbd>/</kbd> key to jump to search</div>
+    </div>
+
+    <div class="game-grid" id="game-grid"></div>
+  </div>
+
+  <script type="module">
+    import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // ---------- CONFIG ----------
+    const SUPABASE_URL = 'https://alrhlskeysfjgofpcwyn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFscmhsc2tleXNmamdvZnBjd3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNTc3MzAsImV4cCI6MjA3OTkzMzczMH0.1-jDLHdwi_FpNgA4TLmAC-dgBBd_rKlQ5zfIBlUkeDg';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const NO_IMAGE_URL = 'https://ratgames.vercel.app/media/noimage.png';
+    const RANDOM_GIF = 'https://ratgames.vercel.app/media/gameimages/random.gif';
+    const VOTES_TABLE = 'votes';
+    const MOVE_THRESHOLD = 3; // only reorder if count > 3
+
+    // local likes
+    const LS_KEY = 'ratgames_liked_v2';
+    let localLikes = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify(localLikes)); }
+
+    // ---------- GAMES ----------
+    const gameList = `
+Rat Simulator, https://ratgames.vercel.app/media/gameimages/rat.png, https://ratcar.netlify.app/
+1v1.lol, https://ratgames.vercel.app/media/gameimages/1v1lol.png, https://1v1lol-unblocked-free.github.io/
+Minecraft, https://ratgames.vercel.app/media/gameimages/minecraft.png, https://4texas4.github.io/EaglyMC/
+Clash Royale, https://ratgames.vercel.app/media/gameimages/clash.png, https://www.friv.com/z/games/clashofvikings/index-x.html
+Geometry Dash, https://ratgames.vercel.app/media/gameimages/geometry-dash.png, https://geometrydashwave.io/game/gd/?v=5
+Obby Faster, https://ratgames.vercel.app/media/gameimages/obby-faster.png, https://ratgames.vercel.app/files/games/obbyfaster.html
+Daddy Long Legs, https://ratgames.vercel.app/media/gameimages/daddy-long-legs.png, https://class811.github.io/g50/daddy-long-legs/
+Drive Mad, https://ratgames.vercel.app/media/gameimages/dmad.png, https://drive-madgame.github.io/file/
+Dune, https://ratgames.vercel.app/media/gameimages/dune.jpg, https://game.azgame.io/curve-rush/
+Subway Surfers, https://ratgames.vercel.app/media/gameimages/subway-surfers.webp, https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210324/jj01/index.html
+Hill Climb Racing, https://ratgames.vercel.app/media/gameimages/hcr.webp, https://script.google.com/macros/s/AKfycbxk6r9om-zK1QwAqUG3i1iCwbcQFQBONYET6bELaAC3V512iVxb7w3ajCd6Bi2NT9YL/exec
+Magic Tiles 3, https://ratgames.vercel.app/media/gameimages/magic-tiles-3.png, https://script.google.com/macros/s/AKfycbwAcyQDrgkMV5t4fyvpk4oSZIlsAsskku4RQlq0IdKVv-JtZ8xT4Y_rbBew58_hbKby/exec
+2048, https://ratgames.vercel.app/media/gameimages/2048.png, https://www.hoodamath.com/mobile/games/2048-game/game.html?nocheckorient=1
+9007199254740992, https://ratgames.vercel.app/media/gameimages/9007199254740992.png, https://dmitrykuzmenko.github.io/2048/
+A Dance of Fire and Ice, https://ratgames.vercel.app/media/gameimages/adofai.png, https://www.gamenora.com/upload/games/html5/A%20Dance%20of%20Fire%20and%20Ice/
+A Difficult Game About Climbing, https://ratgames.vercel.app/media/gameimages/a-difficult-game-about-climbing.jpg, https://g.vseigru.net/10/igra-a-difficult-game-about-climbing/game.html
+Among Us, https://ratgames.vercel.app/media/gameimages/among-us.jpg, https://coolubg.github.io/coolubg-list/among-us-online-scratch/
+Among Us Singleplayer, https://ratgames.vercel.app/media/gameimages/among-us.jpg, https://kdata1.com/2020/12/3054073/
+Angry Birds, https://ratgames.vercel.app/media/gameimages/angry-birds.jpg, https://funhtml5games.com/angrybirds/index.html
+Backflip Dive 3D, https://ratgames.vercel.app/media/gameimages/backflip-dive-3D.png, https://html5.gamedistribution.com/rvvASMiM/a9d7229d3be14c0284d5281d125f27f3/index.html?gd_sdk_referrer_url=https%3A%2F%2Fgamaverse.com%2Fbackflip-dive-3d-game%2F&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2dhbWF2ZXJzZS5jb20vYmFja2ZsaXAtZGl2ZS0zZC1nYW1lLyIsInBhcmVudERvbWFpbiI6ImdhbWF2ZXJzZS5jb20iLCJ0b3BEb21haW4iOiJnYW1hdmVyc2UuY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Backflipper, https://ratgames.vercel.app/media/gameimages/backflipper.png, https://ubg76.gitlab.io/backflipper/
+Backrooms 2D, https://ratgames.vercel.app/media/gameimages/backrooms2d.webp, https://selenite.cc/semag/2d/index.html
+Backrooms 3D, https://ratgames.vercel.app/media/gameimages/backrooms3d.webp, https://kdata1.com/2022/05/backroom16/
+Bad Ice Cream 1, https://ratgames.vercel.app/media/gameimages/bad-ice-cream.webp, https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x4/index.html
+Bad Ice Cream 2, https://ratgames.vercel.app/media/gameimages/bad-ice-cream.webp, https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x6/index.html
+Bad Ice Cream 3, https://ratgames.vercel.app/media/gameimages/bad-ice-cream.webp, https://szhong.4399.com/4399swf//upload_swf/ftp35/liuxinyu/20210128/x5/index.html
+Bad Parenting, https://ratgames.vercel.app/media/gameimages/bad-parenting.jpg, https://ratgames.vercel.app/files/games/Bad%20Parenting%201.html
+Baldi's Basics, https://ratgames.vercel.app/media/gameimages/baldis-basics.png, https://baldis-basics-online.github.io/file/
+Ball Hop, https://ratgames.vercel.app/media/gameimages/hop-ball.png, https://ug17.github.io/play/Ball-Hop/
+Basket Random, https://ratgames.vercel.app/media/gameimages/basketrandom.png, https://t9lat22.github.io/basket-random/
+BasketBall Stars, https://ratgames.vercel.app/media/gameimages/basketball-stars.jpg, https://basketball-stars.io/game/basketball-stars/
+Bit Planes, https://ratgames.vercel.app/media/gameimages/bit-planes.png, https://medv.io/bit-planes/
+Bitlife, https://ratgames.vercel.app/media/gameimages/bit-life.png, https://tylerpalko.github.io/gamehub/bitlife/
+Blob Opera, https://ratgames.vercel.app/media/gameimages/blob-opera.png, https://gacembed.withgoogle.com/blob-opera/#/
+Block Blast, https://ratgames.vercel.app/media/gameimages/block-blast.webp, https://reunbozdo.github.io/
+Bloons Tower Defense, https://ratgames.vercel.app/media/gameimages/bloons-tower-defense.png, https://ad-freegames.github.io/flash/game/bloons-tower-defense.html
+Bloxd, https://ratgames.vercel.app/media/gameimages/bloxd.png, https://bloxd.io/
+Bloxorz, https://ratgames.vercel.app/media/gameimages/bloxorz.png, https://ad-freegames.github.io/flash/game/bloxorz.html
+Bob the robber 2, https://ratgames.vercel.app/media/gameimages/BobTheRobber.webp, https://t9lat22.github.io/bob-the-robber-2/
+Bongo Cat, https://ratgames.vercel.app/media/gameimages/bongocat.png, https://bongo.cat/
+Bonk, https://ratgames.vercel.app/media/gameimages/bonk.png, https://multiplayer.gg/physics/
+Boxing Random, https://ratgames.vercel.app/media/gameimages/boxingrandom.png, https://soccerrandomgame.com/gg/boxing-random/
+Break Stick Completely, https://ratgames.vercel.app/media/gameimages/break-stick-completly.png, https://storage.y8.com/y8-studio/html5/Playgama/break_stick_completely/?key=y8&value=default
+Car Drawing Game, https://ratgames.vercel.app/media/gameimages/Car-Drawing-Game.png, https://slope-game.github.io/car-drawing-game/
+Car Simulator Arena, https://ratgames.vercel.app/media/gameimages/car-simulator-arena.png, https://files.vitalitygames.com/games/webgl/2017/12/13/car-simulator-arena/
+Cat Tennis, https://ratgames.vercel.app/media/gameimages/cat-tennis.jpg, https://sz-games.github.io/Games11/cat%20tennis/
+Charlie The Steak, https://ratgames.vercel.app/media/gameimages/charlie-the-steak.webp, https://charliethesteakonline.com/gg/charlie-the-steak-online/
+Choir, https://ratgames.vercel.app/media/gameimages/choir.jpeg, https://d21u3ic0kp9e91.cloudfront.net/choir/04/index.html
+CircleO, https://ratgames.vercel.app/media/gameimages/circleo.jpeg, https://g.igroutka.ru/games/164/aJQAOvjXMnFLdVPS/circloo/
+Climbing Over It, https://ratgames.vercel.app/media/gameimages/getting-over-it.jpg, https://ubg76.gitlab.io/climbing-over-it/
+Cluster Rush, https://ratgames.vercel.app/media/gameimages/cluster-rush.jpeg, https://www.yoosfuhl.com/game/clusterrush/game.html
+Color Combat, https://ratgames.vercel.app/media/gameimages/color-combat.webp, https://cbgamesdev.github.io/chilibowlflash/colorcombat.html
+Color Roll 3D, https://ratgames.vercel.app/media/gameimages/color-roll-3d.webp, https://html5.gamedistribution.com/rvvASMiM/a216492f41f74bd8ad98eb55ad097dda/index.html?gd_sdk_referrer_url=https://www.mathnook.com/fun-games-2/color-roll-3d.html&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5tYXRobm9vay5jb20vZnVuLWdhbWVzLTIvY29sb3Itcm9sbC0zZC5odG1sIiwicGFyZW50RG9tYWluIjoibWF0aG5vb2suY29tIiwidG9wRG9tYWluIjoibWF0aG5vb2suY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Color Tunnel, https://ratgames.vercel.app/media/gameimages/color-tunnel.webp, https://html5.gamedistribution.com/rvvASMiM/b0ade7a13a4d50bc3f65e2401b55c8/index.html?gd_sdk_referrer_url=https://colortunnel.io&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2NvbG9ydHVubmVsLmlvIiwicGFyZW50RG9tYWluIjoiY29sb3J0dW5uZWwuaW8iLCJ0b3BEb21haW4iOiJjb2xvcnR1bm5lbC5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D
+Core Ball, https://ratgames.vercel.app/media/gameimages/core-ball.png, https://bigsmacky3.github.io/games/flash48.html
+Cookie Clicker, https://ratgames.vercel.app/media/gameimages/cookie-clicker.jpg, https://orcatech2711.github.io/nano/games/cookieclicker/index.html
+Crazy Cattle 3D, https://ratgames.vercel.app/media/gameimages/crazy-cattle-3d.webp, https://rawcdn.githack.com/genizy/google-class/main/crazycattle3d/index.html
+Crazy Chicken 3D, https://ratgames.vercel.app/media/gameimages/crazy-chicken-3d.jpeg, https://html-classic.itch.zone/html/13448030/crazychicken%20web%20port/index.html
+Crazy Crash 3d, https://ratgames.vercel.app/media/gameimages/crazy-crash-3d.webp, https://ratgames.vercel.app/files/games/crazycrash3d.html
+Crazy Kitty 3d, https://ratgames.vercel.app/media/gameimages/crazy-kitty-3d.jpeg, https://1games.io/game/crazy-kitty-3d/
+Creatur, https://ratgames.vercel.app/media/gameimages/creatur.jpeg, https://www.creatur.io/
+Cut The Rope, https://ratgames.vercel.app/media/gameimages/cut-the-rope.png, https://cbgamesdev.github.io/chilibowlflash/ctr/index.html
+Cyber Race, https://ratgames.vercel.app/media/gameimages/cyber-race.png, https://ratgames.vercel.app/files/games/cybercarspunkracing.html
+Dante, https://ratgames.vercel.app/media/gameimages/dante.png, https://bidoofery.github.io/nativegames/dante/
+Defend Your Nuts, https://ratgames.vercel.app/media/gameimages/defend-your-nuts.webp, https://www.friv.com/z/games/defendyournuts/game.html
+Digdig, https://ratgames.vercel.app/media/gameimages/digdig.jpeg, https://digdig.io/
+Doblox, https://ratgames.vercel.app/media/gameimages/doblox.png, https://ratgames.vercel.app/files/games/DOBLOX.html
+Donkey Kong, https://ratgames.vercel.app/media/gameimages/donkey-kong.webp, https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/donkeykong64/
+Doodle Cricket, https://ratgames.vercel.app/media/gameimages/doodle-cricket.jpeg, https://f3.silvergames.com/m/doodle-cricket/
+Doodle Jump, https://ratgames.vercel.app/media/gameimages/doodle-jump.webp, https://doodle-jump.co/game/doodle-jump/
+Doom, https://ratgames.vercel.app/media/gameimages/doom.jpg, https://raz0red.github.io/webprboom/
+Draw Climber, https://ratgames.vercel.app/media/gameimages/draw-climber.webp, https://unblockedgames76.gitlab.io/draw-climber/
+Dreader, https://ratgames.vercel.app/media/gameimages/dreader.webp, https://bidoofery.github.io/nativegames/dreader/
+DreadHead Parkour, https://ratgames.vercel.app/media/gameimages/dreadhead-parkour.jpeg, https://bestofgooglesites.com/games/dreadhead-parkour/index.html
+Drift Boss, https://ratgames.vercel.app/media/gameimages/drift-boss.png, https://www.hoodamath.com/mobile/games/drift-boss/game.html?nocheckorient=1
+Duck Life, https://ratgames.vercel.app/media/gameimages/duck-life.jpeg, https://narrow-one.github.io/n/duck-life/
+Duck Life 2, https://ratgames.vercel.app/media/gameimages/duck-life2.webp, https://gswitch3.github.io/g/duck-life-2-world-champion/
+Duck Life 3, https://ratgames.vercel.app/media/gameimages/duck-life-3.jpeg, https://www.hoodamath.com/mobile/games/duck-life-3-evolution/game.html?nocheckorient=1
+Duck Life 4, https://ratgames.vercel.app/media/gameimages/duck-life4.jpeg, https://htmlxm.github.io/h/duck-life-4/
+Earn To Die, https://ratgames.vercel.app/media/gameimages/Earn_to_Die.png, https://selenite.cc/semag/ern/index.html
+Eggy Car, https://ratgames.vercel.app/media/gameimages/eggy-car.webp, https://ubg98.github.io/EggyCar/
+Elastic Man, https://ratgames.vercel.app/media/gameimages/ElasticMan.webp, https://d21u3ic0kp9e91.cloudfront.net/elasticman/0/index.html
+Escape Road Winter, https://ratgames.vercel.app/media/gameimages/escaperoadwinter.png, https://azgames.io/escape-road-winter.embed
+Factory Balls Forever, https://ratgames.vercel.app/media/gameimages/factory-balls-forever.jpeg, https://tylerpalko.github.io/gamehub/factoryballsforever/
+Feud, https://ratgames.vercel.app/media/gameimages/Google_Feud.webp, https://googlefeud.com/
+Fire Boy Water Girl, https://ratgames.vercel.app/media/gameimages/fireboy&watergirl.webp, https://html5.gamedistribution.com/rvvASMiM/03f124074b0049f89fdace0cacf8ead5/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzAzZjEyNDA3NGIwMDQ5Zjg5ZmRhY2UwY2FjZjhlYWQ1LyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Flappy Bird, https://ratgames.vercel.app/media/gameimages/FlappyBird.webp, https://www.hoodamath.com/mobile/games/flappy-bird/game.html
+Flight, https://ratgames.vercel.app/media/gameimages/flight.jpeg, https://games.engineering.com/PaperFlight1/index.html
+Flow Lines, https://ratgames.vercel.app/media/gameimages/flow-lines.webp, https://html5.gamedistribution.com/rvvASMiM/a7a0226fd3c349caaa3c41ca63680d3a/index.html?gd_sdk_referrer_url=https://www.y8.com/games/flow_lines&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy55OC5jb20vZ2FtZXMvZmxvd19saW5lcyIsInBhcmVudERvbWFpbiI6Ink4LmNvbSIsInRvcERvbWFpbiI6Ink4LmNvbSIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D&key=y8&value=default
+Fluid Sim, https://ratgames.vercel.app/media/gameimages/fluid-sim.jpeg, https://fivestarontop.pages.dev/fluidsim/
+FNAF 1, https://ratgames.vercel.app/media/gameimages/fnaf.png, https://run3.io/popgame/fnaf/fnaf1/
+FNAF 2, https://ratgames.vercel.app/media/gameimages/fnaf2.webp, https://run3.io/popgame/fnaf/fnaf2.html
+FNAF 4, https://ratgames.vercel.app/media/gameimages/fnaf4.webp, https://run3.io/popgame/fnaf/fnaf4.html
+FNAF 3, https://ratgames.vercel.app/media/gameimages/fnaf3.webp, https://run3.io/popgame/fnaf/fnaf3.html
+Free Rider Jumps, https://ratgames.vercel.app/media/gameimages/free-rider-jumps.webp, https://freeriderjumps.com/
+Friday Night Funkin', https://ratgames.vercel.app/media/gameimages/friday-night-funkin.png, https://4texas4.github.io/FNF
+Fruit Basket, https://ratgames.vercel.app/media/gameimages/fruit-basket.png, https://html5.gamedistribution.com/rvvASMiM/634a50cca48b4c0d87cedb3add5c5c81/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzYzNGE1MGNjYTQ4YjRjMGQ4N2NlZGIzYWRkNWM1YzgxLyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Fruit Ninja, https://ratgames.vercel.app/media/gameimages/fruit-ninja.jpeg, https://emulatoros.github.io/gfile/fruitninja/
+G-Switch 4 Creator, https://ratgames.vercel.app/media/gameimages/g-switch-4.jpeg, https://www.seriusgames.com/html5/g-switch-4-1.3.32/
+Go Ball, https://ratgames.vercel.app/media/gameimages/go-ball.webp, https://t9lat22.github.io/go-ball/
+Gobble, https://ratgames.vercel.app/media/gameimages/gobble.webp, https://sz-games.github.io/Games11/Gobble/Gobble.html
+Going Balls, https://ratgames.vercel.app/media/gameimages/going-balls.webp, https://html5.gamedistribution.com/rvvASMiM/2d44a0c8ce704965b2031bcc4ae6a9a8/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzJkNDRhMGM4Y2U3MDQ5NjViMjAzMWJjYzRhZTZhOWE4LyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+Google Baseball, https://ratgames.vercel.app/media/gameimages/google-baseball.webp, https://freeonlinegames.github.io/fourth-of-july-2019.html
+Google Snake Mods, https://ratgames.vercel.app/media/gameimages/google-snake.webp, https://googlesnakemods.com/v/current/
+Granny, https://ratgames.vercel.app/media/gameimages/granny.webp, https://1games.io/game/granny-horror/
+Grow a Garden, https://ratgames.vercel.app/media/gameimages/grow-a-garden.jpeg, https://script.google.com/macros/s/AKfycbwK_YDMKEccZyVOz_fpe66G4Je4VyFPdT10OdaKpM699Utzbq41n2m6OXqAzpX0oqrLTA/exec
+GTA, https://ratgames.vercel.app/media/gameimages/gta.png, https://cbgamesdev.github.io/chilibowlflash/GBA-gh-pages/launcher.html#gta
+Happy Filled Glass, https://ratgames.vercel.app/media/gameimages/Happy-Filled-Glass.jpg, https://www.hoodamath.com/mobile/games/happy-filled-glass/game.html?nocheckorient=1
+Happy Wheels, https://ratgames.vercel.app/media/gameimages/happy-wheels.jpeg, https://happy-wheels-online.github.io/file/
+Helix Jump, https://ratgames.vercel.app/media/gameimages/helix-jump.jpeg, https://cdn.gamesnacks.com/helixjump1/gameCode/index.html
+Hextris, https://ratgames.vercel.app/media/gameimages/hextris.webp, https://hextris.io/
+Hoop Stack, https://ratgames.vercel.app/media/gameimages/hoop-stack.webp, https://html5.gamedistribution.com/rvvASMiM/4b17dd99b4b3438680a3051a44912adb/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2h0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tLzRiMTdkZDk5YjRiMzQzODY4MGEzMDUxYTQ0OTEyYWRiLyIsInBhcmVudERvbWFpbiI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidG9wRG9tYWluIjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xNyJ9
+House Of Hazards, https://ratgames.vercel.app/media/gameimages/house-of-hazards.jpeg, https://t9lat22.github.io/house-of-hazards/
+Hypersnake, https://ratgames.vercel.app/media/gameimages/hypersnake.jpg, https://game-cdn.ikop.xyz/uploads/game/html5/7297/
+Idle Ants, https://ratgames.vercel.app/media/gameimages/idle-ants.webp, https://szhong.4399.com/4399swf//upload_swf/ftp37/gamehwq/20211224/13/index.html
+Incredibox, https://ratgames.vercel.app/media/gameimages/incredibox.png, https://incredibox-game.io/game/incredibox-mod/
+Interactive Buddy, https://ratgames.vercel.app/media/gameimages/interactive-buddy.webp, https://cbgamesdev.github.io/chilibowlflash/ib.html
+Italian Brainrot Bike Rush, https://ratgames.vercel.app/media/gameimages/italian-brainrot-bike-rush.jpeg, https://files.twoplayergames.org/files/games/h1/italian-brainrot-bike-rush-v01f/index.html
+Jelly Truck, https://ratgames.vercel.app/media/gameimages/jelly-truck.webp, https://t9lat22.github.io/jelly-truck/
+Jetpack Joy Ride, https://ratgames.vercel.app/media/gameimages/Jetpack_Joyride.png, https://emulatoros.github.io/gfile/jetpackjoyride/
+Keep Out, https://ratgames.vercel.app/media/gameimages/keep-out.jpg, https://www.playkeepout.com/
+Kour, https://ratgames.vercel.app/media/gameimages/kour.jpeg, https://kour.io/
+Kick The Teddy, https://ratgames.vercel.app/media/gameimages/kick-the-teddy.webp, https://unblocked-games.s3.amazonaws.com/games/kick-the-teddy-bear/unblocked.html
+Lay Eggs, https://ratgames.vercel.app/media/gameimages/lay-eggs.png, https://ubg76.gitlab.io/lay-eggs/
+Learn To Fly, https://ratgames.vercel.app/media/gameimages/Learn-to-fly.webp, https://ad-freegames.github.io/flash/game/learn-to-fly.html
+Level Devil, https://ratgames.vercel.app/media/gameimages/level-devil.jpeg, https://leveldevil2.io/game/level-devil-2/
+Little Alchemy, https://ratgames.vercel.app/media/gameimages/little-alchemy.png, https://littlealchemy2.com/
+lolbeans.io, https://ratgames.vercel.app/media/gameimages/lolbeans.webp, https://lolbeans.io/
+Long cat, https://ratgames.vercel.app/media/gameimages/longcat.jpeg, https://game.enjoy4fun.com/longcat/v1/index.html
+Ludo, https://ratgames.vercel.app/media/gameimages/ludo.jpeg, https://ludoking.com/play/
+Magic Cat, https://ratgames.vercel.app/media/gameimages/magiccat.jpeg, https://html5-games.io/game/magic_cat/
+Make It Meme, https://ratgames.vercel.app/media/gameimages/make-it-meme.png, https://gnhustgames.org/makeitmeme-source/#/
+Mario Kart 64, https://ratgames.vercel.app/media/gameimages/mk64.png, https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/mariokart64/
+Mini Monkey Mart, https://ratgames.vercel.app/media/gameimages/mini-monkey-mart.jpeg, https://monkey-mart.io/iframe/index.html
+Monster Tracks, https://ratgames.vercel.app/media/gameimages/monster-tracks.jpeg, https://monstertracks.github.io/file/
+Monster Trucks, https://ratgames.vercel.app/media/gameimages/monster-trucks.png, https://ratgames.vercel.app/files/games/monstertruck.html
+Moto X3M, https://ratgames.vercel.app/media/gameimages/motox3m.jpeg, https://motox3m.gitlab.io/game/moto-x3m/
+Narrow One, https://ratgames.vercel.app/media/gameimages/narrow-one.webp, https://narrow.one/
+Neon Rider, https://ratgames.vercel.app/media/gameimages/neon-riders.webp, https://html5.gamedistribution.com/rvvASMiM/3c48eb1a56064a83b3c2ca0acbe01bb2/index.html?gd_sdk_referrer_url=https%3A%2F%2Fwww.twoplayergames.org%2Fgame%2Fneon-rider&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy50d29wbGF5ZXJnYW1lcy5vcmcvZ2FtZS9uZW9uLXJpZGVyIiwicGFyZW50RG9tYWluIjoidHdvcGxheWVyZ2FtZXMub3JnIiwidG9wRG9tYWluIjoidHdvcGxheWVyZ2FtZXMub3JnIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTcifQ%253D%253D
+Neon Swing, https://ratgames.vercel.app/media/gameimages/NeonSwing.jpg, https://mazahackasgan.github.io/neon-swing/
+Nut Clicker, https://ratgames.vercel.app/media/gameimages/nutclicker.png, https://nutsimulator.github.io/index.html
+Obby But Your On A Bike, https://ratgames.vercel.app/media/gameimages/obby-but-youre-on-a-bike.webp, https://db.duck.quackprep.com/html/obby_but_youre_on_a_bike/
+Obby Robby, https://ratgames.vercel.app/media/gameimages/Obby-Robby-Only-up.webp, https://www.rapidwebapp.com/game/obbyrobby/index.html
+Only Up, https://ratgames.vercel.app/media/gameimages/onlyup.jpg, https://g.vseigru.net/10/igra-onli-ap-2/
+Orange, https://ratgames.vercel.app/media/gameimages/orange.jpeg, https://www.hoodamath.com/mobile/games/orange/game.html?nocheckorient=1
+Overtake, https://ratgames.vercel.app/media/gameimages/overtake.jpg, https://play.fancade.com/621913A1EAF5CF24?istart=1&max_h=9999999&max_w=999999
+OvO, https://ratgames.vercel.app/media/gameimages/OVO.jpeg, https://www.coolmathgames.com/sites/default/files/public_games/50208/
+Pacman, https://ratgames.vercel.app/media/gameimages/Pacman.png, https://ad-freegames.github.io/flash/game/pacman.html
+Papa's Burgeria, https://ratgames.vercel.app/media/gameimages/papas-burgeria.webp, https://t9lat22.github.io/papas-burgeria/
+Paper IO, https://ratgames.vercel.app/media/gameimages/paper-io.webp, https://paperio-2.github.io/a9/paper-io-2/
+Pixel Gun 4D, https://ratgames.vercel.app/media/gameimages/pixel-gun-4d.jpg, https://play.unity.com/api/v1/games/game/d4fc8fd5-f4eb-48e3-a64f-a76cceef7734/build/latest/frame
+Plants Versus Zombies, https://ratgames.vercel.app/media/gameimages/pvz.png, https://roblnet13.github.io/pvz/game/iframe
+Pointer Pointer, https://ratgames.vercel.app/media/gameimages/pointerpointer.jpg, https://pointerpointer.com/
+Poly Track, https://ratgames.vercel.app/media/gameimages/polytrack.webp, https://t9lat22.github.io/polytrack/
+Pool, https://ratgames.vercel.app/media/gameimages/pool.jpeg, https://www.hoodamath.com/mobile/games/8-ball-pool/game.html?nocheckorient=1
+Portal, https://ratgames.vercel.app/media/gameimages/portal.jpg, https://75kh0.github.io/projects/portalflash/index.html
+Pull Pins, https://ratgames.vercel.app/media/gameimages/pull-pins.webp, https://games.cdn.famobi.com/html5games/p/pull-pins/v220/?fg_domain=play.famobi.com&fg_aid=A-FAMOBI-COM&fg_uid=c24e5a78-927a-4b7c-a536-3452d1f57021&fg_pid=96ab9c2f-6013-4b31-96dc-ccb5c7a89329&fg_beat=955&original_ref=https%3A%2F%2Fgames.cdn.famobi.com%2F
+Push Your Luck, https://ratgames.vercel.app/media/gameimages/Push-Your-Luck.webp, https://sz-games.github.io/Games2/push-your-luck/index.html
+Ragdoll Playground, https://ratgames.vercel.app/media/gameimages/ragdoll-playground.png, https://1games.io/game/ragdoll-playground/
+Red Ball 4, https://ratgames.vercel.app/media/gameimages/red-ball-4.png, https://redball4online.github.io/file/
+Re Run, https://ratgames.vercel.app/media/gameimages/re-run.png, https://ratgames.vercel.app/files/games/RE_RUN.html
+Resizer, https://ratgames.vercel.app/media/gameimages/resizer.png, https://www.hoodamath.com/mobile/games/resizer/game.html?nocheckorient=1
+Retro Bowl, https://ratgames.vercel.app/media/gameimages/Retro_Bowl.png, https://game316009.konggames.com/gamez/0031/6009/live/index.html
+Rise Higher, https://ratgames.vercel.app/media/gameimages/rise-higher.jpeg, https://www.hoodamath.com/mobile/games/rise-higher/game.html
+Rocket League, https://ratgames.vercel.app/media/gameimages/Rocket_League.jpg, https://ubg77.github.io/edit/rocket-soccer-derby/
+Rocket Pult, https://ratgames.vercel.app/media/gameimages/RocketPult.webp, https://scrap-metal.github.io/s9/rocket-pult/
+Rolling Ball 3D, https://ratgames.vercel.app/media/gameimages/rolling-ball-3d.png, https://www.hoodamath.com/mobile/games/rolling-ball-3d/game.html?nocheckorient=1
+Run 3, https://ratgames.vercel.app/media/gameimages/run-3.jpeg, https://lekug.github.io/tn6pS9dCf37xAhkJv/index.html
+Rythem Heaven, https://ratgames.vercel.app/media/gameimages/RhythmHeaven.png, https://rightful-valuable-mum.glitch.me/
+Sandboxels, https://ratgames.vercel.app/media/gameimages/sandboxels.jpeg, https://sandboxels.r74n.com/
+Sandtris, https://ratgames.vercel.app/media/gameimages/sandtris.png, https://sandtris.com/
+Sausage Flip, https://ratgames.vercel.app/media/gameimages/sausage-flip.webp, https://t9lat22.github.io/sausage-flip/
+School Boy Escape, https://ratgames.vercel.app/media/gameimages/school-boy-escape.webp, https://ratgames.vercel.app/files/games/schoolboyescape.html
+Shell Shockers, https://ratgames.vercel.app/media/gameimages/shell-shockers.png, https://scrambled.world/
+ShortCut Race, https://ratgames.vercel.app/media/gameimages/shortcut-race.png, https://www.hoodamath.com/mobile/games/shortcut-race/game.html
+Simply Up, https://ratgames.vercel.app/media/gameimages/simply-up.jpeg, https://blob.gamezfun.com/807c4b26-8eff-492e-9ba9-88d6e3694295/index.html?noads=true
+Sink It, https://ratgames.vercel.app/media/gameimages/sink-it.jpeg, https://gamesonline86.github.io/sink-it/
+Skibidi Toilet Puzzle, https://ratgames.vercel.app/media/gameimages/skibidi-toilet-puzzle.webp, https://g.igroutka.ru/games/23/sxwIYS2PNkzF9vul/rvvASMiM/0a5d7f62d76d464592bc5f99c2032b58/
+Sky Race 3D, https://ratgames.vercel.app/media/gameimages/Sky Race 3D.webp, https://ratgames.vercel.app/files/games/skyrace3d.html
+Sky Riders, https://ratgames.vercel.app/media/gameimages/sky-riders.webp, https://glseries.net/assets/applications/content/sky-riders/
+Slice Master, https://ratgames.vercel.app/media/gameimages/slice-masters.webp, https://bitlifeonline.github.io/slice-master/
+Slope, https://ratgames.vercel.app/media/gameimages/slope.webp, https://freeonlinegames.github.io/slope/
+Slow Roads, https://ratgames.vercel.app/media/gameimages/slow-roads.jpeg, https://slowroads.io/
+Fast Roads, https://ratgames.vercel.app/media/gameimages/slow-roads.jpeg, https://siegfriedschmidt.github.io/fastroads/
+Smash Karts, https://ratgames.vercel.app/media/gameimages/smash-karts.webp, https://smashkarts.io/
+Smashy Roads, https://ratgames.vercel.app/media/gameimages/smashy-roads.webp, https://game.azgame.io/escape-road-city/
+Smashyroads 2, https://ratgames.vercel.app/media/gameimages/smashy-roads2.webp, https://azgames.io/escape-road-city-2.embed
+Snow Rider, https://ratgames.vercel.app/media/gameimages/snowrider3d.png, https://itsvijaysingh.github.io/Snow-Rider3D/
+Soccer Random, https://ratgames.vercel.app/media/gameimages/soccer-random.png, https://math-lessons.online/_games/soccer-random/
+Solitaire, https://ratgames.vercel.app/media/gameimages/solitare.webp, https://www.calculators.org/games/solitaire/game.php
+Sprunki, https://ratgames.vercel.app/media/gameimages/sprunki.png, https://www.yoosfuhl.com/game/sprunkiincredibox/index.html
+Squid Game, https://ratgames.vercel.app/media/gameimages/Squid-Survival-Game-unblocked.jpg, https://www.yoosfuhl.com/game/squidgame/index.html
+Stack Game, https://ratgames.vercel.app/media/gameimages/Stack.png, https://www.coolmathgames.com/sites/default/files/public_games/50382/
+Steal a Brainrot, https://ratgames.vercel.app/media/gameimages/steal-a-brainrot.webp, https://script.google.com/macros/s/AKfycbxJalyip_ETy_kolDAlSVxdcnLtn16P6gIoJ5kDwt1abHFX32SUJEOLCWU31veTffv2/exec
+Stick Fight The Chaos, https://ratgames.vercel.app/media/gameimages/Stick-Fight-The-Chaos.jpg, https://html5.gamedistribution.com/rvvASMiM/06cdcc1cd320472ab3f3574d702ff217/index.html?gd_sdk_referrer_url=https%3A%2F%2Fgamedistribution.com%2Fgames%2Fstick-fight-the-chaos%2F&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2dhbWVkaXN0cmlidXRpb24uY29tL2dhbWVzL3N0aWNrLWZpZ2h0LXRoZS1jaGFvcy8iLCJwYXJlbnREb21haW4iOiJnYW1lZGlzdHJpYnV0aW9uLmNvbSIsInRvcERvbWFpbiI6ImFnZW9md2FyZ2FtZS5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE3In0%253D
+Stick RGP, https://ratgames.vercel.app/media/gameimages/stickrgp.png, https://ad-freegames.github.io/flash/game/stick-rpg.html
+Stickman Hook, https://ratgames.vercel.app/media/gameimages/stickmanhook.webp, https://mexisofunny.github.io/stickhook/
+Stumble Guys, https://ratgames.vercel.app/media/gameimages/stumble-guys.png, https://www.stumbleguys.com/play
+Super Liquid Soccer, https://ratgames.vercel.app/media/gameimages/super-liquid-soccer.png, https://gnhustgames.github.io/super-liquid-soccer/
+Super Mario 64, https://ratgames.vercel.app/media/gameimages/supermario64.jpeg, https://ratgames.vercel.app/files/games/sm64.html
+Super Mario Bros, https://ratgames.vercel.app/media/gameimages/SuperMarioBros.webp, https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/games/supermariobros/
+SWOOOP, https://ratgames.vercel.app/media/gameimages/swooops.jpg, https://playcanv.as/p/JtL2iqIH/
+Temple Run 2, https://ratgames.vercel.app/media/gameimages/temple-run-2.png, https://www.yoosfuhl.com/game/templerun2/index.html
+The Impossible Quiz, https://ratgames.vercel.app/media/gameimages/theimpossiblequiz.jpeg, https://ad-freegames.github.io/flash/game/the-impossible-quiz.html
+The Little Giant, https://ratgames.vercel.app/media/gameimages/TheLittleGiant.jpg, https://grims.pro/_games/thelittlegiant/
+The Man from the Window, https://ratgames.vercel.app/media/gameimages/ManFromTheWindow.webp, https://play.gamepix.com/the-man-from-the-window/embed?sid=e4515
+This is Sand, https://ratgames.vercel.app/media/gameimages/thisissand.png, https://thisissand.com/
+Thorns And Balloons, https://ratgames.vercel.app/media/gameimages/Thornsandballoons.webp, https://www.hoodamath.com/mobile/games/thorn-and-balloons/game.html
+Tiny Fishing, https://ratgames.vercel.app/media/gameimages/tiny-fishing.jpeg, https://blackoutgames.pages.dev/games/annoyingfishgame
+Tomb Of The Mask, https://ratgames.vercel.app/media/gameimages/totm.webp, https://cbgamesdev.github.io/chilibowlflash/totm/index.html
+Town Scaper, https://ratgames.vercel.app/media/gameimages/townscaper.jpeg, https://oskarstalberg.com/Townscaper/
+Tunnel Rush 2, https://ratgames.vercel.app/media/gameimages/tunnel-rush.png, https://gamesbun.github.io/tunnel-rush-2/
+Twisted Tangle, https://ratgames.vercel.app/media/gameimages/twisted-tangle.png, https://cargames.click/twisted-tangle/
+Ultrakill, https://ratgames.vercel.app/media/gameimages/ultrakill.png, https://html5.gdata1.com/ULTRAKILL%20Prelude/?v=20250827221755
+UnderTale, https://ratgames.vercel.app/media/gameimages/undertale.jpg, https://truffled.lol/games/undertale-yellow/index.html
+UNO, https://ratgames.vercel.app/media/gameimages/uno.png, https://www.xpgameplus.com/games/uno/default.html
+Vex 3, https://ratgames.vercel.app/media/gameimages/vex3.jpg, https://tylerpalko.github.io/gamehub/vex3/
+Vex 4, https://ratgames.vercel.app/media/gameimages/vex4.jpg, https://tylerpalko.github.io/gamehub/vex4/
+Vex 5, https://ratgames.vercel.app/media/gameimages/vex5.jpg, https://tylerpalko.github.io/gamehub/vex5/
+Vex 6, https://ratgames.vercel.app/media/gameimages/vex6.jpeg, https://tylerpalko.github.io/gamehub/vex6/
+Vex 7, https://ratgames.vercel.app/media/gameimages/vex-7.png, https://tylerpalko.github.io/gamehub/vex7/
+Volley Random, https://ratgames.vercel.app/media/gameimages/volley-random.jpeg, https://soccerrandomgame.com/gg/volleyball-random/
+War Bot, https://ratgames.vercel.app/media/gameimages/war-bot.png, https://warbot.io/
+Weave Silk, https://ratgames.vercel.app/media/gameimages/weavesilk.jpeg, https://jiwjfowhfusfdgfigiydgsifygdiyfgdi.netlify.app/apps/weavesilk/
+We Become What We Behold, https://ratgames.vercel.app/media/gameimages/we-become-what-we-behold.webp, https://unblocked-games.s3.amazonaws.com/games/2024/more/we-become-what-we-behold/index.html
+Whack Your Boss, https://ratgames.vercel.app/media/gameimages/whack-your-boss.webp, https://ad-freegames.github.io/flash/game/whack-your-boss.html
+Wheelie Bike, https://ratgames.vercel.app/media/gameimages/wheelie-bike.webp, https://www.hoodamath.com/mobile/games/wheelie-bike/game.html
+Wood Turning, https://ratgames.vercel.app/media/gameimages/wood-turning.webp, https://www.bestgames.com/games/Woodturning-3d/index.html?bestgames
+Worlds hardest Game, https://ratgames.vercel.app/media/gameimages/worldshardestgame.png, https://cbgamesdev.github.io/chilibowlflash/hardestgame.html
+Worlds Hardest Game 2, https://ratgames.vercel.app/media/gameimages/worldshardestgame2.jpg, https://cbgamesdev.github.io/chilibowlflash/hardestgame2.html
+xx142b2exe, https://ratgames.vercel.app/media/gameimages/xx142.jpeg, https://tylerpalko.github.io/gamehub/xx142b2.exe/
+Zen Word, https://ratgames.vercel.app/media/gameimages/zen-word.webp, https://ratgames.vercel.app/files/games/ZenWord.html
+Zuma, https://ratgames.vercel.app/media/gameimages/zuma.png, https://ratgames.vercel.app/files/games/Zuma.html
+Line Rider, https://ratgames.vercel.app/media/gameimages/line-rider.png, https://demonzero.lat/game/line.html
+Ragdoll Archers, https://ratgames.vercel.app/media/gameimages/ragdoll-archers.png, https://db.duck.quackprep.com/html/ragdoll_archers/
+Race Survival Arena King, https://ratgames.vercel.app/media/gameimages/race-survival-king.webp, https://db.duck.quackprep.com/html/race_survival_arena_king/
+99 Nights In a Forest, https://ratgames.vercel.app/media/gameimages/99nights.webp, https://db.duck.quackprep.com/html/99_nights_in_the_forest/
+Retro Bowl College, https://ratgames.vercel.app/media/gameimages/retro-bowl-college.webp, https://ethonion10.neocities.org/
+Hollow Knight, https://ratgames.vercel.app/media/gameimages/hollow-night.jpg, https://db.duck.quackprep.com/html/hollow_knight/
+FNAF Pizzaria Simulator, https://ratgames.vercel.app/media/gameimages/fnaf-pizzaria-simulator.jpeg, https://db.duck.quackprep.com/html/fnaf_pizzeria_simulator/
+Spider Dude Parkour, https://ratgames.vercel.app/media/gameimages/Spider-Dude-Parkour.png, https://db.duck.quackprep.com/html/spider_dude_parkour/
+Growden IO, https://ratgames.vercel.app/media/gameimages/growden.jpeg, https://db.duck.quackprep.com/html/growden_io/
+Rainbow Friends Return, https://ratgames.vercel.app/media/gameimages/rainbow-friends.webp, https://db.duck.quackprep.com/html/rainbow_friends_return/
+Buckshot Roulette, https://ratgames.vercel.app/media/gameimages/buckshot-roulette.webp, https://db.duck.quackprep.com/html/buckshot_roulette/
+The Binding Of Isaac, https://ratgames.vercel.app/media/gameimages/thebindingisaac.jpeg, https://db.duck.quackprep.com/html/thebindingofisaac/
+Escape The Prison, https://ratgames.vercel.app/media/gameimages/escape-the-prison.jpeg, https://db.duck.quackprep.com/html/escapetheprison/
+Funny Shooter 2, https://ratgames.vercel.app/media/gameimages/funny-shooter.webp, https://db.duck.quackprep.com/html/funny_shooter_2/
+Spiral Roll, https://ratgames.vercel.app/media/gameimages/spiral-roll.webp, https://db.duck.quackprep.com/html/spiral_roll/
+Duck Life 5, https://ratgames.vercel.app/media/gameimages/duck-life5.jpeg, https://elite-gamez.github.io/g/Duck%20Life%205.html
+Duck Life Battle, https://ratgames.vercel.app/media/gameimages/duck-life-battle.jpeg, https://elite-gamez.github.io/g/Duck%20Life%20Battle.html
+60 Seconds, https://ratgames.vercel.app/media/gameimages/60seconds.jpg, https://www.puzzlegame.com/games/60-Seconds-Atomic-Adventure/index.html?yad
+Papers Grade Please, https://ratgames.vercel.app/media/gameimages/grade-papers-please.webp, https://www.yad.com/games/Papers-Grade-Please/index.html?yad
+CS, https://ratgames.vercel.app/media/gameimages/cs.jpg, https://db.duckmath.org/html/cs_online/
+Aquapark Io, https://ratgames.vercel.app/media/gameimages/aquapark.png, https://unblocked-games.s3.amazonaws.com/games/slidepark-io/unblocked.html
+Attack Hole, https://ratgames.vercel.app/media/gameimages/attackhole.webp, https://html5.gamedistribution.com/fb2c54f5d26c4009ae5b5dafca416c99/?gdpr-targeting=1&gd_sdk_referrer_url=https://www.silvergames.com/en/black-hole-attack
+Bottle Jump 3d, https://ratgames.vercel.app/media/gameimages/bottle-jump-3d.png, https://game.azgame.io/bottle-jump/
+Bottle Flip 3d, https://ratgames.vercel.app/media/gameimages/bottle-flip-3d.png, https://play.wgplayground.com/game/5fa116c15ddf2e4894b341fc1e3c1d8c/?r=bottleflip3d.com
+Bouncemasters, https://ratgames.vercel.app/media/gameimages/bounce_masters.jpg, https://maxwellstevenson.com/Vafor_IT/bouncemasters/
+Bowmasters, https://ratgames.vercel.app/media/gameimages/bowmasters.png, https://g.igroutka.ru/games/3/igra_boumasters/7/igra-boumasters/
+Crossy Road, https://ratgames.vercel.app/media/gameimages/Crossy-Road.jpeg, https://crossy-road.gitlab.io/file/
+Flappy Dunk, https://ratgames.vercel.app/media/gameimages/flappydunk.png, https://flappydunk.com/wp-content/uploads/games/F/flappy-dunk/index.html
+Pou, https://ratgames.vercel.app/media/gameimages/pou.png, https://ubg98.github.io/Pou/
+Tall Man Run, https://ratgames.vercel.app/media/gameimages/tallmanrun.webp, https://www.bestgames.com/games/Tall-Man-Run/index.html?bestgames
+Powder Game 2, https://ratgames.vercel.app/media/gameimages/powder-game.webp, https://dan-ball.jp/en/javagame/dust2/
+Pepsi Skate 3D, https://ratgames.vercel.app/media/gameimages/pepsi-skate-3d.webp, https://the.deconstructors.co.uk/tam-pepi-skate-3d/
+Free Head Skate, https://ratgames.vercel.app/media/gameimages/free-head-skate.jpeg, https://www.hoodamath.com/mobile/games/freehead-skate/game.html?nocheckorient=1
+Amaze, https://ratgames.vercel.app/media/gameimages/amaze.png, https://maxwellstevenson.com/Vafor_IT/amaze/
+Color Block Jam, https://ratgames.vercel.app/media/gameimages/color-block-jam.jpeg, https://gamedistro.rhenrywarren.workers.dev/rvvASMiM/bea1d886820c494091bf1df4e77b956a/index.html?gd_sdk_referrer_url=https://lupine.red#translate.google.com
+Just Fall Lol, https://ratgames.vercel.app/media/gameimages/justfall-lol.jpeg, https://just-fall-lol.github.io/file/
+Talking Ben, https://ratgames.vercel.app/media/gameimages/talkingben.webp, https://turbowarp.org/649123736/embed?autostart=true&fullscreen-background=true
+Under The Red Sky, https://ratgames.vercel.app/media/gameimages/under-the-red-sky.png, https://st.8games.net/7/8g/igra-parkur-pod-krasnym-nebom/
+Overtide, https://ratgames.vercel.app/media/gameimages/overtide.jpeg, https://overtide.io/
+Solar Smash, https://ratgames.vercel.app/media/gameimages/solar-smash.webp, https://noahsamazingtutoringhelp.github.io/Noahs-Calculus-Tutor/games/31.html
+Ragdoll Hit, https://ratgames.vercel.app/media/gameimages/ragdoll-hit.png, https://ragdollhit.gitlab.io/file/
+Poxel, https://ratgames.vercel.app/media/gameimages/poxel.jpeg, https://poxel.io/
+Tag, https://ratgames.vercel.app/media/gameimages/tag.jpg, https://kdata1.com/2024/05/tag/
+Summer Rider 3D, https://ratgames.vercel.app/media/gameimages/summer-rider-3d.jpg, https://html5.gamedistribution.com/rvvASMiM/3ff5df9f5d0248fd9dcd70e2cc253de5/index.html?timestamp=-62135596800&siteid=88&siteLocale=en&locale=en&channelid=1&gd_sdk_referrer_url=https%3A%2F%2Fwww.gamesgames.com%2Fgame%2Fsummer-rider-3d%23theatermode&countryCode=en&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5nYW1lc2dhbWVzLmNvbS9nYW1lL3N1bW1lci1yaWRlci0zZCN0aGVhdGVybW9kZSIsInBhcmVudERvbWFpbiI6ImdhbWVzZ2FtZXMuY29tIiwidG9wRG9tYWluIjoiZ2FtZXNnYW1lcy5jb20iLCJoYXNJbXByZXNzaW9uIjpmYWxzZSwibG9hZGVyRW5hYmxlZCI6dHJ1ZSwiaG9zdCI6Imh0bWw1LmdhbWVkaXN0cmlidXRpb24uY29tIiwidmVyc2lvbiI6IjEuNS4xOCJ9
+SoftWheelieLife, https://ratgames.vercel.app/media/gameimages/soflo-wheelie-life.png, https://scratch.mit.edu/projects/12310158/embed/
+Front Wars IO, https://ratgames.vercel.app/media/gameimages/front-wars.webp, https://frontwars.io/
+Hasmob, https://ratgames.vercel.app/media/gameimages/hazmob.webp, https://html5.gamedistribution.com/rvvASMiM/623baec23d504c83acab0b5250859ba8/index.html?gd_sdk_referrer_url=https%3A%2F%2Fhazmob.io&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL2hhem1vYi5pbyIsInBhcmVudERvbWFpbiI6Imhhem1vYi5pbyIsInRvcERvbWFpbiI6Imhhem1vYi5pbyIsImhhc0ltcHJlc3Npb24iOmZhbHNlLCJsb2FkZXJFbmFibGVkIjp0cnVlLCJob3N0IjoiaHRtbDUuZ2FtZWRpc3RyaWJ1dGlvbi5jb20iLCJ2ZXJzaW9uIjoiMS41LjE4In0%253D
+Handless Millionare, https://ratgames.vercel.app/media/gameimages/handless-millionaire.jpeg, https://pixel-cave.com/games/hm/
+Night City Racing, https://ratgames.vercel.app/media/gameimages/nightcityracing.webp, https://html5.gamedistribution.com/rvvASMiM/837aa1aafa2442cf81a622b505bff752/index.html?gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5mcml2LmNtLyIsInBhcmVudERvbWFpbiI6ImZyaXYuY20iLCJ0b3BEb21haW4iOiJmcml2LmNtIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTgifQ%253D%253D
+Pokemon Green, https://ratgames.vercel.app/media/gameimages/pokemon-green.jpg, https://script.google.com/macros/s/AKfycbxWYXzXN3TRwxELxgrTkjmE5hyqPMgzdNn6clWSzVcU-m0m9MDdHHb-VP-VDnz06vNe/exec
+Pokemon Red, https://ratgames.vercel.app/media/gameimages/pokemon-red.jpg, https://picklekid31.github.io/GBA-unblocked-games/launcher.html#pokemonred
+Roof Top Snipers, https://ratgames.vercel.app/media/gameimages/rooftop-snipers.jpeg, https://rooftop-snipers.github.io/file/
+Roof Top Snipers 2, https://ratgames.vercel.app/media/gameimages/rooftopsnipers2.png, https://htmlxm.github.io/h6/rooftop-snipers-2/
+Water Rider 3D, https://ratgames.vercel.app/media/gameimages/Water-rider-3d.webp, https://www.hoodamath.com/mobile/games/water-rider-3d/game.html?nocheckorient=1
+Drift Hunters, https://ratgames.vercel.app/media/gameimages/drift-hunters.png, https://geometrygames.gitlab.io/drift-hunters/
+I Wanna Be That Guy, https://ratgames.vercel.app/media/gameimages/i-wanna-be-that-guy.jpg, https://copy.sh/iw/
+67 clicker, https://ratgames.vercel.app/media/gameimages/67clicker.png, https://2games.io/game/67-clicker/
+Minesweeper, https://ratgames.vercel.app/media/gameimages/minesweeper.png, https://www.minesweepergoogle.com/gameapp.html
+Krunker, https://ratgames.vercel.app/media/gameimages/krunker.webp, https://krunker.io/
+Infinite Craft, https://ratgames.vercel.app/media/gameimages/infinite-craft.webp, https://script.google.com/macros/s/AKfycby6VkmafM4044keDc4OclZ4Saq2a8lth-pAC1XY_7c1_qVsH9IsVKrqbuWH-SJO1puW/exec
+Extreme Car Driving Simulator, https://ratgames.vercel.app/media/gameimages/extreme-car-driving-simulator.png, https://ubg365.github.io/extreme-car-driving-simulator/play.html
+Wheelie Life, https://ratgames.vercel.app/media/gameimages/streetwheelie.png, https://1games.io/game/street-wheelie/
+Cheese Chompers 3D, https://ratgames.vercel.app/media/gameimages/cheesechompers3d.jpeg, https://nealfun.app/game/cheesechompers3d/
+Wacky Flip, https://ratgames.vercel.app/media/gameimages/wacky-flip.webp, https://game.azgame.io/wacky-flip/
+`;
+
+    const games = gameList
+      .trim()
+      .split('\n')
+      .map(line => {
+        const parts = line.split(',');
+        if (!parts || parts.length < 2) return null;
+        const name = parts.shift().trim();
+        const image = parts.shift().trim() || NO_IMAGE_URL;
+        const url = parts.join(',').trim();
+        if (!name || !url) return null;
+        return { name, url, image };
+      })
+      .filter(Boolean);
+
+    // first 12 fixed order, rest alpha
+    const firstEleven = games.slice(0, 12);
+    const restSorted = games.slice(12).sort((a,b)=> a.name.localeCompare(b.name, undefined, {sensitivity:'base'}));
+    const finalGames = [...firstEleven, ...restSorted];
+
+    // ---------- DOM + STATE ----------
+    const gridContainer = document.getElementById('game-grid');
+    const cardMap = new Map(); // name -> card
+    let countsMap = {}; // name -> count from DB
+
+    function openViewer(url){
+      const encoded = encodeURIComponent(url);
+      window.location.href = `/viewer.html?site=${encoded}`;
+    }
+
+    function escapeHtml(str){
+      return (str + '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function heartSvg(filled){
+      if (filled) {
+        return `<svg class="heart-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="var(--heart-red)" d="M12 21s-7.2-4.9-9.2-7.2C1.6 11.9 3 8.4 6 7c1.8-.9 4-.4 6 1 2-1.4 4.2-1.9 6-1 3 1.4 4.4 4.9 3.2 6.8C19.2 16.1 12 21 12 21z"/>
+        </svg>`;
+      } else {
+        return `<svg class="heart-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="var(--heart-grey)" d="M12.1 8.64l-.1.1-.11-.1C10.14 7.23 8 7.01 6.6 8.2 4.86 9.81 5.2 12.9 8.4 15.9 10.2 17.6 12 18.7 12 18.7s1.8-1.1 3.6-2.8c3.2-3 3.5-6.1 1.8-7.7-1.4-1.2-3.5-1-5.3.5z" opacity="1" stroke="var(--heart-grey)" stroke-width="0.2" fill-opacity="1"/>
+        </svg>`;
+      }
+    }
+
+    // create card (and return it)
+    function createOrUpdateCard(game){
+      if (cardMap.has(game.name)) return cardMap.get(game.name);
+
+      const card = document.createElement('a');
+      card.href = '#';
+      card.className = 'game-card';
+      card.setAttribute('data-game', game.name);
+
+      card.addEventListener('click', (e) => {
+        // if heart clicked, don't open viewer
+        if (e.target.closest('.heart-btn')) return;
+        e.preventDefault();
+        openViewer(game.url);
+      });
+
+      card.innerHTML = `
+        <div class="game-image-wrapper">
+          <img src="${game.image}" alt="${escapeHtml(game.name)} cover" onerror="this.src='${NO_IMAGE_URL}'">
+          <div class="image-overlay">
+            <button class="heart-btn" aria-label="Like ${escapeHtml(game.name)}" title="Like/unlike">
+              ${heartSvg(Boolean(localLikes[game.name]))}
+            </button>
+          </div>
+        </div>
+        <div class="game-info">
+          <h3 class="game-title">${escapeHtml(game.name)}</h3>
+        </div>
+      `;
+
+      const heartBtn = card.querySelector('.heart-btn');
+      heartBtn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        toggleLike(game.name);
+      });
+
+      cardMap.set(game.name, card);
+      return card;
+    }
+
+    // Random card (no random badge)
+    function createRandomCard(){
+      const card = document.createElement('a');
+      card.href = '#';
+      card.className = 'game-card';
+      card.setAttribute('data-game', '__random__');
+      card.setAttribute('title','Play a random game');
+
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!finalGames.length) return;
+        const idx = Math.floor(Math.random()*finalGames.length);
+        const pick = finalGames[idx];
+        openViewer(pick.url);
+      });
+
+      card.innerHTML = `
+        <div class="game-image-wrapper">
+          <img src="${RANDOM_GIF}" alt="Random game" onerror="this.src='${NO_IMAGE_URL}'">
+        </div>
+        <div class="game-info">
+          <h3 class="game-title">Random Game</h3>
+        </div>
+      `;
+      return card;
+    }
+
+    // initial immediate render: random + original order
+    function initialRender(){
+      gridContainer.innerHTML = '';
+      const randomCard = createRandomCard();
+      cardMap.set('__random__', randomCard);
+      gridContainer.appendChild(randomCard);
+      finalGames.forEach(g => {
+        const c = createOrUpdateCard(g);
+        gridContainer.appendChild(c);
+      });
+    }
+
+    // render after votes load: random first, then popular (count > threshold) sorted by count desc, then rest in original order
+    function renderAfterVotes(){
+      const popular = [];
+      const rest = [];
+      finalGames.forEach(game => {
+        const c = countsMap[game.name] || 0;
+        if (c > MOVE_THRESHOLD) popular.push({game, count:c});
+        else rest.push(game);
+      });
+      popular.sort((a,b) => b.count - a.count);
+
+      const order = ['__random__', ...popular.map(p => p.game.name), ...rest.map(g => g.name)];
+      gridContainer.innerHTML = '';
+      order.forEach(key => {
+        if (key === '__random__') {
+          gridContainer.appendChild(cardMap.get('__random__'));
+        } else {
+          const g = finalGames.find(x => x.name === key);
+          if (!g) return;
+          const card = createOrUpdateCard(g);
+          // update heart based on localLikes
+          const heartBtn = card.querySelector('.heart-btn');
+          if (heartBtn) heartBtn.innerHTML = heartSvg(Boolean(localLikes[g.name]));
+          gridContainer.appendChild(card);
+        }
+      });
+    }
+
+    // load votes (countsMap), then reorder
+    async function loadVotes(){
+      try {
+        const { data, error } = await supabase.from(VOTES_TABLE).select('game,count');
+        if (error) {
+          console.error('Supabase load error', error);
+          return;
+        }
+        countsMap = {};
+        (data || []).forEach(r => countsMap[r.game] = r.count);
+        // update hearts (localLikes) visually in case toggled earlier
+        cardMap.forEach((card, name) => {
+          if (name === '__random__') return;
+          const heartBtn = card.querySelector('.heart-btn');
+          if (heartBtn) heartBtn.innerHTML = heartSvg(Boolean(localLikes[name]));
+        });
+        // reorder now that counts exist
+        renderAfterVotes();
+      } catch (e) {
+        console.error('loadVotes catch', e);
+      }
+    }
+
+    // toggle like: flips local state + updates Supabase (insert/update/delete row). No numbers displayed.
+    async function toggleLike(gameName){
+      const wasLiked = !!localLikes[gameName];
+      if (wasLiked) delete localLikes[gameName];
+      else localLikes[gameName] = true;
+      saveLocal();
+      // update heart immediately
+      const card = cardMap.get(gameName);
+      if (card) {
+        const heartBtn = card.querySelector('.heart-btn');
+        if (heartBtn) heartBtn.innerHTML = heartSvg(Boolean(localLikes[gameName]));
+      }
+
+      try {
+        const { data: existingRows, error: selErr } = await supabase.from(VOTES_TABLE).select('id,game,count').eq('game', gameName);
+        if (selErr) console.error('select error', selErr);
+        const existing = (existingRows && existingRows.length) ? existingRows[0] : null;
+
+        if (localLikes[gameName]) {
+          // liked -> increment or insert
+          if (existing) {
+            await supabase.from(VOTES_TABLE).update({ count: (existing.count||0) + 1 }).eq('id', existing.id);
+          } else {
+            await supabase.from(VOTES_TABLE).insert({ game: gameName, count: 1 });
+          }
+        } else {
+          // unliked -> decrement or delete
+          if (existing) {
+            const newCount = (existing.count||0) - 1;
+            if (newCount <= 0) {
+              await supabase.from(VOTES_TABLE).delete().eq('id', existing.id);
+            } else {
+              await supabase.from(VOTES_TABLE).update({ count: newCount }).eq('id', existing.id);
+            }
+          } // else nothing to do
+        }
+      } catch (e) {
+        console.error('toggleLike error', e);
+      } finally {
+        // reload votes to possibly reorder
+        loadVotes();
+      }
+    }
+
+    // realtime subscription (optional)
+    function subscribeRealtime(){
+      try {
+        supabase.channel('public:votes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: VOTES_TABLE }, () => loadVotes())
+          .subscribe();
+      } catch (e) {
+        console.warn('Realtime subscribe issue', e);
+      }
+    }
+
+    // SEARCH & UI init
+    initialRender();
+
+    const fuse = new Fuse(finalGames, { keys:['name'], threshold:0.4 });
+    const searchInput = document.getElementById('search');
+    searchInput.placeholder = `Search through ${finalGames.length} games (try: Minecraft, Clash Royale)`;
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim();
+      const results = q ? fuse.search(q).map(r => r.item.name) : finalGames.map(g => g.name);
+      const showSet = new Set(results);
+      cardMap.forEach((card, name) => {
+        if (name === '__random__') { card.style.display = 'flex'; return; }
+        card.style.display = showSet.has(name) ? 'flex' : 'none';
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+    });
+
+    // label + pulse
+    document.getElementById('label-text').textContent = `Find a game — ${finalGames.length} available`;
+    const wrapper = document.getElementById('search-wrapper');
+    wrapper.classList.add('pulse-once');
+    setTimeout(()=> wrapper.classList.remove('pulse-once'), 1700);
+
+    // load votes AFTER initial render so order switches in place
+    await loadVotes();
+    subscribeRealtime();
+
+  </script>
+</body>
+</html>
