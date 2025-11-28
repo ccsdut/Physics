@@ -17,7 +17,7 @@
 
   <style>
     :root{
-      --phrase-slot-height: 3.2rem; /* visible space reserved for phrases — tweak if you want taller/shorter */
+      --phrase-slot-height: 3.2rem;
     }
 
     html, body {
@@ -47,47 +47,40 @@
       margin: 0;
       text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
       position: relative;
-      z-index: 3; /* keep title above animated words */
+      z-index: 3;
       pointer-events: none;
     }
 
-    /*
-      PHRASE SLOT (in-flow invisible box that reserves the space)
-      - This is the "space" you asked for.
-      - It's invisible by default but reserves layout space so the animation aligns perfectly each cycle.
-      - If you want to see the slot during debugging, set .phrase-slot { outline: 1px dashed lime } temporarily.
-    */
     .phrase-slot {
       width: 100%;
       height: var(--phrase-slot-height);
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative; /* phrase-container positioned inside this slot */
-      pointer-events: none; /* don't block clicks */
+      position: relative;
+      pointer-events: none;
     }
 
-    /* THE ACTUAL ANIMATED CONTAINER — positioned within the slot (centred) */
     .phrase-container {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  white-space: nowrap;
-  font-size: 2.25em;                /* bigger text */
-  font-weight: bold;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);  /* stronger shadow */
-  pointer-events: none;
-}
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      white-space: nowrap;
+      font-size: 2.25em;
+      font-weight: bold;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
 
     .phrase-container .word {
       opacity: 0;
-      transform: translateY(240px); /* START_Y — words start lower and rise into the slot */
+      transform: translateY(240px);
       transition: transform 1.5s ease-out, opacity 1.5s ease-out;
       display: inline-block;
       margin: 0 6px;
@@ -95,44 +88,43 @@
 
     .button-container {
       margin-top: 20px;
-      z-index: 4; /* sit above phrase container and title so buttons remain clickable on top */
+      z-index: 4;
       position: relative;
     }
 
     .btn {
-  background-color: #333;           /* original grey */
-  color: #fff;
-  font-size: 22px;
-  font-weight: bold;
-  padding: 16px 32px;
-  margin: 12px;
-  border: 2px solid transparent;    /* base border is invisible */
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;        /* smooth transition for all properties */
-  pointer-events: auto;
-}
+      background-color: #333;
+      color: #fff;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 16px 32px;
+      margin: 12px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      pointer-events: auto;
+    }
 
-.btn:hover {
-  background-color: #555;           /* lighter grey on hover */
-  transform: scale(1.05);           /* subtle zoom */
-  border-color: #ddd;               /* light grey/white outline */
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
-}
+    .btn:hover {
+      background-color: #555;
+      transform: scale(1.05);
+      border-color: #ddd;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+    }
 
     @media (max-width: 600px) {
       .btn {
         width: 80%;
       }
-      /* slightly lower on mobile so it doesn't overlap the title */
       .phrase-slot { height: calc(var(--phrase-slot-height) + 0.6rem); }
       .phrase-container { font-size: 1.7rem; }
     }
 
     #down-arrow {
       position: absolute;
-      bottom: 60px; /* raised for label */
+      bottom: 60px;
       cursor: pointer;
       width: 60px;
       height: 60px;
@@ -157,29 +149,19 @@
       font-weight: bold;
       user-select: none;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-      pointer-events: none; /* so clicks pass through */
+      pointer-events: none;
       z-index: 4;
     }
 
     @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(15px);
-      }
-      60% {
-        transform: translateY(8px);
-      }
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(15px); }
+      60% { transform: translateY(8px); }
     }
 
     @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.7;
-      }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
 
     #corner-ads {
@@ -227,41 +209,92 @@
       color: #d2b48c;
     }
 
-    .featured-btn {
-      display: inline-block;
-      margin-top: 15px;
-      background-color: #6b4c1a;
-      border: none;
+    /* PARTNERS SECTION (clickable card w/ image left) */
+    .partners-section {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: rgba(0,0,0,0.55);
+      border-radius: 12px;
+      box-shadow: 0 0 10px #d2b48c;
       color: white;
-      padding: 12px 24px;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      text-decoration: none;
-      user-select: none;
     }
 
-    .featured-btn:hover {
-      background-color: #8c6d2a;
+    .partners-section h2 {
+      margin-top: 0;
+      color: #d2b48c;
+      font-size: 1.9rem;
+    }
+
+    .partner-card {
+      display: flex;
+      gap: 20px;
+      padding: 18px;
+      margin-bottom: 25px;
+      border-radius: 12px;
+      text-decoration: none;
+      background-color: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: 0.18s;
+      align-items: center;
+    }
+
+    .partner-card:hover {
+      background-color: rgba(255,255,255,0.12);
+      transform: scale(1.02);
+    }
+
+    .partner-img {
+      width: 170px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .partner-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .partner-info h3 {
+      margin: 0;
+      color: #d2b48c;
+      font-size: 1.6rem;
+    }
+
+    .partner-info p {
+      margin-top: 8px;
+      color: #ddd;
+      font-size: 1.05rem;
+    }
+
+    @media (max-width: 700px) {
+      .partner-card {
+        flex-direction: column;
+        text-align: center;
+      }
+      .partner-img {
+        width: 100%;
+        height: auto;
+      }
     }
   </style>
 </head>
 <body>
   <div class="hero-section">
     <h1 style="text-shadow: none;">
-  <img
-    src="https://ratgames.vercel.app/media/tufflogo.png"
-    alt="Rat Hub"
-    width="1112"
-    height="285"
-    style="max-width: 100%; height: auto; display: block; margin: 0 auto; z-index: 3; position: relative;"
-  />
-</h1>
+      <img
+        src="https://ratgames.vercel.app/media/tufflogo.png"
+        alt="Rat Hub"
+        width="1112"
+        height="285"
+        style="max-width: 100%; height: auto; display: block; margin: 0 auto; z-index: 3; position: relative;"
+      />
+    </h1>
 
-    <!-- PHRASE SLOT: invisible box in the layout that reserves space -->
     <div class="phrase-slot" aria-hidden="true">
-      <!-- animated container positioned inside the slot so layout is consistent every cycle -->
       <div class="phrase-container" id="phraseContainer"></div>
     </div>
 
@@ -271,18 +304,39 @@
       <button class="btn" onclick="window.location.href='/files/survey.html'">Request Game/Feedback</button>
     </div>
 
-    <svg id="down-arrow" viewBox="0 0 24 24" onclick="document.getElementById('featured').scrollIntoView({ behavior: 'smooth' });" xmlns="http://www.w3.org/2000/svg" >
+    <svg id="down-arrow" viewBox="0 0 24 24" onclick="document.getElementById('partners').scrollIntoView({ behavior: 'smooth' });" xmlns="http://www.w3.org/2000/svg" >
       <path d="M6 9l6 6 6-6" stroke="#d2b48c" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div id="down-label">See more</div>
   </div>
 
-  <section id="featured" class="info-box">
-    <h2>Featured Game</h2>
-    <button class="featured-btn" onclick="window.location.href='https://ratgames.vercel.app/viewer.html?site=https://ratcar.netlify.app'">Rat Simulator</button>
-    <p style="margin-top: 15px;">
-      Tap the button above to play our custom-made game, Rat Simulator. Created by the owner of Rat Hub, this is our main highlight game! V3.0
-    </p>
+  <!-- PARTNERS: first section after hero (clickable cards, image left) -->
+  <section id="partners" class="partners-section">
+    <h2>Partners</h2>
+
+    <a href="https://t9os.vercel.app/" class="partner-card" target="_blank" rel="noopener">
+      <img class="partner-img" src="https://ratgames.vercel.app/media/t9os.png" alt="T9OS">
+      <div class="partner-info">
+        <h3>T9OS</h3>
+        <p>The best website for games, ai, and unblocking websites. Definitly check it out</p>
+      </div>
+    </a>
+
+    <a href="https://103tutoring.vercel.app/index.html" class="partner-card" target="_blank" rel="noopener">
+      <img class="partner-img" src="https://ratgames.vercel.app/media/gb103.png" alt="Gaming Brothers 103">
+      <div class="partner-info">
+        <h3>Gaming Brothers 103</h3>
+        <p>The ultimate unblocked website with games, apps, unblockers, and more. Make sure to check this great website out.</p>
+      </div>
+    </a>
+
+    <a href="https://refinedstuffsremade.azurewebsites.net/#home" class="partner-card" target="_blank" rel="noopener">
+      <img class="partner-img" src="https://ratgames.vercel.app/media/refinedstuff.png" alt="Refined Stuff">
+      <div class="partner-info">
+        <h3>Refined Stuff</h3>
+        <p>Fire website has a work in progress proxy, updates daily, always unblocked, and a ton of cool themes</p>
+      </div>
+    </a>
   </section>
 
   <section id="terms" class="info-box">
@@ -297,20 +351,15 @@
       Just to clarify, we are not the creators of the games featured on our website, nor are we involved in their development. We would like to give full credit to all the talented individuals and teams who created the games you enjoy here.
     </p>
     <p>
-      If you are the creator of a game listed on our site and would like it removed, please reach out to me in the 
+      If you are the creator of a game listed on our site and would like it removed, please reach out to me in the
       <a href="/files/survey.html" style="color: #d2b48c; text-decoration: underline;">feedback section</a>.
     </p>
-  </section>
-
-  <section id="comic" class="info-box">
-      <img src="https://ratgames.vercel.app/media/comic.png" alt="Comic" style="width: 100%; max-width: 800px; display: block; margin: 0 auto; border-radius: 12px;">
   </section>
 
   <div id="corner-ads">
     <div id="tracker-box">Loading...</div>
   </div>
 
-  <!-- Yep this literally all of my aura awesome text (reserves slot and guarantees consistent rise position) -->
   <script>
     const phrases = [
       "By the students, for the students",
@@ -324,18 +373,16 @@
 
     const phraseContainer = document.getElementById('phraseContainer');
 
-    // timing settings
-    const STAGGER = 200;        // ms between words
-    const RISE_DURATION = 650; // ms per word rise
-    const HOLD_TIME = 1000;     // ms to wait AFTER last word finishes rising
-    const FADE_DURATION = 700;  // ms fade-out speed
-    const START_Y = 100;        // start distance (px); bigger = starts lower
+    const STAGGER = 200;
+    const RISE_DURATION = 650;
+    const HOLD_TIME = 1000;
+    const FADE_DURATION = 700;
+    const START_Y = 100;
 
     let currentPhraseIndex = 0;
     let running = false;
 
     function showPhrase(phrase, done) {
-      // clear container and reset
       phraseContainer.innerHTML = '';
 
       const words = phrase.split(' ');
@@ -343,7 +390,6 @@
         const s = document.createElement('span');
         s.className = 'word';
         s.textContent = w;
-        // initial inline state to avoid race conditions
         s.style.opacity = '0';
         s.style.transform = `translateY(${START_Y}px)`;
         s.style.transition = `transform ${RISE_DURATION}ms ease-out, opacity ${RISE_DURATION}ms ease-out`;
@@ -351,9 +397,7 @@
         return s;
       });
 
-      // force style flush before starting transitions (prevents first-word pop)
       requestAnimationFrame(() => {
-        // animate each word in with stagger
         spans.forEach((s, i) => {
           setTimeout(() => {
             s.style.opacity = '1';
@@ -362,21 +406,17 @@
         });
       });
 
-      // compute total rise time for last word
       const totalRiseEnd = (spans.length - 1) * STAGGER + RISE_DURATION;
 
-      // after last word finishes rising + HOLD_TIME, start fade out
       setTimeout(() => {
         spans.forEach((s, i) => {
           setTimeout(() => {
-            // make fade-out quicker
             s.style.transition = `transform ${FADE_DURATION}ms ease-out, opacity ${FADE_DURATION}ms ease-out`;
             s.style.opacity = '0';
             s.style.transform = 'translateY(-50px)';
           }, i * STAGGER);
         });
 
-        // when fade-out done, call done()
         const totalFadeEnd = (spans.length - 1) * STAGGER + FADE_DURATION + 50;
         setTimeout(done, totalFadeEnd);
       }, totalRiseEnd + HOLD_TIME);
@@ -394,7 +434,6 @@
       })();
     }
 
-    // start
     rotatePhrases();
   </script>
 
@@ -430,10 +469,8 @@
     async function incrementVisitCount() {
       const today = getTodayDateDenver();
 
-      // Call Postgres function to increment count
       const { error } = await supabase.rpc("increment_visit_count", { visit_date: today });
       if (error) {
-        // fallback if RPC not working
         const { data: existing, error: selectErr } = await supabase
           .from("visitor_summary")
           .select("visit_count")
