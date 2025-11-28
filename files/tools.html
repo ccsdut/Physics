@@ -167,6 +167,7 @@ function openViewer(url){
   Structure is now: Name, Image URL, Viewer URL
 */
 const gameList = `
+Cloud Moon, https://ratgames.vercel.app/media/toolsimages/cloudmoon.png, https://web.cloudmoonapp.com/
 Website Unbl0ck3rs, https://ratgames.vercel.app/media/toolsimages/unblocked.png, https://ratgames.vercel.app/files/tools/unbl0ck3rs.html
 Movies, https://ratgames.vercel.app/media/toolsimages/movie.png, https://ratgames.vercel.app/files/tools/movies.html
 Chat, https://ratgames.vercel.app/media/toolsimages/chat.png, https://ratchatyep.vercel.app/
@@ -181,7 +182,6 @@ Internet Archive, https://ratgames.vercel.app/media/toolsimages/internet-archive
 Clock, https://ratgames.vercel.app/media/toolsimages/clock.png, https://ratgames.vercel.app/files/tools/clock.html
 Emulator, https://ratgames.vercel.app/media/toolsimages/emulator.png, https://ratgames.vercel.app/files/tools/emu.html
 Random Website, https://ratgames.vercel.app/media/toolsimages/button.png, https://ratgames.vercel.app/files/tools/random.html
-Cloud Moon, https://ratgames.vercel.app/media/toolsimages/cloudmoon.png, https://web.cloudmoonapp.com/
 `;
 
     // parse the list robustly - expecting: name, image, url
@@ -206,10 +206,10 @@ const games = gameList
   })
   .filter(Boolean);
 
-// Keep the first 11 exactly as-written, sort the rest alphabetically
-const firstEleven = games.slice(0, 11);
+// Keep the first 15 exactly as-written, sort the rest alphabetically
+const firstEleven = games.slice(0, 15);
 const restSorted = games
-  .slice(11)
+  .slice(15)
   .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 const finalGames = [...firstEleven, ...restSorted];
 
