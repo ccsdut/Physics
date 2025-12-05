@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rat Image Generator</title>
+<style>
+:root{
+  --bg-dark:#3b291a;
+  --panel:#5b3b21;
+  --panel-light:#6a4327;
+  --btn:#2b180f;
+  --tan:#e8d8c0;
+  --slot-h:520px; /* INCREASED dashed outline height so landscape is bigger */
+}
+
+/* RESET */
+html,body{
+  margin:0;
+  background:var(--bg-dark);
+  color:var(--tan);
+  font-family:Inter,Arial,Helvetica,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.container{
+  max-width:980px;
+  margin:14px auto;
+  padding:12px;
+}
+
+.title{
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:12px;
+}
+
+/* TOP SECTION */
+.top-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+/* PROMPT BOX */
+#prompt{
+  flex:1;
+  height:97px; /* locked per request */
+  resize:none;
+  border-radius:8px;
+  border:2px solid rgba(255,255,255,0.04);
+  background:var(--panel);
+  color:var(--tan);
+  padding:14px;
+  font-size:15px;
+  line-height:1.3;
+  outline:none;
+}
+
+/* RIGHT STACK — CONTROLS */
+.right{
+  width:260px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.control{
+  height:60px;
+  border-radius:8px;
+  border:2px solid rgba(255,255,255,0.04);
+  font-size:15px;
+  font-weight:700;
+  color:var(--tan);
+  background:var(--panel-light);
+  padding:8px 12px;
+}
+
+#generate{
+  background:var(--btn);
+  cursor:pointer;
+}
+#generate:disabled{
+  opacity:0.55;
+  cursor:not-allowed;
+}
+
+/* SEPARATOR */
+.separator{
+  width:100%;
+  height:2px;
+  background:rgba(232,216,192,0.18);
+  margin:18px 0 12px 0;
+}
+
+/* IMAGE OUTLINE + SLOT */
+.outline{
+  border:5px dashed var(--tan); /* slightly thicker to be very visible */
+  border-radius:14px;
+  padding:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.slot{
+  background:var(--panel);
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:var(--slot-h);        /* taller so landscape looks BIG */
+  width:100%;
+  max-width:920px;            /* constrained by container */
+  position:relative;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* Loader */
+.loader{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.28);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-weight:800;
+  color:var(--tan);
+}
+
+.spinner{
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  border:5px solid rgba(232,216,192,0.3);
+  border-top-color:var(--tan);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Display rules:
+   - landscape: fill almost entire slot (bigger, covers area)
+   - square/portrait: match slot height, width auto (centered) and leave side space
+*/
+.slot img.landscape {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.slot img.others {
+  height:100%;
+  width:auto;
+  object-fit:cover;
+  display:block;
+  margin:0 auto;
+}
+
+/* MOBILE STACK */
+@media(max-width:850px){
+  :root{ --slot-h:360px; } /* reduce height on small screens */
+  .top-row{
+    flex-direction:column;
+  }
+  .right{
+    width:100%;
+    flex-direction:row;
+    gap:8px;
+  }
+  #prompt{ width:100% }
+  #preset, #generate{ flex:1 }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">Rat Image Generator</div>
+
+  <div class="top-row">
+    <textarea id="prompt" placeholder="Describe your perfect image... (e.g., 'A futuristic city at night with neon lights')"></textarea>
+
+    <div class="right" id="rightCol">
+      <select id="preset" class="control" aria-label="preset">
+        <option value="square" selected>Square (1:1)</option>
+        <option value="landscape">Landscape</option>
+        <option value="portrait">Portrait</option>
+      </select>
+
+      <button id="generate" class="control" disabled>Generate</button>
+    </div>
+  </div>
+
+  <div class="separator"></div>
+
+  <div class="outline">
+    <div class="slot" id="slot"></div>
+  </div>
+</div>
+
+<script>
+/* PRESETS and API sizes */
+const PRESETS = {
+  square:    { w:1536, h:1536, ratio:1, key:'square' },
+  landscape: { w:1920, h:1080, ratio:16/9, key:'landscape' },
+  portrait:  { w:1080, h:1920, ratio:9/16, key:'portrait' }
+};
+
+const container = document.querySelector('.container');
+const promptEl = document.getElementById('prompt');
+const presetEl = document.getElementById('preset');
+const generateBtn = document.getElementById('generate');
+const slot = document.getElementById('slot');
+
+/* Enable generate only when prompt has text */
+promptEl.addEventListener('input', () => {
+  generateBtn.disabled = promptEl.value.trim().length === 0;
+});
+
+/* Update slot max width based on container */
+function updateSlotMaxWidth() {
+  const containerPad = 40; // breathing room
+  const contW = Math.min(container.clientWidth, 980);
+  const max = Math.max(320, contW - containerPad);
+  slot.style.maxWidth = max + 'px';
+}
+
+/* Update how the preset displays inside the slot:
+   - slot height is controlled via CSS variable --slot-h
+   - landscape: fill width & height (big, covers slot)
+   - square/portrait: height = slot, width = auto, centered and smaller than max to leave side-space
+*/
+function updateVisualPreset() {
+  const p = PRESETS[presetEl.value];
+  const slotHeight = slot.clientHeight;
+  const preferredWidth = Math.round(slotHeight * p.ratio);
+  const maxWidth = parseInt(getComputedStyle(slot).maxWidth, 10) || slot.clientWidth;
+
+  let finalWidth;
+  if (p.key === 'landscape') {
+    // Make landscape BIG: use nearly the full available width inside the slot.
+    finalWidth = Math.min(maxWidth, Math.round(maxWidth * 0.99));
+  } else {
+    // Square/portrait: keep them sized by ratio but leave side padding (use 72% of max width limit)
+    finalWidth = Math.min(preferredWidth, Math.round(maxWidth * 0.72));
+  }
+
+  slot.style.width = finalWidth + 'px';
+  slot.innerHTML = ''; // clear earlier content (show outline)
+}
+
+/* Build API url */
+function buildURL(text, w, h) {
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=${w}&height=${h}&nologo=true&enhance=true&model=flux`;
+}
+
+/* Show loader */
+function showLoader() {
+  slot.innerHTML = `
+    <div class="loader" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>Image Generating...</div>
+    </div>
+  `;
+}
+
+/* Load and display image */
+function showImage(url, presetKey) {
+  const img = new Image();
+  img.decoding = 'async';
+  img.alt = 'Generated image';
+
+  if (presetKey === 'landscape') img.className = 'landscape';
+  else img.className = 'others';
+
+  img.onload = () => {
+    slot.innerHTML = '';
+    if (presetKey === 'landscape') {
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+    } else {
+      img.style.height = '100%';
+      img.style.width = 'auto';
+      img.style.objectFit = 'cover';
+      img.style.margin = '0 auto';
+    }
+    slot.appendChild(img);
+    generateBtn.disabled = false;
+  };
+
+  img.onerror = () => {
+    slot.innerHTML = `<div style="font-weight:800;padding:14px;color:var(--tan)">Error loading image.</div>`;
+    generateBtn.disabled = false;
+  };
+
+  img.src = url;
+}
+
+/* Wiring */
+window.addEventListener('resize', () => {
+  updateSlotMaxWidth();
+  updateVisualPreset();
+});
+presetEl.addEventListener('change', updateVisualPreset);
+
+// initial state
+updateSlotMaxWidth();
+updateVisualPreset();
+
+/* Generate click */
+generateBtn.addEventListener('click', () => {
+  const text = promptEl.value.trim();
+  if (!text) return;
+
+  const presetKey = presetEl.value;
+  const p = PRESETS[presetKey];
+
+  updateSlotMaxWidth();
+  updateVisualPreset();
+  showLoader();
+  generateBtn.disabled = true;
+  const url = buildURL(text, p.w, p.h);
+  showImage(url, presetKey);
+});
+
+/* Ctrl/Cmd+Enter to generate */
+promptEl.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (!generateBtn.disabled) generateBtn.click();
+  }
+});
+</script>
+</body>
+</html>
