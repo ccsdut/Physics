@@ -1,52 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Au revoir, Rat Games.</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles for the Inter font */
-        body { font-family: "Inter", sans-serif; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Au revoir, Rat Games.</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font */
+        body { font-family: "Inter", sans-serif; }
+    </style>
 </head>
-<!-- Dark background (Deep Brown/Stone) for the new theme -->
 <body class="bg-stone-900 min-h-screen flex items-center justify-center p-4">
 
-    <!-- 
-        Main Content Container 
-        - Increased width: max-w-xl changed to max-w-3xl 
-        - Dark Card: bg-white changed to bg-stone-800 
-        - Highlight Border: border-amber-500 changed to border-orange-400 
-    -->
-    <div class="max-w-3xl w-full p-8 md:p-16 bg-stone-800 rounded-xl shadow-2xl space-y-10 border-4 border-orange-400 transform hover:scale-[1.01] transition duration-500 ease-in-out">
+        <div class="max-w-3xl w-full p-8 md:p-12 bg-stone-800 rounded-xl shadow-2xl space-y-8 border-4 border-orange-400 transform hover:scale-[1.01] transition duration-500 ease-in-out">
 
-        <!-- Title Section: Highlight Text -->
-        <header class="pb-4">
-            <!-- Title Text: Changed to the highlight color (Orange) -->
-            <h1 class="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-center text-orange-400 leading-tight tracking-tighter">
-                👋Au revoir, Rat Games.
-            </h1>
-        </header>
+                <header class="pb-2">
+            <h1 class="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-center text-orange-400 leading-tight tracking-tighter">
+                👋Au revoir, Rat Games.
+            </h1>
+        </header>
 
-        <!-- Body Text: Tan Text -->
-        <section>
-            <!-- Paragraph Text: Changed to the tan color (Amber-100) -->
-            <p class="text-xl sm:text-2xl text-center text-amber-100 leading-relaxed">
-                Goodbye. Rat Games will be down for now. I got in trouble with the principal, and he forced me to take down Rat Games. I had fun while making this website, and i know you guys have had fun too, but all good things come to an end. Ok that was corny go play lit games or sumthing. Goodbye, until next time. 
-                
-                <!-- Separating contact info slightly -->
-                <br class="hidden sm:block">
-                <span class="text-lg text-amber-200/70 block mt-4 font-mono">tvdrbio@stu.ccsdut.org | 4texasplayz4@gmail.com</span>
-            </p>
+                <section class="space-y-4">
+            <p class="text-xl sm:text-2xl text-center text-amber-100 leading-relaxed">
+                Goodbye. Rat Games will be down for now. I got in trouble with the principal, and he forced me to take down Rat Games. I had fun while making this website, and i know you guys have had fun too, but all good things come to an end. Ok that was corny go play lit games or sumthing. Goodbye, until next time. 
+                
+                <br class="hidden sm:block">
+                <span class="text-lg text-amber-200/70 block mt-4 font-mono">tvdrbio@stu.ccsdut.org | 4texasplayz4@gmail.com</span>
+            </p>
+        </section>
+
+                <hr class="border-t-2 border-orange-400/50 w-1/3 mx-auto mt-4">
+
+        <section class="pt-4 space-y-4">
+            <h2 class="text-3xl font-bold text-center text-orange-400">Rat Chat</h2>
+            <iframe 
+                src="https://ratchatyep.vercel.app" 
+                title="Rat Chat Application"
+                class="w-full h-[600px] border-4 border-orange-300 rounded-xl shadow-inner bg-stone-900"
+                frameborder="0"
+                allowfullscreen>
+            </iframe>
         </section>
-
-        <!-- Subtle Divider for Aesthetics -->
-        <!-- Divider color updated to match the highlight -->
-        <hr class="border-t-2 border-orange-400/50 w-1/3 mx-auto pt-4">
-        
-    </div>
+    </div>
 
 </body>
 </html>
