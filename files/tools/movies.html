@@ -334,33 +334,27 @@
 
   <script>
     /**************** DISCLAIMER COUNTDOWN ****************/
+/**************** DISCLAIMER (NO COUNTDOWN) ****************/
 const overlay = document.getElementById('disclaimerOverlay');
 const agreeBtn = document.getElementById('agreeBtn');
-let countdown = 5;
-agreeBtn.textContent = `I agree with (${countdown})`;
-agreeBtn.setAttribute('aria-disabled', 'true');
+const agreeDesc = document.getElementById('agreeDesc');
 
-const countdownInterval = setInterval(() => {
-  countdown--;
-  if (countdown > 0) {
-    agreeBtn.textContent = `I agree with (${countdown})`;
-  } else {
-    clearInterval(countdownInterval);
-    agreeBtn.classList.add('enabled');
-    agreeBtn.textContent = 'I agree';
-    agreeBtn.setAttribute('aria-disabled', 'false');
-    agreeBtn.style.cursor = 'pointer';
-  }
-}, 1000);
+// Make the button active instantly
+agreeBtn.classList.add('enabled');
+agreeBtn.textContent = 'I agree';
+agreeBtn.setAttribute('aria-disabled', 'false');
+agreeBtn.style.cursor = 'pointer';
 
+// Remove useless countdown text
+agreeDesc.textContent = 'Click the button to continue.';
+
+// Make clicking it close immediately
 agreeBtn.addEventListener('click', () => {
-  if (!agreeBtn.classList.contains('enabled')) return;
-
   overlay.style.opacity = '0';
   setTimeout(() => overlay.style.display = 'none', 300);
 
-  // Start your main site logic here
-  initSite();  // make sure all your existing page-loading code is inside this function
+  // Start your main site loading here
+  initSite();
 });
 
     /**************** API + DOM Refs ****************/
