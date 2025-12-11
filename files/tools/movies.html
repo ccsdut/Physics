@@ -334,28 +334,34 @@
 
   <script>
     /**************** DISCLAIMER COUNTDOWN ****************/
-    const overlay = document.getElementById('disclaimerOverlay');
-    const agreeBtn = document.getElementById('agreeBtn');
-    let countdown = 5;
+const overlay = document.getElementById('disclaimerOverlay');
+const agreeBtn = document.getElementById('agreeBtn');
+let countdown = 5;
+agreeBtn.textContent = `I agree with (${countdown})`;
+agreeBtn.setAttribute('aria-disabled', 'true');
+
+const countdownInterval = setInterval(() => {
+  countdown--;
+  if (countdown > 0) {
     agreeBtn.textContent = `I agree with (${countdown})`;
-    agreeBtn.setAttribute('aria-disabled', 'true');
-    const countdownInterval = setInterval(() => {
-      countdown--;
-      if (countdown > 0) {
-        agreeBtn.textContent = `I agree with (${countdown})`;
-      } else {
-        clearInterval(countdownInterval);
-        agreeBtn.classList.add('enabled');
-        agreeBtn.textContent = 'I agree';
-        agreeBtn.setAttribute('aria-disabled', 'false');
-        agreeBtn.style.cursor = 'pointer';
-      }
-    }, 1000);
-    agreeBtn.addEventListener('click', () => {
-      if (!agreeBtn.classList.contains('enabled')) return;
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.style.display = 'none', 300);
-    });
+  } else {
+    clearInterval(countdownInterval);
+    agreeBtn.classList.add('enabled');
+    agreeBtn.textContent = 'I agree';
+    agreeBtn.setAttribute('aria-disabled', 'false');
+    agreeBtn.style.cursor = 'pointer';
+  }
+}, 1000);
+
+agreeBtn.addEventListener('click', () => {
+  if (!agreeBtn.classList.contains('enabled')) return;
+
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.style.display = 'none', 300);
+
+  // Start your main site logic here
+  initSite();  // make sure all your existing page-loading code is inside this function
+});
 
     /**************** API + DOM Refs ****************/
     const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
@@ -776,11 +782,22 @@
       }
     });
 
-    // initial load then ensure at least 4 rows
-    (async () => {
-      await loadItems();
-      await ensureMinRows(4);
-    })();
+    function initSite() {
+  (async () => {
+    // Hide the loading indicator completely
+    loadingIndicator.style.display = 'none';
+
+    // Load first page of movies + TV instantly
+    const movies = await fetchItems('movie', currentPage);
+    const shows = await fetchItems('tv', currentPage);
+    const combined = [...movies, ...shows];
+    const annotated = await annotateWithCerts(combined);
+
+    // Fill cache and render immediately
+    annotatedCache = annotated;
+    renderAnnotatedItemsAppend(annotated);
+  })();
+}
   </script>
 </body>
 </html>
