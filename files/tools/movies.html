@@ -333,29 +333,31 @@
   </div>
 
   <script>
-    /**************** DISCLAIMER COUNTDOWN ****************/
-/**************** DISCLAIMER (NO COUNTDOWN) ****************/
-const overlay = document.getElementById('disclaimerOverlay');
-const agreeBtn = document.getElementById('agreeBtn');
-const agreeDesc = document.getElementById('agreeDesc');
+    /**************** DISCLAIMER (no countdown — enable instantly) ****************/
+    const overlay = document.getElementById('disclaimerOverlay');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const agreeDesc = document.getElementById('agreeDesc');
 
-// Make the button active instantly
-agreeBtn.classList.add('enabled');
-agreeBtn.textContent = 'I agree';
-agreeBtn.setAttribute('aria-disabled', 'false');
-agreeBtn.style.cursor = 'pointer';
+    // Make the button active instantly
+    agreeBtn.classList.add('enabled');
+    agreeBtn.textContent = 'I agree';
+    agreeBtn.setAttribute('aria-disabled', 'false');
+    agreeBtn.style.cursor = 'pointer';
+    agreeDesc.textContent = 'Click the button to continue.';
 
-// Remove useless countdown text
-agreeDesc.textContent = 'Click the button to continue.';
-
-// Make clicking it close immediately
-agreeBtn.addEventListener('click', () => {
-  overlay.style.opacity = '0';
-  setTimeout(() => overlay.style.display = 'none', 300);
-
-  // Start your main site loading here
-  initSite();
-});
+    let siteInitialized = false;
+    agreeBtn.addEventListener('click', () => {
+      if (siteInitialized) {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 300);
+        return;
+      }
+      // hide overlay smoothly
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 300);
+      siteInitialized = true;
+      initSite();
+    });
 
     /**************** API + DOM Refs ****************/
     const API_KEY = '3a73619bbb8fc6d47742d1b5b2b707b5';
@@ -382,7 +384,7 @@ agreeBtn.addEventListener('click', () => {
     // Cache of annotated items we've loaded so far (for append & filter)
     let annotatedCache = [];
 
-    /**************** SOURCES (FULL LISTS; swapped entries for vidsrc/player order) ****************/
+    /**************** SOURCES (FULL LISTS) ****************/
     const tvSources = [
       'https://player.vidify.top/embed/tv/${id}/${season}/${episode}?autoplay=false&poster=true&chromecast=true&servericon=false&setting=true&pip=true&download=true&logourl=https%3A%2F%2Fi.ibb.co%2F67wTJd9R%2Fpngimg-com-netflix-PNG11.png&font=Roboto&fontcolor=6f63ff&fontsize=20&opacity=0.5&primarycolor=4b3621&secondarycolor=c4a484&iconcolor=a9a9a9',
       'https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}',
@@ -468,7 +470,9 @@ agreeBtn.addEventListener('click', () => {
       try {
         const res = await fetch(`${baseURL}/${type}/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
         const data = await res.json();
-        return data.results || [];
+        // annotate results with an explicit media_type to avoid id collisions between movie/tv
+        const results = (data.results || []).map(r => Object.assign({}, r, { media_type: type }));
+        return results;
       } catch (e) { return []; }
     }
 
@@ -484,19 +488,22 @@ agreeBtn.addEventListener('click', () => {
     async function annotateWithCerts(items) {
       const annotated = [];
       for (let item of items) {
+        // determine and normalize media_type so we can de-dup properly
+        const media_type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+
         // avoid annotating duplicates already in cache (by id + media_type)
-        const already = annotatedCache.find(c => c.id === item.id && c.media_type === item.media_type);
+        const already = annotatedCache.find(c => c.id === item.id && c.media_type === media_type);
         if (already) {
           annotated.push(already);
           continue;
         }
         let cert = null;
-        if (item.media_type === 'tv' || item.first_air_date) {
+        if (media_type === 'tv') {
           cert = await getTvCertification(item.id);
         } else {
           cert = await getMovieCertification(item.id);
         }
-        const newItem = Object.assign({}, item, { _cert: cert });
+        const newItem = Object.assign({}, item, { _cert: cert, media_type });
         annotated.push(newItem);
       }
       return annotated;
@@ -556,12 +563,15 @@ agreeBtn.addEventListener('click', () => {
     function createCard(item) {
       const card = document.createElement('div');
       card.className = 'card';
+      card.setAttribute('role', 'button');
+      card.tabIndex = 0;
       const imgPath = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : FALLBACK_POSTER;
       card.innerHTML = `
         <img src="${imgPath}" alt="${(item.title||item.name) || 'Poster'}">
         <h4>${item.title || item.name || 'Untitled'}</h4>
       `;
       card.onclick = () => openModal(item);
+      card.addEventListener('keypress', (e) => { if (e.key === 'Enter') openModal(item); });
       main.appendChild(card);
     }
 
@@ -636,13 +646,16 @@ agreeBtn.addEventListener('click', () => {
               seasonSelect.onchange = () => loadEpisodes(item.id, seasonSelect.value);
               seasonSelect.selectedIndex = 0;
               seasonSelect.dispatchEvent(new Event('change'));
+            } else {
+              modalIframe.src = '';
             }
           })
           .catch(()=>{ modalIframe.src=''; });
       } else {
         movieSources.forEach(link => {
+          const val = link.replace('${id}', item.id);
           const opt = document.createElement('option');
-          opt.value = link.replace('${id}', item.id);
+          opt.value = val;
           try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
           sourceSelect.appendChild(opt);
         });
@@ -681,8 +694,9 @@ agreeBtn.addEventListener('click', () => {
     function updateTvIframe(id, season, episode) {
       sourceSelect.innerHTML = '';
       tvSources.forEach(link => {
+        const val = link.replace('${id}', id).replace('${season}', season).replace('${episode}', episode);
         const opt = document.createElement('option');
-        opt.value = link.replace('${id}', id).replace('${season}', season).replace('${episode}', episode);
+        opt.value = val;
         try { opt.textContent = new URL(opt.value).hostname; } catch(e) { opt.textContent = 'source'; }
         sourceSelect.appendChild(opt);
       });
@@ -694,11 +708,18 @@ agreeBtn.addEventListener('click', () => {
       }
     }
 
-    document.getElementById('closeModal').onclick = () => {
+    function closeModal() {
       modal.style.display = 'none';
       modalIframe.src = '';
       if (document.fullscreenElement) document.exitFullscreen?.();
-    };
+    }
+
+    document.getElementById('closeModal').onclick = closeModal;
+
+    // close modal when clicking outside content
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
 
     /**************** Search + debounce + rating integration ****************/
     let searchTimeout = null;
@@ -762,8 +783,7 @@ agreeBtn.addEventListener('click', () => {
       }
       if (e.key === 'Escape') {
         if (modal.style.display === 'flex') {
-          modal.style.display = 'none';
-          modalIframe.src = '';
+          closeModal();
         }
       }
     });
@@ -776,22 +796,37 @@ agreeBtn.addEventListener('click', () => {
       }
     });
 
-    function initSite() {
-  (async () => {
-    // Hide the loading indicator completely
-    loadingIndicator.style.display = 'none';
+    async function initSite() {
+      // protect against double init
+      if (siteInitialized && annotatedCache.length) return;
+      showLoading(false);
 
-    // Load first page of movies + TV instantly
-    const movies = await fetchItems('movie', currentPage);
-    const shows = await fetchItems('tv', currentPage);
-    const combined = [...movies, ...shows];
-    const annotated = await annotateWithCerts(combined);
+      try {
+        // Load first page of movies + TV instantly
+        const movies = await fetchItems('movie', currentPage);
+        const shows = await fetchItems('tv', currentPage);
+        const combined = [...movies, ...shows];
+        const annotated = await annotateWithCerts(combined);
 
-    // Fill cache and render immediately
-    annotatedCache = annotated;
-    renderAnnotatedItemsAppend(annotated);
-  })();
-}
+        // Fill cache and render immediately
+        annotatedCache = annotated.slice(); // copy
+        renderAnnotatedItemsAppend(annotated);
+
+        // we've now loaded page 1, so advance to page 2 for future loads
+        currentPage = Math.max(2, currentPage + 1);
+
+        // ensure minimal rows in case viewport is tall
+        await ensureMinRows(4);
+      } catch (err) {
+        console.warn('initSite error', err);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Optional: if you want the site to start loading while the disclaimer is open
+    // (commented out). Currently initSite is called when the user clicks "I agree".
+    // initSite();
   </script>
 </body>
 </html>
