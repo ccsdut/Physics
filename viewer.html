@@ -1,67 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Viewer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rat Games</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+    html, body {
       margin: 0;
-      background: #f5f5f5;
+      padding: 0;
+      height: auto;
+      overflow: auto;
+      background-color: #000;
+
+      /* Hide scrollbars but keep scrolling */
+      scrollbar-width: none; /* Firefox */
     }
-    h1 {
-      margin-bottom: 20px;
+    body::-webkit-scrollbar {
+      display: none; /* Chrome, Safari */
     }
-    .buttons {
-      display: flex;
-      gap: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
+
+    iframe {
       border: none;
-      border-radius: 5px;
-      background: #007bff;
-      color: white;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background: #0056b3;
+      width: 100%;
+      min-height: 100vh;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <h1>Choose Mode</h1>
-  <div class="buttons">
-    <button id="normalBtn">Normal</button>
-    <button id="proxyBtn">Proxy</button>
-  </div>
+  <iframe id="viewerFrame" src="" allowfullscreen allow="fullscreen; pointer-lock"></iframe>
 
   <script>
-    // Get the ?site= URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const site = urlParams.get('site');
+    const params = new URLSearchParams(window.location.search);
+    const site = params.get('site');
 
-    if (!site) {
-      document.body.innerHTML = "<h1>No site provided!</h1>";
+    if (site) {
+      document.getElementById('viewerFrame').src = decodeURIComponent(site);
     } else {
-      const normalBtn = document.getElementById('normalBtn');
-      const proxyBtn = document.getElementById('proxyBtn');
-
-      normalBtn.onclick = () => {
-        window.location.href = site; // Go directly
-      };
-
-      proxyBtn.onclick = () => {
-        const encoded = encodeURIComponent(site);
-        window.location.href = `https://tjs65t-8080.csb.app/?${encoded}`;
-      };
+      document.body.innerHTML = '<p style="color: white; text-align: center; margin-top: 20px;">No site specified.</p>';
     }
   </script>
 </body>
